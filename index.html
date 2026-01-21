@@ -1,35 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scratch Demo</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scratch to Win</title>
+
 <style>
-  body { font-family: Arial, sans-serif; background:#fafafa; }
-  .wrap { max-width:520px; margin:40px auto; text-align:center; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #fafafa;
+    margin: 0;
+    padding: 0;
+  }
+  .wrap {
+    max-width: 520px;
+    margin: 40px auto;
+    text-align: center;
+    padding: 0 16px;
+  }
+  h2 {
+    margin-bottom: 6px;
+  }
+  .sub {
+    color: #666;
+    margin-bottom: 20px;
+  }
+  button {
+    margin-top: 18px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
+  }
 </style>
 </head>
+
 <body>
 
 <div class="wrap">
   <h2>🎁 Scratch to Win</h2>
-  <p>Demo mode — no email</p>
+  <div class="sub">Demo mode — no email</div>
 
   <div style="position:relative;width:100%;max-width:480px;margin:auto;">
-    <div style="position:absolute;inset:0;background:#f6f6f6;border-radius:12px;
-                display:flex;align-items:center;justify-content:center;">
+
+    <!-- UNDERLAY (PRIZE) -->
+    <div style="
+      position:absolute;
+      inset:0;
+      z-index:0;
+      background:#f6f6f6;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid #eee;
+    ">
       <div>
         <div style="font-size:18px;">🎉 YOU WON</div>
-        <div id="prize" style="font-size:34px;font-weight:800;">—</div>
+        <div id="prize" style="font-size:36px;font-weight:800;margin-top:6px;">
+          —
+        </div>
       </div>
     </div>
 
-    <canvas id="scratch" width="480" height="220"
-      style="width:100%;border-radius:12px;touch-action:none;"></canvas>
+    <!-- SCRATCH CANVAS (ON TOP) -->
+    <canvas
+      id="scratch"
+      width="480"
+      height="220"
+      style="
+        position:relative;
+        z-index:1;
+        width:100%;
+        height:auto;
+        border-radius:12px;
+        touch-action:none;
+        display:block;
+      ">
+    </canvas>
   </div>
 
-  <button onclick="resetGame()" style="margin-top:20px;padding:12px 20px;font-weight:bold;">
-    Play Again
-  </button>
+  <button onclick="resetGame()">Play Again</button>
 </div>
 
 <script>
@@ -37,57 +92,77 @@ const canvas = document.getElementById("scratch");
 const ctx = canvas.getContext("2d");
 let scratching = false;
 
-function choosePrize(){
+// 92% = 20% OFF, 8% = $50 OFF
+function choosePrize() {
   return Math.random() < 0.08 ? "$50 OFF" : "20% OFF";
 }
 
-function cover(){
-  ctx.globalCompositeOperation="source-over";
-  ctx.fillStyle="#bfbfbf";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle="rgba(0,0,0,.4)";
-  ctx.font="bold 22px Arial";
-  ctx.textAlign="center";
-  ctx.fillText("SCRATCH HERE",canvas.width/2,canvas.height/2);
-  ctx.globalCompositeOperation="destination-out";
+function drawCover() {
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "#bfbfbf";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "rgba(0,0,0,0.4)";
+  ctx.font = "bold 22px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("SCRATCH HERE", canvas.width / 2, canvas.height / 2);
+
+  ctx.globalCompositeOperation = "destination-out";
 }
 
-function scratch(x,y){
+function scratch(x, y) {
   ctx.beginPath();
-  ctx.arc(x,y,20,0,Math.PI*2);
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
   ctx.fill();
 }
 
-function pos(e){
-  const r=canvas.getBoundingClientRect();
-  const t=e.touches?e.touches[0]:e;
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
   return {
-    x:(t.clientX-r.left)*(canvas.width/r.width),
-    y:(t.clientY-r.top)*(canvas.height/r.height)
+    x: (touch.clientX - rect.left) * (canvas.width / rect.width),
+    y: (touch.clientY - rect.top) * (canvas.height / rect.height)
   };
 }
 
-canvas.addEventListener("touchstart",e=>{
-  scratching=true;
-  const p=pos(e);
-  scratch(p.x,p.y);
+// TOUCH EVENTS (iPad / iPhone)
+canvas.addEventListener("touchstart", e => {
+  scratching = true;
+  const p = getPos(e);
+  scratch(p.x, p.y);
   e.preventDefault();
-},{passive:false});
+}, { passive: false });
 
-canvas.addEventListener("touchmove",e=>{
-  if(!scratching) return;
-  const p=pos(e);
-  scratch(p.x,p.y);
+canvas.addEventListener("touchmove", e => {
+  if (!scratching) return;
+  const p = getPos(e);
+  scratch(p.x, p.y);
   e.preventDefault();
-},{passive:false});
+}, { passive: false });
 
-canvas.addEventListener("touchend",()=>scratching=false);
+canvas.addEventListener("touchend", () => scratching = false);
 
-function resetGame(){
+// MOUSE EVENTS (desktop testing)
+canvas.addEventListener("mousedown", e => {
+  scratching = true;
+  const p = getPos(e);
+  scratch(p.x, p.y);
+});
+
+canvas.addEventListener("mousemove", e => {
+  if (!scratching) return;
+  const p = getPos(e);
+  scratch(p.x, p.y);
+});
+
+window.addEventListener("mouseup", () => scratching = false);
+
+function resetGame() {
   document.getElementById("prize").textContent = choosePrize();
-  cover();
+  drawCover();
 }
 
+// INIT
 resetGame();
 </script>
 
