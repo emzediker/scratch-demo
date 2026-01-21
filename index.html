@@ -59,24 +59,20 @@
   }
   button.action:disabled { opacity:0.5; cursor:not-allowed; }
 
-  /* ========= SCRATCH ========= */
-  .scratchStage { position:relative; width:100%; max-width:520px; margin: 0 auto; }
-  #scratchCanvas {
-    position:relative; z-index:1;
-    width:100%; height:auto; border-radius:12px;
-    touch-action:none; display:block;
-    border:1px solid #ddd;
+  .result {
+    margin: 12px auto 0;
+    max-width: 560px;
+    display:none;
+    padding: 12px;
+    border: 1px solid #cce5ff;
+    background: #f0f7ff;
+    border-radius: 12px;
+    text-align:center;
   }
-  .scratchUnderlay {
-    position:absolute; inset:0; z-index:0;
-    background:#f6f6f6; border-radius:12px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    border:1px solid #eee;
-  }
-  .scratchUnderlay .big { font-size:34px; font-weight:900; margin-top:6px; }
-  .scratchUnderlay .small { font-size:13px; color:#666; margin-top:6px; }
+  .result .big { font-size:22px; font-weight:900; }
+  .result .small { margin-top:6px; font-size:13px; color:#444; }
 
-  /* ========= LEAD CAPTURE ========= */
+  /* ========= LEAD CAPTURE (SCRATCH ONLY) ========= */
   .leadGate{
     max-width:520px;
     margin:0 auto 14px;
@@ -146,401 +142,22 @@
     border-radius:12px;
     padding:10px;
   }
-</style>
-</head>
 
-<body>
-  <div class="wrap">
-    <h2>OD on the GO — Conference Game Demos</h2>
-    <div class="sub">Collect name/email first, then scratch to reveal a discount.</div>
-
-    <div class="toggleBar">
-      <button id="btnScratch" class="toggleBtn active">🪙 Scratcher</button>
-      <button id="btnOther" class="toggleBtn">🎮 Other</button>
-    </div>
-
-    <!-- ===== PANEL: SCRATCHER ===== -->
-    <div id="panelScratch" class="panel active">
-      <h3 style="margin-top:0;">🪙 Scratch to Win</h3>
-
-      <!-- Lead gate (required before scratch) -->
-      <div id="leadGate" class="leadGate">
-        <div class="title">✅ Enter your info to play</div>
-
-        <label>Name</label>
-        <input id="leadName" type="text" placeholder="First + last name" autocomplete="name">
-
-        <label>Email</label>
-        <input id="leadEmail" type="email" placeholder="name@email.com" autocomplete="email">
-
-        <button id="startGame" class="startBtn" type="button">Start Scratch Game</button>
-
-        <div id="leadSavedCard" class="savedCard">
-          <div class="big">Saved ✅ (screenshot this if you want)</div>
-          <div class="row"><strong>Name:</strong> <span id="savedName"></span></div>
-          <div class="row"><strong>Email:</strong> <span id="savedEmail"></span></div>
-          <div class="row"><strong>Status:</strong> <span id="savedStatus">(started)</span></div>
-          <small>Now scratch below to reveal your discount.</small>
-        </div>
-      </div>
-
-      <!-- Scratcher -->
-      <div class="scratchStage">
-        <div class="scratchUnderlay">
-          <div style="font-size:30px;font-weight:900;">🎉 You won</div>
-          <div class="big" id="prizeText">—</div>
-          <div class="small" id="prizeCodeText">Code: —</div>
-        </div>
-
-        <canvas id="scratchCanvas" width="900" height="360"></canvas>
-      </div>
-
-      <button id="resetScratch" class="action" type="button" disabled>Reset for next student</button>
-
-      <div class="note">
-        Leads are stored on this device (localStorage). Export CSV at the end of the day.
-      </div>
-
-      <div class="adminRow">
-        <button id="viewLeads" class="ghostBtn" type="button">View saved list</button>
-        <button id="exportLeads" class="ghostBtn" type="button">Export CSV</button>
-        <button id="clearAllLeads" class="ghostBtn" type="button">Clear saved leads</button>
-        <div id="leadList"></div>
-      </div>
-    </div>
-
-    <!-- ===== PANEL: OTHER (placeholder) ===== -->
-    <div id="panelOther" class="panel">
-      <h3 style="margin-top:0;">🎮 Other games</h3>
-      <div class="note">Drop your other panels in here later.</div>
-    </div>
-
-  </div>
-
-<script>
-(() => {
-  // -------------------------
-  // TOGGLE (2 panels example)
-  // -------------------------
-  const tabs = [
-    { btn: "btnScratch", panel: "panelScratch" },
-    { btn: "btnOther", panel: "panelOther" }
-  ];
-  function show(panelId){
-    tabs.forEach(t => {
-      document.getElementById(t.btn).classList.toggle("active", t.panel === panelId);
-      document.getElementById(t.panel).classList.toggle("active", t.panel === panelId);
-    });
+  /* ========= SCRATCH ========= */
+  .scratchStage { position:relative; width:100%; max-width:520px; margin: 0 auto; }
+  #scratchCanvas {
+    position:relative; z-index:1;
+    width:100%; height:auto; border-radius:12px;
+    touch-action:none; display:block;
+    border:1px solid #ddd;
   }
-  tabs.forEach(t => document.getElementById(t.btn).addEventListener("click", () => show(t.panel)));
-
-  // -------------------------
-  // STORAGE (leads)
-  // -------------------------
-  const STORAGE_KEY = "odgo_scratcher_leads_v1";
-
-  function getLeads(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-    catch { return []; }
+  .scratchUnderlay {
+    position:absolute; inset:0; z-index:0;
+    background:#f6f6f6; border-radius:12px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border:1px solid #eee;
   }
-  function setLeads(arr){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-  }
-  function validEmail(s){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
-  }
-  function newId(){
-    return (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2));
-  }
-
-  // -------------------------
-  // PRIZE LOGIC (adjust odds)
-  // -------------------------
-  // Typical request earlier: 20% most, $50 rare. If you want 10% as miss etc, tell me.
-  const PROB_50 = 0.08;
-  function choosePrize(){
-    return (Math.random() < PROB_50)
-      ? { label:"$50 OFF", code:"CONF50" }
-      : { label:"20% OFF", code:"CONF20" };
-  }
-
-  // -------------------------
-  // LEAD GATE ELEMENTS
-  // -------------------------
-  const leadName = document.getElementById("leadName");
-  const leadEmail = document.getElementById("leadEmail");
-  const startGame = document.getElementById("startGame");
-
-  const leadSavedCard = document.getElementById("leadSavedCard");
-  const savedName = document.getElementById("savedName");
-  const savedEmail = document.getElementById("savedEmail");
-  const savedStatus = document.getElementById("savedStatus");
-
-  const resetScratch = document.getElementById("resetScratch");
-
-  const viewLeads = document.getElementById("viewLeads");
-  const exportLeads = document.getElementById("exportLeads");
-  const clearAllLeads = document.getElementById("clearAllLeads");
-  const leadList = document.getElementById("leadList");
-
-  // -------------------------
-  // SCRATCHER ELEMENTS
-  // -------------------------
-  const canvas = document.getElementById("scratchCanvas");
-  const ctx = canvas.getContext("2d");
-  const prizeText = document.getElementById("prizeText");
-  const prizeCodeText = document.getElementById("prizeCodeText");
-
-  let scratchEnabled = false;
-  let scratching = false;
-  let revealed = false;
-
-  // link scratch completion back to the right person
-  let currentLeadId = null;
-
-  // store the current prize so we can write it into the lead record at completion
-  let currentPrize = null;
-
-  // -------------------------
-  // DRAW COVER (scratch layer)
-  // -------------------------
-  function drawCover(){
-    ctx.globalCompositeOperation = "source-over";
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // cover rectangle
-    ctx.fillStyle = "#bfbfbf";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    // text
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.font = "bold 44px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("SCRATCH HERE", canvas.width/2, canvas.height/2);
-
-    // switch to erase mode
-    ctx.globalCompositeOperation = "destination-out";
-  }
-
-  function setPrizeUI(prize){
-    prizeText.textContent = prize.label;
-    prizeCodeText.textContent = "Code: " + prize.code;
-  }
-
-  function startNewRound(){
-    revealed = false;
-    currentPrize = choosePrize();
-    setPrizeUI(currentPrize);
-    drawCover();
-  }
-
-  // -------------------------
-  // HELPERS: pointer coords
-  // -------------------------
-  function getPos(evt){
-    const r = canvas.getBoundingClientRect();
-    const t = evt.touches ? evt.touches[0] : evt;
-    return {
-      x: (t.clientX - r.left) * (canvas.width / r.width),
-      y: (t.clientY - r.top) * (canvas.height / r.height)
-    };
-  }
-
-  function scratchDot(x,y){
-    ctx.beginPath();
-    ctx.arc(x,y,28,0,Math.PI*2);
-    ctx.fill();
-  }
-
-  // -------------------------
-  // COMPLETION CHECK
-  // -------------------------
-  function percentCleared(){
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    let cleared = 0;
-    for (let i = 3; i < img.length; i += 4) {
-      if (img[i] === 0) cleared++;
-    }
-    return cleared / (img.length / 4);
-  }
-
-  function updateLead(fields){
-    if (!currentLeadId) return;
-    const leads = getLeads();
-    const idx = leads.findIndex(l => l.id === currentLeadId);
-    if (idx === -1) return;
-    leads[idx] = { ...leads[idx], ...fields };
-    setLeads(leads);
-  }
-
-  function checkComplete(){
-    if (revealed) return;
-    const pct = percentCleared();
-    if (pct >= 0.55) {
-      revealed = true;
-
-      // mark completion + prize on the stored lead
-      updateLead({
-        completedAt: new Date().toISOString(),
-        prizeLabel: currentPrize?.label || null,
-        prizeCode: currentPrize?.code || null
-      });
-
-      savedStatus.textContent = `completed — ${currentPrize.label} (${currentPrize.code})`;
-
-      // enable reset button (booth workflow)
-      resetScratch.disabled = false;
-    }
-  }
-
-  // -------------------------
-  // SCRATCH EVENTS (gated)
-  // -------------------------
-  canvas.addEventListener("mousedown", (e) => {
-    if (!scratchEnabled) return;
-    scratching = true;
-    const p = getPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-  });
-
-  canvas.addEventListener("mousemove", (e) => {
-    if (!scratchEnabled || !scratching) return;
-    const p = getPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-  });
-
-  window.addEventListener("mouseup", () => scratching = false);
-
-  canvas.addEventListener("touchstart", (e) => {
-    if (!scratchEnabled) return;
-    scratching = true;
-    const p = getPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-    e.preventDefault();
-  }, { passive:false });
-
-  canvas.addEventListener("touchmove", (e) => {
-    if (!scratchEnabled || !scratching) return;
-    const p = getPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-    e.preventDefault();
-  }, { passive:false });
-
-  canvas.addEventListener("touchend", () => scratching = false);
-
-  // -------------------------
-  // GATE: save lead BEFORE scratch
-  // -------------------------
-  startGame.addEventListener("click", () => {
-    const name = (leadName.value || "").trim();
-    const email = (leadEmail.value || "").trim();
-
-    if (!name) { alert("Please enter your name."); return; }
-    if (!validEmail(email)) { alert("Please enter a valid email."); return; }
-
-    const id = newId();
-    const leads = getLeads();
-    leads.unshift({
-      id,
-      name,
-      email,
-      startedAt: new Date().toISOString(),
-      completedAt: null,
-      prizeLabel: null,
-      prizeCode: null
-    });
-    setLeads(leads);
-
-    currentLeadId = id;
-    scratchEnabled = true;
-
-    // lock the gate so they can't change after starting
-    leadName.disabled = true;
-    leadEmail.disabled = true;
-    startGame.disabled = true;
-    startGame.textContent = "Ready — scratch below!";
-
-    // show saved card (for screenshot)
-    savedName.textContent = name;
-    savedEmail.textContent = email;
-    savedStatus.textContent = "(started)";
-    leadSavedCard.style.display = "block";
-
-    // start scratch round
-    startNewRound();
-  });
-
-  // -------------------------
-  // Reset for next student
-  // -------------------------
-  resetScratch.addEventListener("click", () => {
-    // reset UI inputs
-    leadName.value = "";
-    leadEmail.value = "";
-    leadName.disabled = false;
-    leadEmail.disabled = false;
-    startGame.disabled = false;
-    startGame.textContent = "Start Scratch Game";
-
-    // reset state
-    scratchEnabled = false;
-    currentLeadId = null;
-    currentPrize = null;
-    revealed = false;
-    resetScratch.disabled = true;
-
-    leadSavedCard.style.display = "none";
-
-    // redraw cover so no one scratches without entering info
-    drawCover();
-  });
-
-  // -------------------------
-  // Admin: view / export / clear
-  // -------------------------
-  viewLeads.addEventListener("click", () => {
-    const leads = getLeads();
-    leadList.textContent = leads.length
-      ? leads.map((l,i)=>`${i+1}. ${l.name} — ${l.email} — ${l.prizeLabel || "(not finished)"} ${l.prizeCode ? "(" + l.prizeCode + ")" : ""} — started ${new Date(l.startedAt).toLocaleString()}`).join("\n")
-      : "No saved leads yet.";
-    leadList.style.display = "block";
-  });
-
-  exportLeads.addEventListener("click", () => {
-    const leads = getLeads();
-    if (!leads.length) { alert("No leads to export yet."); return; }
-
-    const header = "name,email,startedAt,completedAt,prizeLabel,prizeCode\n";
-    const rows = leads.map(l =>
-      `"${String(l.name).replaceAll('"','""')}","${String(l.email).replaceAll('"','""')}","${l.startedAt}","${l.completedAt || ""}","${l.prizeLabel || ""}","${l.prizeCode || ""}"`
-    ).join("\n");
-
-    const blob = new Blob([header + rows], { type:"text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "odgo_scratcher_leads.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  clearAllLeads.addEventListener("click", () => {
-    if (!confirm("Clear all saved leads on this device?")) return;
-    setLeads([]);
-    leadList.style.display = "none";
-    alert("Saved leads cleared.");
-  });
-
-  // init (locked until lead entered)
-  drawCover();
-})();
-</script>
+  .scratchUnderlay .big { font-size:34px; font-weight:900; margin-top:6px; }
 
   /* ========= SPIN ========= */
   .spinStage { position:relative; width:320px; height:320px; margin: 10px auto 10px; }
@@ -562,19 +179,6 @@
   }
   .badge .emoji { font-size:44px; line-height:1; }
   .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:900; letter-spacing:0.6px; }
-
-  .result {
-    margin: 12px auto 0;
-    max-width: 560px;
-    display:none;
-    padding: 12px;
-    border: 1px solid #cce5ff;
-    background: #f0f7ff;
-    border-radius: 12px;
-    text-align:center;
-  }
-  .result .big { font-size:22px; font-weight:900; }
-  .result .small { margin-top:6px; font-size:13px; color:#444; }
 
   /* ========= DROP GAME ========= */
   .hud { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin: 10px 0 14px; }
@@ -758,7 +362,6 @@
     background: transparent;
   }
 
-  /* Glasses target zone on the face */
   .glassesTarget {
     position:absolute;
     left: 50%;
@@ -786,9 +389,6 @@
     touch-action:none;
   }
   .glasses:active { cursor: grabbing; }
-  .frame {
-    position:absolute; inset: 0;
-  }
   .lens {
     position:absolute;
     width: 78px; height: 54px;
@@ -815,9 +415,7 @@
   .arm.left { left: -18px; }
   .arm.right { right: -18px; }
 
-  .snap {
-    animation: snap 160ms ease-out;
-  }
+  .snap { animation: snap 160ms ease-out; }
   @keyframes snap {
     0% { transform: scale(1); }
     60% { transform: scale(1.06); }
@@ -829,7 +427,7 @@
 <body>
   <div class="wrap">
     <h2>🎮 OD on the GO Mini-Game Demos</h2>
-    <div class="sub">Pick one for your conference booth (no email yet).</div>
+    <div class="sub">Pick one for your conference booth.</div>
 
     <div class="toggleBar">
       <button id="btnScratch" class="toggleBtn active" type="button">🪙 Scratch</button>
@@ -839,24 +437,51 @@
       <button id="btnFit" class="toggleBtn" type="button">👤 Glasses</button>
     </div>
 
-    <!-- ===== SCRATCH ===== -->
+    <!-- ===== SCRATCH (with email capture) ===== -->
     <div id="panelScratch" class="panel active">
       <h3 style="margin:0 0 10px;">🪙 Scratch to Win</h3>
 
+      <!-- Lead gate (required before scratch) -->
+      <div class="leadGate">
+        <div class="title">✅ Enter your info to play</div>
+
+        <label>Name</label>
+        <input id="leadName" type="text" placeholder="First + last name" autocomplete="name">
+
+        <label>Email</label>
+        <input id="leadEmail" type="email" placeholder="name@email.com" autocomplete="email">
+
+        <button id="startGame" class="startBtn" type="button">Start Scratch Game</button>
+
+        <div id="leadSavedCard" class="savedCard">
+          <div class="big">Saved ✅ (you can screenshot this)</div>
+          <div class="row"><strong>Name:</strong> <span id="savedName"></span></div>
+          <div class="row"><strong>Email:</strong> <span id="savedEmail"></span></div>
+          <div class="row"><strong>Status:</strong> <span id="savedStatus">(started)</span></div>
+          <small>Now scratch below to reveal your discount.</small>
+        </div>
+      </div>
+
       <div class="scratchStage">
         <div class="scratchUnderlay">
-          <div>
-            <div style="font-size:18px;">🎉 YOU WON</div>
-            <div id="scratchPrizeText" class="big">—</div>
-            <div style="font-size:12px;color:#666;margin-top:6px;">Scratch to reveal</div>
-          </div>
+          <div style="font-size:18px;">🎉 YOU WON</div>
+          <div id="scratchPrizeText" class="big">—</div>
+          <div id="scratchCodeText" style="font-size:12px;color:#666;margin-top:6px;">Code: —</div>
+          <div style="font-size:12px;color:#666;margin-top:6px;">Scratch to reveal</div>
         </div>
 
         <canvas id="scratchCanvas" width="480" height="220"></canvas>
       </div>
 
-      <button class="action" id="scratchReset" type="button">Play Again</button>
-      <div class="note">Odds: mostly 20% off; a few $50 off.</div>
+      <button class="action" id="scratchReset" type="button" disabled>Reset for next student</button>
+      <div class="note">Leads save on this device. Export CSV at end of day.</div>
+
+      <div class="adminRow">
+        <button id="viewLeads" class="ghostBtn" type="button">View saved list</button>
+        <button id="exportLeads" class="ghostBtn" type="button">Export CSV</button>
+        <button id="clearAllLeads" class="ghostBtn" type="button">Clear saved leads</button>
+        <div id="leadList"></div>
+      </div>
     </div>
 
     <!-- ===== SPIN ===== -->
@@ -974,13 +599,11 @@
         </div>
 
         <div id="glasses" class="glasses" title="Drag me">
-          <div class="frame">
-            <div class="arm left"></div>
-            <div class="arm right"></div>
-            <div class="lens left"></div>
-            <div class="lens right"></div>
-            <div class="bridge"></div>
-          </div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="lens left"></div>
+          <div class="lens right"></div>
+          <div class="bridge"></div>
         </div>
       </div>
 
@@ -992,7 +615,6 @@
 
       <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
     </div>
-
   </div>
 
 <script>
@@ -1043,16 +665,56 @@
   btnFit.addEventListener("click", () => setActive("fit"));
 
   // =========================
+  // ===== LEADS (SCRATCH) ====
+  // =========================
+  const STORAGE_KEY = "odgo_scratcher_leads_v1";
+  function getLeads(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+    catch { return []; }
+  }
+  function setLeads(arr){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+  function validEmail(s){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
+  }
+  function newId(){
+    return (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2));
+  }
+
+  const leadName = document.getElementById("leadName");
+  const leadEmail = document.getElementById("leadEmail");
+  const startGame = document.getElementById("startGame");
+  const leadSavedCard = document.getElementById("leadSavedCard");
+  const savedName = document.getElementById("savedName");
+  const savedEmail = document.getElementById("savedEmail");
+  const savedStatus = document.getElementById("savedStatus");
+
+  const viewLeads = document.getElementById("viewLeads");
+  const exportLeads = document.getElementById("exportLeads");
+  const clearAllLeads = document.getElementById("clearAllLeads");
+  const leadList = document.getElementById("leadList");
+
+  let currentLeadId = null;
+
+  // =========================
   // ===== SCRATCH GAME ======
   // =========================
   const scratchCanvas = document.getElementById("scratchCanvas");
   const sctx = scratchCanvas.getContext("2d");
   const scratchPrizeText = document.getElementById("scratchPrizeText");
+  const scratchCodeText = document.getElementById("scratchCodeText");
   const scratchReset = document.getElementById("scratchReset");
+
+  let scratchEnabled = false;
   let scratching = false;
+  let revealed = false;
+  let currentPrize = null;
 
   function drawScratchCover() {
     sctx.globalCompositeOperation = "source-over";
+    sctx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+
     sctx.fillStyle = "#bfbfbf";
     sctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
 
@@ -1063,28 +725,194 @@
 
     sctx.globalCompositeOperation = "destination-out";
   }
-  function scratchDot(x, y) { sctx.beginPath(); sctx.arc(x, y, 20, 0, Math.PI * 2); sctx.fill(); }
+  function scratchDot(x, y) {
+    sctx.beginPath();
+    sctx.arc(x, y, 20, 0, Math.PI * 2);
+    sctx.fill();
+  }
   function scratchPos(e) {
     const rect = scratchCanvas.getBoundingClientRect();
     const t = e.touches ? e.touches[0] : e;
-    return { x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
-             y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height) };
+    return {
+      x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
+      y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height)
+    };
   }
 
-  scratchCanvas.addEventListener("touchstart", e => { scratching = true; const p = scratchPos(e); scratchDot(p.x,p.y); e.preventDefault(); }, { passive:false });
-  scratchCanvas.addEventListener("touchmove", e => { if (!scratching) return; const p = scratchPos(e); scratchDot(p.x,p.y); e.preventDefault(); }, { passive:false });
-  scratchCanvas.addEventListener("touchend", () => scratching = false);
-  scratchCanvas.addEventListener("mousedown", e => { scratching = true; const p = scratchPos(e); scratchDot(p.x,p.y); });
-  scratchCanvas.addEventListener("mousemove", e => { if (!scratching) return; const p = scratchPos(e); scratchDot(p.x,p.y); });
-  window.addEventListener("mouseup", () => scratching = false);
+  function percentCleared(){
+    const img = sctx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height).data;
+    let cleared = 0;
+    for (let i = 3; i < img.length; i += 4) if (img[i] === 0) cleared++;
+    return cleared / (img.length / 4);
+  }
 
-  function resetScratch() {
-    const prize = choosePrize();
-    scratchPrizeText.textContent = prize.label;
+  function updateLead(fields){
+    if (!currentLeadId) return;
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === currentLeadId);
+    if (idx === -1) return;
+    leads[idx] = { ...leads[idx], ...fields };
+    setLeads(leads);
+  }
+
+  function checkComplete(){
+    if (revealed) return;
+    if (percentCleared() >= 0.55) {
+      revealed = true;
+
+      updateLead({
+        completedAt: new Date().toISOString(),
+        prizeLabel: currentPrize?.label || null,
+        prizeCode: currentPrize?.code || null
+      });
+
+      savedStatus.textContent = `completed — ${currentPrize.label} (${currentPrize.code})`;
+      scratchReset.disabled = false;
+    }
+  }
+
+  function resetScratchRound(){
+    revealed = false;
+    currentPrize = choosePrize();
+    scratchPrizeText.textContent = currentPrize.label;
+    scratchCodeText.textContent = "Code: " + currentPrize.code;
     drawScratchCover();
   }
-  scratchReset.addEventListener("click", resetScratch);
-  resetScratch();
+
+  // Scratch events (GATED)
+  scratchCanvas.addEventListener("touchstart", e => {
+    if (!scratchEnabled) return;
+    scratching = true;
+    const p = scratchPos(e);
+    scratchDot(p.x,p.y);
+    checkComplete();
+    e.preventDefault();
+  }, { passive:false });
+
+  scratchCanvas.addEventListener("touchmove", e => {
+    if (!scratchEnabled || !scratching) return;
+    const p = scratchPos(e);
+    scratchDot(p.x,p.y);
+    checkComplete();
+    e.preventDefault();
+  }, { passive:false });
+
+  scratchCanvas.addEventListener("touchend", () => scratching = false);
+
+  scratchCanvas.addEventListener("mousedown", e => {
+    if (!scratchEnabled) return;
+    scratching = true;
+    const p = scratchPos(e);
+    scratchDot(p.x,p.y);
+    checkComplete();
+  });
+
+  scratchCanvas.addEventListener("mousemove", e => {
+    if (!scratchEnabled || !scratching) return;
+    const p = scratchPos(e);
+    scratchDot(p.x,p.y);
+    checkComplete();
+  });
+
+  window.addEventListener("mouseup", () => scratching = false);
+
+  // Gate: save lead BEFORE scratch starts
+  startGame.addEventListener("click", () => {
+    const name = (leadName.value || "").trim();
+    const email = (leadEmail.value || "").trim();
+    if (!name) { alert("Please enter your name."); return; }
+    if (!validEmail(email)) { alert("Please enter a valid email."); return; }
+
+    const id = newId();
+    const leads = getLeads();
+    leads.unshift({
+      id, name, email,
+      startedAt: new Date().toISOString(),
+      completedAt: null,
+      prizeLabel: null,
+      prizeCode: null
+    });
+    setLeads(leads);
+
+    currentLeadId = id;
+    scratchEnabled = true;
+
+    leadName.disabled = true;
+    leadEmail.disabled = true;
+    startGame.disabled = true;
+    startGame.textContent = "Ready — scratch below!";
+
+    savedName.textContent = name;
+    savedEmail.textContent = email;
+    savedStatus.textContent = "(started)";
+    leadSavedCard.style.display = "block";
+
+    scratchReset.disabled = true; // only enable once completed
+    resetScratchRound();
+  });
+
+  // Reset for next student (booth workflow)
+  scratchReset.addEventListener("click", () => {
+    // reset gate
+    leadName.value = "";
+    leadEmail.value = "";
+    leadName.disabled = false;
+    leadEmail.disabled = false;
+    startGame.disabled = false;
+    startGame.textContent = "Start Scratch Game";
+    leadSavedCard.style.display = "none";
+
+    // reset state
+    scratchEnabled = false;
+    currentLeadId = null;
+    currentPrize = null;
+    revealed = false;
+    scratchReset.disabled = true;
+
+    // cover again
+    drawScratchCover();
+    scratchPrizeText.textContent = "—";
+    scratchCodeText.textContent = "Code: —";
+  });
+
+  // Admin buttons
+  viewLeads.addEventListener("click", () => {
+    const leads = getLeads();
+    leadList.textContent = leads.length
+      ? leads.map((l,i)=>`${i+1}. ${l.name} — ${l.email} — ${l.prizeLabel || "(not finished)"} ${l.prizeCode ? "(" + l.prizeCode + ")" : ""} — started ${new Date(l.startedAt).toLocaleString()}`).join("\n")
+      : "No saved leads yet.";
+    leadList.style.display = "block";
+  });
+
+  exportLeads.addEventListener("click", () => {
+    const leads = getLeads();
+    if (!leads.length) { alert("No leads to export yet."); return; }
+
+    const header = "name,email,startedAt,completedAt,prizeLabel,prizeCode\n";
+    const rows = leads.map(l =>
+      `"${String(l.name).replaceAll('"','""')}","${String(l.email).replaceAll('"','""')}","${l.startedAt}","${l.completedAt || ""}","${l.prizeLabel || ""}","${l.prizeCode || ""}"`
+    ).join("\n");
+
+    const blob = new Blob([header + rows], { type:"text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "odgo_scratcher_leads.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  clearAllLeads.addEventListener("click", () => {
+    if (!confirm("Clear all saved leads on this device?")) return;
+    setLeads([]);
+    leadList.style.display = "none";
+    alert("Saved leads cleared.");
+  });
+
+  // init scratch locked
+  drawScratchCover();
 
   // =========================
   // ===== SPIN GAME =========
@@ -1413,15 +1241,13 @@
   let fitOffsetX = 0, fitOffsetY = 0;
   let fitWon = false;
 
-  // Move head left/right smoothly
   let fitAnimId = null;
   let fitStart = performance.now();
 
   function fitResetPositions() {
-    // reset glasses bottom-left
     glasses.style.left = "20px";
     glasses.style.bottom = "18px";
-    glasses.style.top = ""; // clear top if set
+    glasses.style.top = "";
     fitResult.style.display = "none";
     fitWon = false;
   }
@@ -1454,12 +1280,11 @@
     const p = fitPointerPos(evt);
     const g = fitGetElPosInStage(glasses);
 
-    // start drag if touch is on glasses box
     if (p.x >= g.left && p.x <= g.right && p.y >= g.top && p.y <= g.bottom) {
       fitDragging = true;
       fitOffsetX = p.x - g.left;
       fitOffsetY = p.y - g.top;
-      glasses.style.bottom = ""; // switch to top/left for drag
+      glasses.style.bottom = "";
       glasses.style.top = g.top + "px";
       glasses.style.left = g.left + "px";
       evt.preventDefault();
@@ -1485,13 +1310,11 @@
     fitWon = true;
     fitDragging = false;
 
-    // Snap glasses to target (centered)
     const t = fitGetElPosInStage(glassesTarget);
     const gx = t.left + (t.width - glasses.offsetWidth) / 2;
     const gy = t.top + (t.height - glasses.offsetHeight) / 2;
 
     glasses.classList.remove("snap");
-    // force reflow
     void glasses.offsetWidth;
     glasses.classList.add("snap");
 
@@ -1511,25 +1334,19 @@
     const g = fitGetElPosInStage(glasses);
     const t = fitGetElPosInStage(glassesTarget);
 
-    if (fitRectsOverlap(g, t)) {
-      fitWin();
-    } else {
-      // reset glasses to start position
-      fitResetPositions();
-    }
+    if (fitRectsOverlap(g, t)) fitWin();
+    else fitResetPositions();
   }
 
-  // Head animation loop
   function animateHead(now) {
     const elapsed = (now - fitStart) / 1000;
-    const amplitude = Math.min(220, fitStage.clientWidth * 0.28); // responsive
+    const amplitude = Math.min(220, fitStage.clientWidth * 0.28);
     const center = fitStage.clientWidth / 2;
-    const x = center + Math.sin(elapsed * 1.6) * amplitude; // speed
+    const x = center + Math.sin(elapsed * 1.6) * amplitude;
     head.style.left = x + "px";
     fitAnimId = requestAnimationFrame(animateHead);
   }
 
-  // Fit events
   fitStage.addEventListener("touchstart", fitOnDown, { passive:false });
   fitStage.addEventListener("touchmove", fitOnMove, { passive:false });
   fitStage.addEventListener("touchend", fitOnUp, { passive:false });
@@ -1539,7 +1356,6 @@
 
   fitAgainBtn.addEventListener("click", () => fitResetPositions());
 
-  // Start anim
   fitResetPositions();
   fitAnimId = requestAnimationFrame(animateHead);
 
