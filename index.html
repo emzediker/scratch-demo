@@ -1,684 +1,139 @@
-<script>
-(() => {
-  // ===== Shared odds =====
-  const PROB_50 = 0.08;
-  function choosePrize() {
-    return (Math.random() < PROB_50)
-      ? { label: "$50 OFF", code: "CONF50" }
-      : { label: "20% OFF", code: "CONF20" };
-  }
-
-  // ===== Toggle =====
-  const btnScratch = document.getElementById("btnScratch");
-  const btnSpin = document.getElementById("btnSpin");
-  const btnDrop = document.getElementById("btnDrop");
-  const btnSlots = document.getElementById("btnSlots");
-  const btnFit = document.getElementById("btnFit");
-  const btnLaunch = document.getElementById("btnLaunch");
-
-  const panelScratch = document.getElementById("panelScratch");
-  const panelSpin = document.getElementById("panelSpin");
-  const panelDrop = document.getElementById("panelDrop");
-  const panelSlots = document.getElementById("panelSlots");
-  const panelFit = document.getElementById("panelFit");
-  const panelLaunch = document.getElementById("panelLaunch");
-
-  function setActive(which) {
-    btnScratch.classList.toggle("active", which === "scratch");
-    btnSpin.classList.toggle("active", which === "spin");
-    btnDrop.classList.toggle("active", which === "drop");
-    btnSlots.classList.toggle("active", which === "slots");
-    btnFit.classList.toggle("active", which === "fit");
-    btnLaunch.classList.toggle("active", which === "launch");
-
-    panelScratch.classList.toggle("active", which === "scratch");
-    panelSpin.classList.toggle("active", which === "spin");
-    panelDrop.classList.toggle("active", which === "drop");
-    panelSlots.classList.toggle("active", which === "slots");
-    panelFit.classList.toggle("active", which === "fit");
-    panelLaunch.classList.toggle("active", which === "launch");
-
-    if (which === "spin") drawWheel();
-    if (which === "drop") setDropToStart();
-    if (which === "fit") fitResetPositions();
-    if (which === "launch") resetLaunch();
-  }
-
-  btnScratch.addEventListener("click", () => setActive("scratch"));
-  btnSpin.addEventListener("click", () => setActive("spin"));
-  btnDrop.addEventListener("click", () => setActive("drop"));
-  btnSlots.addEventListener("click", () => setActive("slots"));
-  btnFit.addEventListener("click", () => setActive("fit"));
-  btnLaunch.addEventListener("click", () => setActive("launch"));
-
-  // =========================
-  // ===== SCRATCH GAME ======
-  // =========================
-  const scratchCanvas = document.getElementById("scratchCanvas");
-  const sctx = scratchCanvas.getContext("2d");
-  const scratchPrizeText = document.getElementById("scratchPrizeText");
-  const scratchReset = document.getElementById("scratchReset");
-
-  let scratching = false;
-
-  function drawScratchCover() {
-    sctx.globalCompositeOperation = "source-over";
-    sctx.fillStyle = "#bfbfbf";
-    sctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
-
-    sctx.fillStyle = "rgba(0,0,0,0.4)";
-    sctx.font = "bold 22px Arial";
-    sctx.textAlign = "center";
-    sctx.fillText("SCRATCH HERE", scratchCanvas.width / 2, scratchCanvas.height / 2);
-
-    sctx.globalCompositeOperation = "destination-out";
-  }
-
-  function scratchDot(x, y) {
-    sctx.beginPath();
-    sctx.arc(x, y, 20, 0, Math.PI * 2);
-    sctx.fill();
-  }
-
-  function scratchPos(e) {
-    const rect = scratchCanvas.getBoundingClientRect();
-    const t = e.touches ? e.touches[0] : e;
-    return {
-      x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
-      y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height)
-    };
-  }
-
-  scratchCanvas.addEventListener("touchstart", e => {
-    scratching = true;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-    e.preventDefault();
-  }, { passive: false });
-
-  scratchCanvas.addEventListener("touchmove", e => {
-    if (!scratching) return;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-    e.preventDefault();
-  }, { passive: false });
-
-  scratchCanvas.addEventListener("touchend", () => scratching = false);
-
-  scratchCanvas.addEventListener("mousedown", e => {
-    scratching = true;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-  });
-  scratchCanvas.addEventListener("mousemove", e => {
-    if (!scratching) return;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-  });
-  window.addEventListener("mouseup", () => scratching = false);
-
-  function resetScratch() {
-    const prize = choosePrize();
-    scratchPrizeText.textContent = prize.label;
-    drawScratchCover();
-  }
-  scratchReset.addEventListener("click", resetScratch);
-  resetScratch();
-
-  // =========================
-  // ===== SPIN GAME =========
-  // =========================
-  const wheel = document.getElementById("wheel");
-  const wctx = wheel.getContext("2d");
-  const spinBtn = document.getElementById("spinBtn");
-  const spinResult = document.getElementById("spinResult");
-  const spinResultBig = document.getElementById("spinResultBig");
-  const spinResultSmall = document.getElementById("spinResultSmall");
-
-  const segments = [
-    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" },
-    { label: "$50 OFF" },
-    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }
-  ];
-
-  const cx = wheel.width / 2, cy = wheel.height / 2, radius = 150;
-  let currentAngle = 0, spinning = false;
-
-  function drawWheel() {
-    wctx.clearRect(0, 0, wheel.width, wheel.height);
-    const n = segments.length;
-    const arc = (Math.PI * 2) / n;
-
-    for (let i = 0; i < n; i++) {
-      const start = currentAngle + i * arc;
-      const end = start + arc;
-
-      wctx.beginPath();
-      wctx.moveTo(cx, cy);
-      wctx.arc(cx, cy, radius, start, end);
-      wctx.closePath();
-      wctx.fillStyle = (i % 2 === 0) ? "#e9e9e9" : "#d9d9d9";
-      wctx.fill();
-      wctx.strokeStyle = "#ffffff";
-      wctx.stroke();
-
-      wctx.save();
-      wctx.translate(cx, cy);
-      wctx.rotate(start + arc / 2);
-      wctx.textAlign = "right";
-      wctx.fillStyle = "#111";
-      wctx.font = "bold 14px Arial";
-      wctx.fillText(segments[i].label, radius - 14, 5);
-      wctx.restore();
-    }
-
-    wctx.beginPath();
-    wctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    wctx.lineWidth = 2;
-    wctx.strokeStyle = "#eee";
-    wctx.stroke();
-  }
-
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-
-  function pickTargetAngleForLabel(label) {
-    const matches = segments.map((s, i) => ({ s, i })).filter(x => x.s.label === label);
-    const chosen = matches[Math.floor(Math.random() * matches.length)];
-    const n = segments.length;
-    const arc = (Math.PI * 2) / n;
-    const pointerAngle = -Math.PI / 2;
-    const segmentCenter = chosen.i * arc + arc / 2;
-    return pointerAngle - segmentCenter;
-  }
-
-  function spin() {
-    if (spinning) return;
-    spinning = true;
-    spinBtn.disabled = true;
-    spinResult.style.display = "none";
-
-    const prize = choosePrize();
-    const targetBase = pickTargetAngleForLabel(prize.label);
-    const extraTurns = 6 + Math.random() * 3;
-    const target = targetBase - extraTurns * Math.PI * 2;
-
-    const start = currentAngle;
-    const duration = 2200 + Math.random() * 600;
-    const t0 = performance.now();
-
-    function frame(now) {
-      const t = Math.min(1, (now - t0) / duration);
-      const eased = easeOutCubic(t);
-      currentAngle = start + (target - start) * eased;
-      drawWheel();
-
-      if (t < 1) requestAnimationFrame(frame);
-      else {
-        currentAngle = target;
-        drawWheel();
-        spinResultBig.textContent = prize.label;
-        spinResultSmall.textContent = `Code (demo): ${prize.code}`;
-        spinResult.style.display = "block";
-        spinning = false;
-        spinBtn.disabled = false;
-      }
-    }
-    requestAnimationFrame(frame);
-  }
-
-  spinBtn.addEventListener("click", spin);
-  drawWheel();
-
-  // =========================
-  // ===== DROP GAME =========
-  // =========================
-  const dropGame = document.getElementById("dropGame");
-  const drop = document.getElementById("drop");
-  const iris = document.getElementById("iris");
-  const target = document.getElementById("target");
-  const lidTop = document.getElementById("lidTop");
-  const lidBot = document.getElementById("lidBot");
-
-  const scoreEl = document.getElementById("score");
-  const shotsEl = document.getElementById("shots");
-  const streakEl = document.getElementById("streak");
-
-  const dropResult = document.getElementById("dropResult");
-  const dropResultBig = document.getElementById("dropResultBig");
-  const dropResultSmall = document.getElementById("dropResultSmall");
-  const dropPlayAgain = document.getElementById("dropPlayAgain");
-
-  let dDragging = false;
-  let dOffsetX = 0, dOffsetY = 0;
-  let shots = 0, score = 0, streak = 0, playing = true;
-  let blinkTimer = null, moveTimer = null;
-
-  function rand(min, max) { return Math.random() * (max - min) + min; }
-  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-
-  function setDropToStart() {
-    if (!dropGame) return;
-    const rect = dropGame.getBoundingClientRect();
-    drop.style.left = "24px";
-    drop.style.top = (rect.height - 84) + "px";
-  }
-
-  function blinkOnce() {
-    lidTop.style.transform = "translateY(0%)";
-    lidBot.style.transform = "translateY(0%)";
-    setTimeout(() => {
-      lidTop.style.transform = "translateY(-65%)";
-      lidBot.style.transform = "translateY(65%)";
-    }, 130);
-  }
-
-  function scheduleBlinking() {
-    clearInterval(blinkTimer);
-    blinkTimer = setInterval(() => { if (playing) blinkOnce(); }, rand(900, 1400));
-  }
-
-  function moveEye() {
-    const x = rand(-26, 26);
-    const y = rand(-14, 14);
-    iris.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-  }
-
-  function scheduleMovement() {
-    clearInterval(moveTimer);
-    moveTimer = setInterval(() => { if (playing) moveEye(); }, rand(650, 1050));
-  }
-
-  function pointerPos(evt) {
-    const r = dropGame.getBoundingClientRect();
-    const p = evt.touches ? evt.touches[0] : evt;
-    return { x: p.clientX - r.left, y: p.clientY - r.top };
-  }
-
-  function rectsOverlap(a, b) {
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-  }
-
-  function dDown(evt) {
-    if (!playing) return;
-    const p = pointerPos(evt);
-    const d = drop.getBoundingClientRect();
-    const gr = dropGame.getBoundingClientRect();
-    const dropX = d.left - gr.left;
-    const dropY = d.top - gr.top;
-
-    if (p.x >= dropX && p.x <= dropX + d.width && p.y >= dropY && p.y <= dropY + d.height) {
-      dDragging = true;
-      dOffsetX = p.x - dropX;
-      dOffsetY = p.y - dropY;
-      evt.preventDefault();
-    }
-  }
-
-  function dMove(evt) {
-    if (!dDragging || !playing) return;
-    const p = pointerPos(evt);
-    const newX = clamp(p.x - dOffsetX, 0, dropGame.clientWidth - drop.clientWidth);
-    const newY = clamp(p.y - dOffsetY, 0, dropGame.clientHeight - drop.clientHeight);
-    drop.style.left = newX + "px";
-    drop.style.top = newY + "px";
-    evt.preventDefault();
-  }
-
-  function finishDropGame() {
-    playing = false;
-    clearInterval(blinkTimer);
-    clearInterval(moveTimer);
-    const prize = choosePrize();
-    dropResultBig.textContent = `🎉 You won ${prize.label}`;
-    dropResultSmall.textContent = `Score: ${score}/10 • Code (demo): ${prize.code}`;
-    dropResult.style.display = "block";
-  }
-
-  function dUp(evt) {
-    if (!dDragging || !playing) return;
-    dDragging = false;
-
-    shots += 1;
-    shotsEl.textContent = shots;
-
-    const dr = drop.getBoundingClientRect();
-    const tr = target.getBoundingClientRect();
-    const hit = rectsOverlap(dr, tr);
-
-    if (hit) { score += 1; streak += 1; blinkOnce(); }
-    else { streak = 0; }
-
-    scoreEl.textContent = score;
-    streakEl.textContent = streak;
-
-    setDropToStart();
-
-    if (shots >= 10) finishDropGame();
-  }
-
-  function resetDropGame() {
-    shots = 0; score = 0; streak = 0; playing = true;
-    shotsEl.textContent = shots;
-    scoreEl.textContent = score;
-    streakEl.textContent = streak;
-
-    dropResult.style.display = "none";
-    iris.style.transform = "translate(-50%, -50%)";
-    lidTop.style.transform = "translateY(-65%)";
-    lidBot.style.transform = "translateY(65%)";
-
-    setDropToStart();
-    scheduleBlinking();
-    scheduleMovement();
-  }
-
-  dropGame.addEventListener("touchstart", dDown, { passive:false });
-  dropGame.addEventListener("touchmove", dMove, { passive:false });
-  dropGame.addEventListener("touchend", dUp, { passive:false });
-  dropGame.addEventListener("mousedown", dDown);
-  dropGame.addEventListener("mousemove", dMove);
-  window.addEventListener("mouseup", dUp);
-
-  dropPlayAgain.addEventListener("click", resetDropGame);
-  resetDropGame();
-
-  // =========================
-  // ===== SLOTS GAME =========
-  // =========================
-  const slotsSpinBtn = document.getElementById("slotsSpinBtn");
-  const slotsAgainBtn = document.getElementById("slotsAgainBtn");
-  const slotsResult = document.getElementById("slotsResult");
-  const slotsResultBig = document.getElementById("slotsResultBig");
-  const slotsResultSmall = document.getElementById("slotsResultSmall");
-
-  const sI1 = document.getElementById("sI1"), sT1 = document.getElementById("sT1");
-  const sI2 = document.getElementById("sI2"), sT2 = document.getElementById("sT2");
-  const sI3 = document.getElementById("sI3"), sT3 = document.getElementById("sT3");
-
-  const symbols = [
-    { icon:"👓", text:"Phoropter" },
-    { icon:"🧿", text:"OCT" },
-    { icon:"💧", text:"Eye Drops" },
-    { icon:"📏", text:"Lensometer" },
-    { icon:"📈", text:"Visual Field" },
-    { icon:"⚪️", text:"Tonometry" },
-    { icon:"🔦", text:"Slit Lamp" },
-    { icon:"🧠", text:"Neuro" }
-  ];
-
-  function randSym(){ return symbols[Math.floor(Math.random()*symbols.length)]; }
-  function setReel(idx, sym){
-    if (idx === 1){ sI1.textContent = sym.icon; sT1.textContent = sym.text; }
-    if (idx === 2){ sI2.textContent = sym.icon; sT2.textContent = sym.text; }
-    if (idx === 3){ sI3.textContent = sym.icon; sT3.textContent = sym.text; }
-  }
-
-  let slotsSpinning = false;
-  let timers = [];
-
-  function clearTimers(){ timers.forEach(id => clearInterval(id)); timers = []; }
-
-  function slotsReset(){
-    clearTimers();
-    slotsResult.style.display = "none";
-    setReel(1, randSym());
-    setReel(2, randSym());
-    setReel(3, randSym());
-  }
-
-  function slotsSpin(){
-    if (slotsSpinning) return;
-    slotsSpinning = true;
-    slotsSpinBtn.disabled = true;
-    slotsResult.style.display = "none";
-
-    const id1 = setInterval(() => setReel(1, randSym()), 70);
-    const id2 = setInterval(() => setReel(2, randSym()), 70);
-    const id3 = setInterval(() => setReel(3, randSym()), 70);
-    timers.push(id1,id2,id3);
-
-    setTimeout(() => clearInterval(id1), 900);
-    setTimeout(() => clearInterval(id2), 1300);
-    setTimeout(() => {
-      clearInterval(id3);
-
-      const prize = choosePrize();
-      slotsResultBig.textContent = `🎉 You won ${prize.label}`;
-      slotsResultSmall.textContent = `Code (demo): ${prize.code}`;
-      slotsResult.style.display = "block";
-
-      slotsSpinning = false;
-      slotsSpinBtn.disabled = false;
-    }, 1700);
-  }
-
-  slotsSpinBtn.addEventListener("click", slotsSpin);
-  slotsAgainBtn.addEventListener("click", slotsReset);
-  slotsReset();
-
-  // =========================
-  // ===== GLASSES FIT GAME ===
-  // =========================
-  const fitStage = document.getElementById("fitStage");
-  const head = document.getElementById("head");
-  const glasses = document.getElementById("glasses");
-  const glassesTarget = document.getElementById("glassesTarget");
-
-  const fitResult = document.getElementById("fitResult");
-  const fitResultBig = document.getElementById("fitResultBig");
-  const fitResultSmall = document.getElementById("fitResultSmall");
-  const fitAgainBtn = document.getElementById("fitAgainBtn");
-
-  let fitDragging = false;
-  let fitOffsetX = 0, fitOffsetY = 0;
-  let fitWon = false;
-
-  let fitStart = performance.now();
-
-  function fitResetPositions() {
-    glasses.style.left = "20px";
-    glasses.style.bottom = "18px";
-    glasses.style.top = "";
-    fitResult.style.display = "none";
-    fitWon = false;
-  }
-
-  function fitPointerPos(evt) {
-    const r = fitStage.getBoundingClientRect();
-    const p = evt.touches ? evt.touches[0] : evt;
-    return { x: p.clientX - r.left, y: p.clientY - r.top };
-  }
-
-  function fitGetElPosInStage(el) {
-    const sr = fitStage.getBoundingClientRect();
-    const er = el.getBoundingClientRect();
-    return {
-      left: er.left - sr.left,
-      top: er.top - sr.top,
-      right: er.right - sr.left,
-      bottom: er.bottom - sr.top,
-      width: er.width,
-      height: er.height
-    };
-  }
-
-  function fitRectsOverlap(a, b) {
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-  }
-
-  function fitOnDown(evt) {
-    if (fitWon) return;
-    const p = fitPointerPos(evt);
-    const g = fitGetElPosInStage(glasses);
-
-    if (p.x >= g.left && p.x <= g.right && p.y >= g.top && p.y <= g.bottom) {
-      fitDragging = true;
-      fitOffsetX = p.x - g.left;
-      fitOffsetY = p.y - g.top;
-
-      glasses.style.bottom = "";
-      glasses.style.left = g.left + "px";
-      glasses.style.top = g.top + "px";
-
-      evt.preventDefault();
-    }
-  }
-
-  function fitOnMove(evt) {
-    if (!fitDragging || fitWon) return;
-    const p = fitPointerPos(evt);
-
-    const maxX = fitStage.clientWidth - glasses.offsetWidth;
-    const maxY = fitStage.clientHeight - glasses.offsetHeight;
-
-    const x = Math.max(0, Math.min(maxX, p.x - fitOffsetX));
-    const y = Math.max(0, Math.min(maxY, p.y - fitOffsetY));
-
-    glasses.style.left = x + "px";
-    glasses.style.top = y + "px";
-    evt.preventDefault();
-  }
-
-  function fitWin() {
-    fitWon = true;
-    fitDragging = false;
-
-    const t = fitGetElPosInStage(glassesTarget);
-    const gx = t.left + (t.width - glasses.offsetWidth) / 2;
-    const gy = t.top + (t.height - glasses.offsetHeight) / 2;
-
-    glasses.classList.remove("snap");
-    void glasses.offsetWidth;
-    glasses.classList.add("snap");
-
-    glasses.style.left = gx + "px";
-    glasses.style.top = gy + "px";
-
-    const prize = choosePrize();
-    fitResultBig.textContent = `🎉 You won ${prize.label}`;
-    fitResultSmall.textContent = `Code (demo): ${prize.code}`;
-    fitResult.style.display = "block";
-  }
-
-  function fitOnUp(evt) {
-    if (!fitDragging || fitWon) return;
-    fitDragging = false;
-
-    const g = fitGetElPosInStage(glasses);
-    const t = fitGetElPosInStage(glassesTarget);
-
-    if (fitRectsOverlap(g, t)) fitWin();
-    else fitResetPositions();
-  }
-
-  function animateHead(now) {
-    const elapsed = (now - fitStart) / 1000;
-    const amplitude = Math.min(220, fitStage.clientWidth * 0.28);
-    const center = fitStage.clientWidth / 2;
-    const x = center + Math.sin(elapsed * 1.6) * amplitude;
-    head.style.left = x + "px";
-    requestAnimationFrame(animateHead);
-  }
-
-  fitStage.addEventListener("touchstart", fitOnDown, { passive:false });
-  fitStage.addEventListener("touchmove", fitOnMove, { passive:false });
-  fitStage.addEventListener("touchend", fitOnUp, { passive:false });
-  fitStage.addEventListener("mousedown", fitOnDown);
-  fitStage.addEventListener("mousemove", fitOnMove);
-  window.addEventListener("mouseup", fitOnUp);
-
-  fitAgainBtn.addEventListener("click", fitResetPositions);
-
-  fitResetPositions();
-  requestAnimationFrame(animateHead);
-
-  // =========================
-  // ===== LAUNCH DROP GAME ===
-  // =========================
-  const launchStage = document.getElementById("launchStage");
-  const launchDrop = document.getElementById("launchDrop");
-  const launchEye = document.getElementById("launchEye");
-
-  const launchResult = document.getElementById("launchResult");
-  const launchResultBig = document.getElementById("launchResultBig");
-  const launchResultSmall = document.getElementById("launchResultSmall");
-  const launchAgainBtn = document.getElementById("launchAgainBtn");
-
-  let lDragging = false;
-  let lStartX = 0, lStartY = 0;
-
-  function resetLaunch() {
-    launchDrop.style.transition = "none";
-    launchDrop.style.left = "120px";
-    launchDrop.style.top = "50%";
-    launchDrop.style.transform = "translate(-50%,-50%)";
-    launchResult.style.display = "none";
-  }
-
-  function lPos(evt) {
-    const r = launchStage.getBoundingClientRect();
-    const p = evt.touches ? evt.touches[0] : evt;
-    return { x: p.clientX - r.left, y: p.clientY - r.top };
-  }
-
-  function overlapRects(a, b){
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-  }
-
-  function lDown(evt){
-    const p = lPos(evt);
-    const dr = launchDrop.getBoundingClientRect();
-    const sr = launchStage.getBoundingClientRect();
-    const dx = dr.left - sr.left, dy = dr.top - sr.top;
-
-    // click/touch inside drop
-    if (p.x >= dx && p.x <= dx + dr.width && p.y >= dy && p.y <= dy + dr.height) {
-      lDragging = true;
-      const pr = evt.touches ? evt.touches[0] : evt;
-      lStartX = pr.clientX;
-      lStartY = pr.clientY;
-      evt.preventDefault();
-    }
-  }
-
-  function lUp(evt){
-    if (!lDragging) return;
-    lDragging = false;
-
-    const pr = evt.changedTouches ? evt.changedTouches[0] : evt;
-    const dx = lStartX - pr.clientX;
-    const dy = lStartY - pr.clientY;
-
-    // launch strength
-    const targetLeft = 120 + dx * 1.4;
-    const targetTopPx = (launchStage.getBoundingClientRect().height * 0.5) + dy * 0.35;
-
-    launchDrop.style.transition = "left 0.65s cubic-bezier(.2,.8,.2,1), top 0.65s";
-    launchDrop.style.left = targetLeft + "px";
-    launchDrop.style.top = targetTopPx + "px";
-    launchDrop.style.transform = "translate(-50%,-50%)";
-
-    setTimeout(() => {
-      const hit = overlapRects(launchDrop.getBoundingClientRect(), launchEye.getBoundingClientRect());
-      const prize = choosePrize();
-      launchResultBig.textContent = (hit ? `🎯 Direct hit! ` : `💥 Miss… `) + `You won ${prize.label}`;
-      launchResultSmall.textContent = `Code (demo): ${prize.code}`;
-      launchResult.style.display = "block";
-    }, 660);
-  }
-
-  launchDrop.addEventListener("mousedown", lDown);
-  launchDrop.addEventListener("touchstart", lDown, { passive:false });
-  window.addEventListener("mouseup", lUp);
-  window.addEventListener("touchend", lUp, { passive:false });
-
-  launchAgainBtn.addEventListener("click", resetLaunch);
-  resetLaunch();
-
-  // DEFAULT
-  setActive("scratch");
-})();
-</script>
-
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OD on the GO – Conference Games</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#fafafa;
+  margin:0;
+}
+.wrap{
+  max-width:1100px;
+  margin:24px auto;
+  padding:0 14px;
+  text-align:center;
+}
+.toggleBar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin:16px 0 20px;
+}
+.toggleBtn{
+  padding:12px 16px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  background:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+.toggleBtn.active{
+  background:#111;
+  color:#fff;
+}
+.panel{
+  display:none;
+  background:#fff;
+  border:1px solid #eee;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 2px 12px rgba(0,0,0,.06);
+}
+.panel.active{display:block;}
+.note{font-size:12px;color:#666;margin-top:10px;}
+.action{
+  margin-top:14px;
+  padding:12px 18px;
+  font-size:16px;
+  font-weight:900;
+  border:none;
+  border-radius:10px;
+  background:#111;
+  color:#fff;
+  cursor:pointer;
+}
+.result{
+  display:none;
+  margin:14px auto 0;
+  padding:14px;
+  max-width:520px;
+  border:1px solid #cce5ff;
+  background:#f0f7ff;
+  border-radius:12px;
+}
+.result .big{font-size:22px;font-weight:900;}
+.result .small{font-size:13px;color:#444;margin-top:6px;}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+<h2>🎮 OD on the GO Conference Games</h2>
+<div class="note">Demo mode — no email capture yet</div>
+
+<div class="toggleBar">
+  <button id="btnScratch" class="toggleBtn active">🪙 Scratch</button>
+  <button id="btnSpin" class="toggleBtn">🛞 Spin</button>
+  <button id="btnSlots" class="toggleBtn">🎰 Slots</button>
+  <button id="btnFit" class="toggleBtn">👓 Glasses</button>
+  <button id="btnLaunch" class="toggleBtn">🏹 Launch</button>
+</div>
+
+<!-- SCRATCH -->
+<div id="panelScratch" class="panel active">
+  <h3>🪙 Scratch to Win</h3>
+  <canvas id="scratchCanvas" width="480" height="200"
+    style="border-radius:12px;border:1px solid #ccc;"></canvas>
+  <div id="scratchPrize" style="font-size:28px;font-weight:900;margin-top:10px;">—</div>
+  <button class="action" id="scratchReset">Play Again</button>
+</div>
+
+<!-- SPIN -->
+<div id="panelSpin" class="panel">
+  <h3>🛞 Spin the Phoropter</h3>
+  <canvas id="wheel" width="320" height="320"></canvas>
+  <button class="action" id="spinBtn">SPIN</button>
+  <div id="spinResult" class="result">
+    <div class="big" id="spinBig"></div>
+    <div class="small" id="spinSmall"></div>
+  </div>
+</div>
+
+<!-- SLOTS -->
+<div id="panelSlots" class="panel">
+  <h3>🎰 Optometry Slots</h3>
+  <div style="font-size:64px" id="slotIcons">👓 🧿 💧</div>
+  <button class="action" id="slotsSpin">SPIN</button>
+  <div id="slotsResult" class="result">
+    <div class="big" id="slotsBig"></div>
+    <div class="small" id="slotsSmall"></div>
+  </div>
+</div>
+
+<!-- GLASSES -->
+<div id="panelFit" class="panel">
+  <h3>👓 Put the Glasses On</h3>
+  <div style="font-size:90px;margin:20px">🙂</div>
+  <button class="action" id="fitWin">Snap Glasses</button>
+  <div id="fitResult" class="result">
+    <div class="big" id="fitBig"></div>
+    <div class="small" id="fitSmall"></div>
+  </div>
+</div>
+
+<!-- LAUNCH -->
+<div id="panelLaunch" class="panel">
+  <h3>🏹 Launch the Eye Drop</h3>
+  <button class="action" id="launchBtn">LAUNCH</button>
+  <div id="launchResult" class="result">
+    <div class="big" id="launchBig"></div>
+    <div class="small" id="launchSmall"></div>
+  </div>
+</div>
+
+</div>
