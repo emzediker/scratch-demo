@@ -7,7 +7,7 @@
 
 <style>
   body { font-family: Arial, sans-serif; background:#fafafa; margin:0; }
-  .wrap { max-width: 980px; margin: 28px auto; padding: 0 14px; text-align:center; }
+  .wrap { max-width: 1100px; margin: 26px auto; padding: 0 14px; text-align:center; }
 
   h2 { margin: 0 0 6px; }
   .sub { color:#666; margin: 0 0 16px; }
@@ -23,7 +23,7 @@
     background: #fff;
     font-weight: 900;
     cursor: pointer;
-    min-width: 170px;
+    min-width: 190px;
   }
   .toggleBtn.active {
     background:#111;
@@ -34,7 +34,7 @@
   .panel {
     display:none;
     margin: 0 auto;
-    max-width: 760px;
+    max-width: 820px;
     background:#fff;
     border:1px solid #eee;
     border-radius: 16px;
@@ -99,7 +99,7 @@
   .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:900; letter-spacing:0.6px; }
   .result {
     margin: 12px auto 0;
-    max-width: 520px;
+    max-width: 560px;
     display:none;
     padding: 12px;
     border: 1px solid #cce5ff;
@@ -117,7 +117,7 @@
   .game {
     position: relative;
     margin: 0 auto;
-    width: min(720px, 100%);
+    width: min(760px, 100%);
     aspect-ratio: 16 / 10;
     background: #fff;
     border: 1px solid #eee;
@@ -131,7 +131,7 @@
     left:50%;
     top:48%;
     transform: translate(-50%, -50%);
-    width: min(560px, 92%);
+    width: min(600px, 92%);
     height: 60%;
   }
   .eyeWhite {
@@ -222,6 +222,35 @@
   .tray .label { font-weight:900; }
   .tiny { font-size:12px; color:#666; }
 
+  /* ========= SLOTS ========= */
+  .machine {
+    margin: 0 auto;
+    max-width: 600px;
+    background:#fff;
+    border:1px solid #eee;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+  }
+  .reels { display:flex; justify-content:center; gap:12px; margin: 14px 0; flex-wrap:wrap; }
+  .reel {
+    width: 160px; height: 160px;
+    border-radius: 16px;
+    border: 2px solid #eee;
+    background: linear-gradient(#ffffff, #f6f6f6);
+    display:flex; align-items:center; justify-content:center;
+    font-weight: 900;
+    position:relative; overflow:hidden;
+  }
+  .reelInner { text-align:center; }
+  .reel .icon { font-size: 46px; line-height:1; }
+  .reel .label { margin-top:10px; font-size:14px; color:#222; }
+  .shine {
+    position:absolute; inset:-40%;
+    background: linear-gradient(45deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 60%);
+    transform: translateX(-40%) rotate(10deg);
+    pointer-events:none;
+  }
 </style>
 </head>
 
@@ -233,7 +262,8 @@
     <div class="toggleBar">
       <button id="btnScratch" class="toggleBtn active" type="button">🪙 Scratch</button>
       <button id="btnSpin" class="toggleBtn" type="button">🛞 Spin</button>
-      <button id="btnDrop" class="toggleBtn" type="button">💧 Drop Game</button>
+      <button id="btnDrop" class="toggleBtn" type="button">💧 Drop</button>
+      <button id="btnSlots" class="toggleBtn" type="button">🎰 Slots</button>
     </div>
 
     <!-- ===== SCRATCH ===== -->
@@ -282,7 +312,7 @@
       <div class="note">Odds: mostly 20% off; a few $50 off.</div>
     </div>
 
-    <!-- ===== DROP GAME ===== -->
+    <!-- ===== DROP ===== -->
     <div id="panelDrop" class="panel">
       <h3 style="margin:0 0 6px;">💧 Drop the Drop</h3>
       <div class="sub" style="margin:0 0 10px;">Drag the drop into the dashed circle before the eye blinks or looks away.</div>
@@ -324,6 +354,30 @@
       <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
     </div>
 
+    <!-- ===== SLOTS ===== -->
+    <div id="panelSlots" class="panel">
+      <h3 style="margin:0 0 6px;">🎰 Optometry Slots</h3>
+      <div class="sub" style="margin:0 0 10px;">Tap SPIN and see what you win (demo mode — no email).</div>
+
+      <div class="machine">
+        <div class="reels">
+          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI1" class="icon">👓</div><div id="sT1" class="label">Phoropter</div></div></div>
+          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI2" class="icon">🧿</div><div id="sT2" class="label">OCT</div></div></div>
+          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI3" class="icon">💧</div><div id="sT3" class="label">Eye Drops</div></div></div>
+        </div>
+
+        <button id="slotsSpinBtn" class="action" type="button">SPIN</button>
+
+        <div id="slotsResult" class="result">
+          <div class="big" id="slotsResultBig">—</div>
+          <div class="small" id="slotsResultSmall">—</div>
+          <button id="slotsAgainBtn" class="action" type="button" style="margin-top:12px;">Play Again</button>
+        </div>
+
+        <div class="note">Odds: mostly 20% off; a few $50 off.</div>
+      </div>
+    </div>
+
   </div>
 
 <script>
@@ -340,31 +394,32 @@
   const btnScratch = document.getElementById("btnScratch");
   const btnSpin = document.getElementById("btnSpin");
   const btnDrop = document.getElementById("btnDrop");
+  const btnSlots = document.getElementById("btnSlots");
 
   const panelScratch = document.getElementById("panelScratch");
   const panelSpin = document.getElementById("panelSpin");
   const panelDrop = document.getElementById("panelDrop");
+  const panelSlots = document.getElementById("panelSlots");
 
   function setActive(which) {
-    // buttons
     btnScratch.classList.toggle("active", which === "scratch");
     btnSpin.classList.toggle("active", which === "spin");
     btnDrop.classList.toggle("active", which === "drop");
+    btnSlots.classList.toggle("active", which === "slots");
 
-    // panels
     panelScratch.classList.toggle("active", which === "scratch");
     panelSpin.classList.toggle("active", which === "spin");
     panelDrop.classList.toggle("active", which === "drop");
+    panelSlots.classList.toggle("active", which === "slots");
 
-    // redraw wheel if needed
     if (which === "spin") drawWheel();
-    // ensure drop game layout updated (bounding boxes)
     if (which === "drop") setDropToStart();
   }
 
   btnScratch.addEventListener("click", () => setActive("scratch"));
   btnSpin.addEventListener("click", () => setActive("spin"));
   btnDrop.addEventListener("click", () => setActive("drop"));
+  btnSlots.addEventListener("click", () => setActive("slots"));
 
   // =========================
   // ===== SCRATCH GAME ======
@@ -654,13 +709,8 @@
     const tr = target.getBoundingClientRect();
     const hit = rectsOverlap(dr, tr);
 
-    if (hit) {
-      score += 1;
-      streak += 1;
-      blinkOnce();
-    } else {
-      streak = 0;
-    }
+    if (hit) { score += 1; streak += 1; blinkOnce(); }
+    else { streak = 0; }
 
     scoreEl.textContent = score;
     streakEl.textContent = streak;
@@ -688,7 +738,6 @@
     streakEl.textContent = streak;
 
     dropResult.style.display = "none";
-
     iris.style.transform = "translate(-50%, -50%)";
     lidTop.style.transform = "translateY(-65%)";
     lidBot.style.transform = "translateY(65%)";
@@ -707,11 +756,84 @@
   window.addEventListener("mouseup", onUp);
 
   dropPlayAgain.addEventListener("click", resetDropGame);
-
-  // init drop game
   resetDropGame();
 
-  // default tab
+  // =========================
+  // ===== SLOTS GAME =========
+  // =========================
+  const slotsSpinBtn = document.getElementById("slotsSpinBtn");
+  const slotsAgainBtn = document.getElementById("slotsAgainBtn");
+  const slotsResult = document.getElementById("slotsResult");
+  const slotsResultBig = document.getElementById("slotsResultBig");
+  const slotsResultSmall = document.getElementById("slotsResultSmall");
+
+  const sI1 = document.getElementById("sI1"), sT1 = document.getElementById("sT1");
+  const sI2 = document.getElementById("sI2"), sT2 = document.getElementById("sT2");
+  const sI3 = document.getElementById("sI3"), sT3 = document.getElementById("sT3");
+
+  const symbols = [
+    { icon:"👓", text:"Phoropter" },
+    { icon:"🧿", text:"OCT" },
+    { icon:"💧", text:"Eye Drops" },
+    { icon:"📏", text:"Lensometer" },
+    { icon:"📈", text:"Visual Field" },
+    { icon:"⚪️", text:"Tonometry" },
+    { icon:"🔦", text:"Slit Lamp" },
+    { icon:"🧠", text:"Neuro" }
+  ];
+
+  function randSym(){ return symbols[Math.floor(Math.random()*symbols.length)]; }
+
+  function setReel(idx, sym){
+    if (idx === 1){ sI1.textContent = sym.icon; sT1.textContent = sym.text; }
+    if (idx === 2){ sI2.textContent = sym.icon; sT2.textContent = sym.text; }
+    if (idx === 3){ sI3.textContent = sym.icon; sT3.textContent = sym.text; }
+  }
+
+  let slotsSpinning = false;
+  let timers = [];
+
+  function clearTimers(){ timers.forEach(id => clearInterval(id)); timers = []; }
+
+  function slotsReset(){
+    clearTimers();
+    slotsResult.style.display = "none";
+    setReel(1, randSym());
+    setReel(2, randSym());
+    setReel(3, randSym());
+  }
+
+  function slotsSpin(){
+    if (slotsSpinning) return;
+    slotsSpinning = true;
+    slotsSpinBtn.disabled = true;
+    slotsResult.style.display = "none";
+
+    const id1 = setInterval(() => setReel(1, randSym()), 70);
+    const id2 = setInterval(() => setReel(2, randSym()), 70);
+    const id3 = setInterval(() => setReel(3, randSym()), 70);
+    timers.push(id1,id2,id3);
+
+    setTimeout(() => clearInterval(id1), 900);
+    setTimeout(() => clearInterval(id2), 1300);
+    setTimeout(() => {
+      clearInterval(id3);
+
+      const prize = choosePrize();
+      slotsResultBig.textContent = `🎉 You won ${prize.label}`;
+      slotsResultSmall.textContent = `Code (demo): ${prize.code}`;
+      slotsResult.style.display = "block";
+
+      slotsSpinning = false;
+      slotsSpinBtn.disabled = false;
+    }, 1700);
+  }
+
+  slotsSpinBtn.addEventListener("click", slotsSpin);
+  slotsAgainBtn.addEventListener("click", slotsReset);
+  slotsReset();
+
+  // Default
   setActive("scratch");
 })();
 </script>
