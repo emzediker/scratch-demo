@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>OD on the GO — Conference Game Demo</title>
+<title>OD on the GO — Conference Game Demos</title>
 
 <style>
   body { font-family: Arial, sans-serif; background:#fafafa; margin:0; }
-  .wrap { max-width: 760px; margin: 34px auto; padding: 0 16px; text-align:center; }
+  .wrap { max-width: 980px; margin: 28px auto; padding: 0 14px; text-align:center; }
 
   h2 { margin: 0 0 6px; }
-  .sub { color:#666; margin: 0 0 18px; }
+  .sub { color:#666; margin: 0 0 16px; }
 
   .toggleBar {
     display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
@@ -21,9 +21,9 @@
     border-radius: 10px;
     border: 1px solid #ddd;
     background: #fff;
-    font-weight: 800;
+    font-weight: 900;
     cursor: pointer;
-    min-width: 160px;
+    min-width: 170px;
   }
   .toggleBtn.active {
     background:#111;
@@ -34,7 +34,7 @@
   .panel {
     display:none;
     margin: 0 auto;
-    max-width: 560px;
+    max-width: 760px;
     background:#fff;
     border:1px solid #eee;
     border-radius: 16px;
@@ -45,7 +45,6 @@
 
   .note { margin-top: 10px; font-size:12px; color:#666; }
 
-  /* Shared button */
   button.action {
     width: 320px; max-width: 100%;
     margin-top: 14px;
@@ -60,34 +59,24 @@
   }
   button.action:disabled { opacity:0.5; cursor:not-allowed; }
 
-  /* ===== SCRATCH ===== */
+  /* ========= SCRATCH ========= */
   .scratchStage { position:relative; width:100%; max-width:480px; margin: 0 auto; }
   #scratchCanvas {
-    position:relative;
-    z-index:1;
-    width:100%;
-    height:auto;
-    border-radius:12px;
-    touch-action:none;
-    display:block;
+    position:relative; z-index:1;
+    width:100%; height:auto; border-radius:12px;
+    touch-action:none; display:block;
   }
   .scratchUnderlay {
-    position:absolute;
-    inset:0;
-    z-index:0;
-    background:#f6f6f6;
-    border-radius:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    position:absolute; inset:0; z-index:0;
+    background:#f6f6f6; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
     border:1px solid #eee;
   }
   .scratchUnderlay .big { font-size:36px; font-weight:900; margin-top:6px; }
 
-  /* ===== SPIN ===== */
-  .stage { position:relative; width:320px; height:320px; margin: 10px auto 10px; }
+  /* ========= SPIN ========= */
+  .spinStage { position:relative; width:320px; height:320px; margin: 10px auto 10px; }
   #wheel { width:320px; height:320px; display:block; border-radius:50%; background:#fff; border:1px solid #eee; }
-
   .pointer {
     position:absolute; top:-10px; left:50%; transform:translateX(-50%);
     width:0; height:0;
@@ -96,7 +85,6 @@
     border-bottom:26px solid #111;
     z-index:5;
   }
-
   .badge {
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     pointer-events:none;
@@ -108,11 +96,10 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.06);
   }
   .badge .emoji { font-size:44px; line-height:1; }
-  .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:800; letter-spacing:0.6px; }
-
+  .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:900; letter-spacing:0.6px; }
   .result {
     margin: 12px auto 0;
-    max-width: 420px;
+    max-width: 520px;
     display:none;
     padding: 12px;
     border: 1px solid #cce5ff;
@@ -122,20 +109,134 @@
   }
   .result .big { font-size:22px; font-weight:900; }
   .result .small { margin-top:6px; font-size:13px; color:#444; }
+
+  /* ========= DROP GAME ========= */
+  .hud { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin: 10px 0 14px; }
+  .pill { background:#fff; border:1px solid #eee; border-radius:999px; padding:10px 14px; font-weight:900; }
+
+  .game {
+    position: relative;
+    margin: 0 auto;
+    width: min(720px, 100%);
+    aspect-ratio: 16 / 10;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 18px;
+    overflow:hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+    touch-action: none;
+  }
+  .eyeWrap {
+    position:absolute;
+    left:50%;
+    top:48%;
+    transform: translate(-50%, -50%);
+    width: min(560px, 92%);
+    height: 60%;
+  }
+  .eyeWhite {
+    position:absolute; inset: 18% 8% 18% 8%;
+    background: #f7f7f7;
+    border-radius: 999px;
+    border: 2px solid #e6e6e6;
+    box-shadow: inset 0 0 0 8px #ffffff;
+    overflow:hidden;
+  }
+  .iris {
+    position:absolute;
+    width: 26%;
+    aspect-ratio:1/1;
+    border-radius:50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at 35% 35%, #6aa6ff, #2b62c9 55%, #1b2b58 100%);
+    border: 2px solid rgba(0,0,0,0.08);
+  }
+  .pupil {
+    position:absolute;
+    width: 38%;
+    aspect-ratio:1/1;
+    border-radius:50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #111;
+  }
+  .spark {
+    position:absolute;
+    width: 18%;
+    aspect-ratio:1/1;
+    border-radius:50%;
+    left: 32%;
+    top: 28%;
+    background: rgba(255,255,255,0.85);
+  }
+  .lidTop, .lidBot {
+    position:absolute; left:0; right:0;
+    height: 50%;
+    background: #fafafa;
+    z-index: 5;
+    transition: transform 110ms linear;
+  }
+  .lidTop { top:0; border-bottom:2px solid #eee; transform: translateY(-65%); }
+  .lidBot { bottom:0; border-top:2px solid #eee; transform: translateY(65%); }
+
+  .target {
+    position:absolute;
+    width: 30%;
+    aspect-ratio: 1/1;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    outline: 3px dashed rgba(0,0,0,0.10);
+    outline-offset: 6px;
+    pointer-events:none;
+    z-index: 2;
+  }
+  .drop {
+    position:absolute;
+    width: 44px;
+    height: 54px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 35% 25%, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 35%, rgba(72,160,255,0.9) 70%, rgba(32,110,210,0.95) 100%);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+    cursor: grab;
+    z-index: 10;
+  }
+  .drop:active { cursor: grabbing; }
+  .tray {
+    position:absolute;
+    left: 14px;
+    bottom: 14px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    background:#fff;
+    border:1px solid #eee;
+    padding:10px 12px;
+    border-radius: 14px;
+    z-index: 20;
+  }
+  .tray .label { font-weight:900; }
+  .tiny { font-size:12px; color:#666; }
+
 </style>
 </head>
 
 <body>
   <div class="wrap">
-    <h2>🎁 Conference Game Demo</h2>
-    <div class="sub">Try Scratch vs Spin (no email yet)</div>
+    <h2>🎮 OD on the GO Mini-Game Demos</h2>
+    <div class="sub">Pick one for your conference booth (no email yet).</div>
 
     <div class="toggleBar">
-      <button id="btnScratch" class="toggleBtn active" type="button">🪙 Scratch Game</button>
-      <button id="btnSpin" class="toggleBtn" type="button">🛞 Spin the Phoropter</button>
+      <button id="btnScratch" class="toggleBtn active" type="button">🪙 Scratch</button>
+      <button id="btnSpin" class="toggleBtn" type="button">🛞 Spin</button>
+      <button id="btnDrop" class="toggleBtn" type="button">💧 Drop Game</button>
     </div>
 
-    <!-- ===== SCRATCH PANEL ===== -->
+    <!-- ===== SCRATCH ===== -->
     <div id="panelScratch" class="panel active">
       <h3 style="margin:0 0 10px;">🪙 Scratch to Win</h3>
 
@@ -155,11 +256,11 @@
       <div class="note">Odds: mostly 20% off; a few $50 off.</div>
     </div>
 
-    <!-- ===== SPIN PANEL ===== -->
+    <!-- ===== SPIN ===== -->
     <div id="panelSpin" class="panel">
       <h3 style="margin:0 0 10px;">🛞 Spin the Phoropter</h3>
 
-      <div class="stage">
+      <div class="spinStage">
         <div class="pointer"></div>
         <canvas id="wheel" width="320" height="320"></canvas>
 
@@ -180,44 +281,90 @@
 
       <div class="note">Odds: mostly 20% off; a few $50 off.</div>
     </div>
+
+    <!-- ===== DROP GAME ===== -->
+    <div id="panelDrop" class="panel">
+      <h3 style="margin:0 0 6px;">💧 Drop the Drop</h3>
+      <div class="sub" style="margin:0 0 10px;">Drag the drop into the dashed circle before the eye blinks or looks away.</div>
+
+      <div class="hud">
+        <div class="pill">Score: <span id="score">0</span></div>
+        <div class="pill">Drops: <span id="shots">0</span>/10</div>
+        <div class="pill">Streak: <span id="streak">0</span></div>
+      </div>
+
+      <div id="dropGame" class="game" aria-label="Drop game">
+        <div class="eyeWrap">
+          <div class="eyeWhite">
+            <div id="iris" class="iris">
+              <div class="pupil"></div>
+              <div class="spark"></div>
+            </div>
+            <div id="target" class="target"></div>
+          </div>
+
+          <div id="lidTop" class="lidTop"></div>
+          <div id="lidBot" class="lidBot"></div>
+        </div>
+
+        <div class="tray">
+          <div class="label">💧 Drag the drop</div>
+          <div class="tiny">Aim for dashed circle</div>
+        </div>
+
+        <div id="drop" class="drop" title="Drag me"></div>
+      </div>
+
+      <div id="dropResult" class="result">
+        <div class="big" id="dropResultBig">—</div>
+        <div class="small" id="dropResultSmall">—</div>
+        <button id="dropPlayAgain" class="action" type="button">Play Again</button>
+      </div>
+
+      <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
+    </div>
+
   </div>
 
 <script>
 (() => {
-  // ===== Shared prize odds =====
-  // 92% -> 20% OFF, 8% -> $50 OFF
+  // ===== Shared odds =====
   const PROB_50 = 0.08;
-
   function choosePrize() {
     return (Math.random() < PROB_50)
       ? { label: "$50 OFF", code: "CONF50" }
       : { label: "20% OFF", code: "CONF20" };
   }
 
-  // ===== Toggle logic =====
+  // ===== Toggle =====
   const btnScratch = document.getElementById("btnScratch");
   const btnSpin = document.getElementById("btnSpin");
+  const btnDrop = document.getElementById("btnDrop");
+
   const panelScratch = document.getElementById("panelScratch");
   const panelSpin = document.getElementById("panelSpin");
+  const panelDrop = document.getElementById("panelDrop");
 
-  function showScratch() {
-    btnScratch.classList.add("active");
-    btnSpin.classList.remove("active");
-    panelScratch.classList.add("active");
-    panelSpin.classList.remove("active");
+  function setActive(which) {
+    // buttons
+    btnScratch.classList.toggle("active", which === "scratch");
+    btnSpin.classList.toggle("active", which === "spin");
+    btnDrop.classList.toggle("active", which === "drop");
+
+    // panels
+    panelScratch.classList.toggle("active", which === "scratch");
+    panelSpin.classList.toggle("active", which === "spin");
+    panelDrop.classList.toggle("active", which === "drop");
+
+    // redraw wheel if needed
+    if (which === "spin") drawWheel();
+    // ensure drop game layout updated (bounding boxes)
+    if (which === "drop") setDropToStart();
   }
 
-  function showSpin() {
-    btnSpin.classList.add("active");
-    btnScratch.classList.remove("active");
-    panelSpin.classList.add("active");
-    panelScratch.classList.remove("active");
-    // Ensure wheel draws when first shown
-    drawWheel();
-  }
-
-  btnScratch.addEventListener("click", showScratch);
-  btnSpin.addEventListener("click", showSpin);
+  btnScratch.addEventListener("click", () => setActive("scratch"));
+  btnSpin.addEventListener("click", () => setActive("spin"));
+  btnDrop.addEventListener("click", () => setActive("drop"));
 
   // =========================
   // ===== SCRATCH GAME ======
@@ -257,7 +404,6 @@
     };
   }
 
-  // Touch (iPad/iPhone)
   scratchCanvas.addEventListener("touchstart", e => {
     scratching = true;
     const p = scratchPos(e);
@@ -274,7 +420,6 @@
 
   scratchCanvas.addEventListener("touchend", () => scratching = false);
 
-  // Mouse (desktop)
   scratchCanvas.addEventListener("mousedown", e => {
     scratching = true;
     const p = scratchPos(e);
@@ -293,8 +438,6 @@
     drawScratchCover();
   }
   scratchReset.addEventListener("click", resetScratch);
-
-  // init scratch
   resetScratch();
 
   // =========================
@@ -307,28 +450,17 @@
   const spinResultBig = document.getElementById("spinResultBig");
   const spinResultSmall = document.getElementById("spinResultSmall");
 
-  // Wheel segments (visual)
   const segments = [
-    { label: "20% OFF" },
-    { label: "20% OFF" },
-    { label: "20% OFF" },
-    { label: "20% OFF" },
+    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" },
     { label: "$50 OFF" },
-    { label: "20% OFF" },
-    { label: "20% OFF" },
-    { label: "20% OFF" }
+    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }
   ];
 
-  const cx = wheel.width / 2;
-  const cy = wheel.height / 2;
-  const radius = 150;
-
-  let currentAngle = 0;
-  let spinning = false;
+  const cx = wheel.width / 2, cy = wheel.height / 2, radius = 150;
+  let currentAngle = 0, spinning = false;
 
   function drawWheel() {
     wctx.clearRect(0, 0, wheel.width, wheel.height);
-
     const n = segments.length;
     const arc = (Math.PI * 2) / n;
 
@@ -365,14 +497,10 @@
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
   function pickTargetAngleForLabel(label) {
-    const matches = segments
-      .map((s, i) => ({ s, i }))
-      .filter(x => x.s.label === label);
-
+    const matches = segments.map((s, i) => ({ s, i })).filter(x => x.s.label === label);
     const chosen = matches[Math.floor(Math.random() * matches.length)];
     const n = segments.length;
     const arc = (Math.PI * 2) / n;
-
     const pointerAngle = -Math.PI / 2;
     const segmentCenter = chosen.i * arc + arc / 2;
     return pointerAngle - segmentCenter;
@@ -386,7 +514,6 @@
 
     const prize = choosePrize();
     const targetBase = pickTargetAngleForLabel(prize.label);
-
     const extraTurns = 6 + Math.random() * 3;
     const target = targetBase - extraTurns * Math.PI * 2;
 
@@ -400,28 +527,192 @@
       currentAngle = start + (target - start) * eased;
       drawWheel();
 
-      if (t < 1) {
-        requestAnimationFrame(frame);
-      } else {
+      if (t < 1) requestAnimationFrame(frame);
+      else {
         currentAngle = target;
         drawWheel();
-
         spinResultBig.textContent = prize.label;
         spinResultSmall.textContent = `Code (demo): ${prize.code}`;
         spinResult.style.display = "block";
-
         spinning = false;
         spinBtn.disabled = false;
       }
     }
-
     requestAnimationFrame(frame);
   }
 
   spinBtn.addEventListener("click", spin);
-
-  // init wheel (in case user starts on spin)
   drawWheel();
+
+  // =========================
+  // ===== DROP GAME =========
+  // =========================
+  const dropGame = document.getElementById("dropGame");
+  const drop = document.getElementById("drop");
+  const iris = document.getElementById("iris");
+  const target = document.getElementById("target");
+  const lidTop = document.getElementById("lidTop");
+  const lidBot = document.getElementById("lidBot");
+
+  const scoreEl = document.getElementById("score");
+  const shotsEl = document.getElementById("shots");
+  const streakEl = document.getElementById("streak");
+
+  const dropResult = document.getElementById("dropResult");
+  const dropResultBig = document.getElementById("dropResultBig");
+  const dropResultSmall = document.getElementById("dropResultSmall");
+  const dropPlayAgain = document.getElementById("dropPlayAgain");
+
+  let dragging = false;
+  let offsetX = 0, offsetY = 0;
+  let shots = 0, score = 0, streak = 0, playing = true;
+  let blinkTimer = null, moveTimer = null;
+
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  function setDropToStart() {
+    if (!dropGame) return;
+    const rect = dropGame.getBoundingClientRect();
+    const x = 24;
+    const y = rect.height - 84;
+    drop.style.left = x + "px";
+    drop.style.top = y + "px";
+  }
+
+  function blinkOnce() {
+    lidTop.style.transform = "translateY(0%)";
+    lidBot.style.transform = "translateY(0%)";
+    setTimeout(() => {
+      lidTop.style.transform = "translateY(-65%)";
+      lidBot.style.transform = "translateY(65%)";
+    }, 130);
+  }
+
+  function scheduleBlinking() {
+    clearInterval(blinkTimer);
+    blinkTimer = setInterval(() => { if (playing) blinkOnce(); }, rand(900, 1400));
+  }
+
+  function moveEye() {
+    const x = rand(-26, 26);
+    const y = rand(-14, 14);
+    iris.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+  }
+
+  function scheduleMovement() {
+    clearInterval(moveTimer);
+    moveTimer = setInterval(() => { if (playing) moveEye(); }, rand(650, 1050));
+  }
+
+  function pointerPos(evt) {
+    const r = dropGame.getBoundingClientRect();
+    const p = evt.touches ? evt.touches[0] : evt;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+
+  function onDown(evt) {
+    if (!playing) return;
+    const p = pointerPos(evt);
+    const d = drop.getBoundingClientRect();
+    const gr = dropGame.getBoundingClientRect();
+    const dropX = d.left - gr.left;
+    const dropY = d.top - gr.top;
+
+    if (p.x >= dropX && p.x <= dropX + d.width && p.y >= dropY && p.y <= dropY + d.height) {
+      dragging = true;
+      offsetX = p.x - dropX;
+      offsetY = p.y - dropY;
+      evt.preventDefault();
+    }
+  }
+
+  function onMove(evt) {
+    if (!dragging || !playing) return;
+    const p = pointerPos(evt);
+
+    const newX = clamp(p.x - offsetX, 0, dropGame.clientWidth - drop.clientWidth);
+    const newY = clamp(p.y - offsetY, 0, dropGame.clientHeight - drop.clientHeight);
+
+    drop.style.left = newX + "px";
+    drop.style.top = newY + "px";
+    evt.preventDefault();
+  }
+
+  function rectsOverlap(a, b) {
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+  }
+
+  function onUp(evt) {
+    if (!dragging || !playing) return;
+    dragging = false;
+
+    shots += 1;
+    shotsEl.textContent = shots;
+
+    const dr = drop.getBoundingClientRect();
+    const tr = target.getBoundingClientRect();
+    const hit = rectsOverlap(dr, tr);
+
+    if (hit) {
+      score += 1;
+      streak += 1;
+      blinkOnce();
+    } else {
+      streak = 0;
+    }
+
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+
+    setDropToStart();
+
+    if (shots >= 10) finishDropGame();
+  }
+
+  function finishDropGame() {
+    playing = false;
+    clearInterval(blinkTimer);
+    clearInterval(moveTimer);
+
+    const prize = choosePrize();
+    dropResultBig.textContent = `🎉 You won ${prize.label}`;
+    dropResultSmall.textContent = `Score: ${score}/10 • Code (demo): ${prize.code}`;
+    dropResult.style.display = "block";
+  }
+
+  function resetDropGame() {
+    shots = 0; score = 0; streak = 0; playing = true;
+    shotsEl.textContent = shots;
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+
+    dropResult.style.display = "none";
+
+    iris.style.transform = "translate(-50%, -50%)";
+    lidTop.style.transform = "translateY(-65%)";
+    lidBot.style.transform = "translateY(65%)";
+
+    setDropToStart();
+    scheduleBlinking();
+    scheduleMovement();
+  }
+
+  dropGame.addEventListener("touchstart", onDown, { passive:false });
+  dropGame.addEventListener("touchmove", onMove, { passive:false });
+  dropGame.addEventListener("touchend", onUp, { passive:false });
+
+  dropGame.addEventListener("mousedown", onDown);
+  dropGame.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+
+  dropPlayAgain.addEventListener("click", resetDropGame);
+
+  // init drop game
+  resetDropGame();
+
+  // default tab
+  setActive("scratch");
 })();
 </script>
 
