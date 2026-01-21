@@ -3,24 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Launch the Eye Drop</title>
+<title>OD on the GO – Launch the Eye Drop</title>
+
 <style>
   body{ font-family: Arial, sans-serif; background:#fafafa; margin:0; text-align:center; }
-  .wrap{ max-width:900px; margin:22px auto; padding:0 14px; }
+  .wrap{ max-width:1100px; margin:22px auto; padding:0 14px; }
   h2{ margin:0 0 6px; }
   .sub{ color:#666; margin:0 0 14px; font-size:14px; }
 
+  /* Bigger/wider stage for more flight distance */
   .stage{
     position:relative;
     margin:0 auto;
-    width:min(860px, 100%);
-    aspect-ratio:16/9;
+    width:min(1060px, 100%);
+    height:520px;                 /* taller */
     background:#fff;
     border:1px solid #eee;
     border-radius:18px;
     overflow:hidden;
     box-shadow:0 2px 14px rgba(0,0,0,0.06);
     touch-action:none;
+  }
+  @media (max-width: 650px){
+    .stage{ height:420px; }
   }
 
   .hint{
@@ -34,10 +39,10 @@
 
   .eye{
     position:absolute;
-    right:90px;
+    right:120px;
     top:50%;
     transform:translateY(-50%);
-    width:190px; height:120px;
+    width:220px; height:140px;
     background:#f7f7f7;
     border:3px solid #e0e0e0;
     border-radius:999px;
@@ -46,7 +51,7 @@
     position:absolute;
     left:50%; top:50%;
     transform:translate(-50%,-50%);
-    width:52px; height:52px;
+    width:58px; height:58px;
     border-radius:50%;
     background:#111;
   }
@@ -54,16 +59,16 @@
     position:absolute;
     left:50%; top:50%;
     transform:translate(-50%,-50%);
-    width:92px; height:92px;
+    width:105px; height:105px;
     border-radius:50%;
     border:3px dashed rgba(0,0,0,0.08);
   }
 
   .drop{
     position:absolute;
-    left:150px; top:50%;
+    left:180px; top:50%;
     transform:translate(-50%,-50%);
-    width:48px; height:60px;
+    width:52px; height:66px;
     border-radius:999px;
     background: radial-gradient(circle at 35% 25%, #fff, #6aa6ff 70%, #1b4fd6);
     box-shadow:0 10px 18px rgba(0,0,0,0.2);
@@ -73,12 +78,7 @@
   }
   .drop:active{ cursor:grabbing; }
 
-  .band{
-    position:absolute;
-    left:150px; top:50%;
-    width:0; height:0;
-    z-index:2;
-  }
+  /* slingshot band visuals */
   .line{
     position:absolute;
     left:0; top:0;
@@ -86,19 +86,24 @@
     background:rgba(0,0,0,0.18);
     transform-origin:0 50%;
     border-radius:999px;
+    display:none;
+    z-index:2;
   }
 
+  /* Results box */
   .result{
     display:none;
     margin:14px auto 0;
-    max-width:560px;
+    max-width:760px;
     padding:14px;
     border:1px solid #cce5ff;
     background:#f0f7ff;
     border-radius:12px;
+    text-align:left;
   }
   .result .big{ font-size:22px; font-weight:900; }
   .result .small{ margin-top:6px; font-size:13px; color:#444; }
+
   .btn{
     margin-top:12px;
     padding:12px 16px;
@@ -111,85 +116,203 @@
     width:260px;
     max-width:100%;
   }
+
+  /* Lead capture panel */
+  .leadWrap{
+    max-width:1060px;
+    margin:14px auto 0;
+    text-align:left;
+  }
+  .leadPanel{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:16px;
+    padding:14px;
+    box-shadow:0 2px 12px rgba(0,0,0,.06);
+  }
+  .leadTitle{ font-weight:900; margin-bottom:8px; }
+  label{ display:block; font-weight:900; margin:10px 0 6px; }
+  input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-size:16px;
+  }
+  .leadBtn{
+    margin-top:12px;
+    width:100%;
+    padding:12px 16px;
+    border:none;
+    border-radius:10px;
+    background:#111;
+    color:#fff;
+    font-weight:900;
+    font-size:16px;
+    cursor:pointer;
+  }
+  .leadCard{
+    display:none;
+    margin-top:12px;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #cce5ff;
+    background:#f0f7ff;
+  }
+  .leadCard small{ color:#555; }
+  .rowBtns{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .ghostBtn{
+    padding:10px 14px;
+    border-radius:10px;
+    border:1px solid #ddd;
+    background:#fff;
+    font-weight:900;
+    cursor:pointer;
+  }
+  #leadList{
+    display:none;
+    margin-top:10px;
+    font-size:13px;
+    color:#333;
+    white-space:pre-wrap;
+  }
 </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <h2>🏹 Launch the Eye Drop</h2>
-    <div class="sub">Pull back the drop and release. Hit the eye to win a discount (demo).</div>
+<div class="wrap">
+  <h2>🏹 Launch the Eye Drop</h2>
+  <div class="sub">Pull back the drop and release. Hit the eye for a bigger discount.</div>
 
-    <div id="stage" class="stage">
-      <div class="hint">
-        <div class="t">💧 Pull back + release</div>
-        <div class="s">Works on iPad + desktop</div>
-      </div>
-
-      <div id="eye" class="eye">
-        <div class="ring"></div>
-        <div class="pupil"></div>
-      </div>
-
-      <!-- elastic band (visual) -->
-      <div class="band">
-        <div id="line1" class="line"></div>
-        <div id="line2" class="line"></div>
-      </div>
-
-      <div id="drop" class="drop" title="Pull back then release"></div>
+  <div id="stage" class="stage">
+    <div class="hint">
+      <div class="t">💧 Pull back + release</div>
+      <div class="s">Hit = 20% / $50 • Miss = 10%</div>
     </div>
 
-    <div id="result" class="result">
-      <div id="resultBig" class="big">—</div>
-      <div id="resultSmall" class="small">—</div>
-      <button id="again" class="btn" type="button">Play Again</button>
+    <div id="eye" class="eye">
+      <div class="ring"></div>
+      <div class="pupil"></div>
+    </div>
+
+    <div id="lineA" class="line"></div>
+    <div id="lineB" class="line"></div>
+
+    <div id="drop" class="drop" title="Pull back then release"></div>
+  </div>
+
+  <!-- Lead capture panel -->
+  <div class="leadWrap">
+    <div class="leadPanel">
+      <div class="leadTitle">✅ Claim your discount</div>
+
+      <label>Name</label>
+      <input id="leadName" type="text" placeholder="First + last name" autocomplete="name">
+
+      <label>Email</label>
+      <input id="leadEmail" type="email" placeholder="name@email.com" autocomplete="email">
+
+      <button id="saveLead" class="leadBtn" type="button">Save (for screenshot)</button>
+
+      <div id="leadCard" class="leadCard">
+        <div style="font-weight:900;font-size:18px;">Saved ✅</div>
+        <div style="margin-top:6px;"><strong>Name:</strong> <span id="leadCardName"></span></div>
+        <div><strong>Email:</strong> <span id="leadCardEmail"></span></div>
+        <div><strong>Discount:</strong> <span id="leadCardDiscount"></span></div>
+        <small>Tip: screenshot this screen for booth tracking.</small>
+
+        <div class="rowBtns">
+          <button id="clearLead" class="ghostBtn" type="button">Clear</button>
+          <button id="viewLeads" class="ghostBtn" type="button">View saved list</button>
+          <button id="exportLeads" class="ghostBtn" type="button">Export CSV</button>
+        </div>
+
+        <div id="leadList"></div>
+      </div>
     </div>
   </div>
+
+  <!-- Result box (game) -->
+  <div id="result" class="result">
+    <div id="resultBig" class="big">—</div>
+    <div id="resultSmall" class="small">—</div>
+    <button id="again" class="btn" type="button">Play Again</button>
+  </div>
+</div>
 
 <script>
 (() => {
   const stage = document.getElementById("stage");
   const drop = document.getElementById("drop");
-  const eye = document.getElementById("eye");
+  const eye  = document.getElementById("eye");
+
+  const lineA = document.getElementById("lineA");
+  const lineB = document.getElementById("lineB");
 
   const result = document.getElementById("result");
   const resultBig = document.getElementById("resultBig");
   const resultSmall = document.getElementById("resultSmall");
   const again = document.getElementById("again");
 
-  const line1 = document.getElementById("line1");
-  const line2 = document.getElementById("line2");
+  // Lead capture elements
+  const leadName = document.getElementById("leadName");
+  const leadEmail = document.getElementById("leadEmail");
+  const saveLead = document.getElementById("saveLead");
+  const leadCard = document.getElementById("leadCard");
+  const leadCardName = document.getElementById("leadCardName");
+  const leadCardEmail = document.getElementById("leadCardEmail");
+  const leadCardDiscount = document.getElementById("leadCardDiscount");
+  const clearLead = document.getElementById("clearLead");
+  const viewLeads = document.getElementById("viewLeads");
+  const exportLeads = document.getElementById("exportLeads");
+  const leadList = document.getElementById("leadList");
 
-  // slingshot anchor point in stage coordinates
-  const anchor = { x: 150, y: null }; // y set after layout
+  // ---- Prize logic per your rules ----
+  // HIT -> 20% most of the time, $50 rarely
+  // MISS -> 10%
+  const HIT_PROB_50 = 0.08; // rare $50 on hit
+
+  function prizeForHit(){
+    return (Math.random() < HIT_PROB_50)
+      ? { label: "$50 OFF", code: "CONF50" }
+      : { label: "20% OFF", code: "CONF20" };
+  }
+  function prizeForMiss(){
+    return { label: "10% OFF", code: "CONF10" };
+  }
+
+  // We'll store the latest game outcome so the lead card can show it.
+  let lastDiscount = null; // {label, code, hit:boolean}
+
+  // ---- Physics tuning (longer flight + smoother arc) ----
+  const GRAV  = 0.78;   // gravity (lower = longer float)
+  const DAMP  = 0.995;  // drag
+  const POWER = 0.30;   // launch strength (higher = further)
+
+  const anchor = { x: 180, y: 0 };
   let dragging = false;
   let launched = false;
 
-  // physics state
-  let x=0,y=0,vx=0,vy=0;
+  // physics state (in stage coords)
+  let x=0, y=0, vx=0, vy=0;
   let raf = null;
 
-  const GRAV = 0.85;   // gravity
-  const DAMP = 0.995;  // air drag
-  const POWER = 0.26;  // launch strength
-
-  const PROB_50 = 0.08;
-  function prize(){
-    return Math.random() < PROB_50
-      ? { label:"$50 OFF", code:"CONF50" }
-      : { label:"20% OFF", code:"CONF20" };
-  }
-
-  function stageRect(){ return stage.getBoundingClientRect(); }
-
-  function setAnchorY(){
+  function setAnchor(){
     anchor.y = stage.clientHeight / 2;
   }
 
   function setDropPos(px,py){
     drop.style.left = px + "px";
-    drop.style.top = py + "px";
+    drop.style.top  = py + "px";
     drop.style.transform = "translate(-50%,-50%)";
   }
+
+  function stageRect(){ return stage.getBoundingClientRect(); }
 
   function getPointer(evt){
     const r = stageRect();
@@ -198,45 +321,37 @@
   }
 
   function showBand(px,py){
-    // two lines for a little "V" effect
     const dx = px - anchor.x;
     const dy = py - anchor.y;
     const dist = Math.hypot(dx,dy);
     const ang = Math.atan2(dy,dx);
 
-    line1.style.width = dist + "px";
-    line1.style.transform = `rotate(${ang}rad)`;
+    lineA.style.display = "block";
+    lineB.style.display = "block";
 
-    line2.style.width = dist + "px";
-    line2.style.transform = `rotate(${ang}rad)`;
+    lineA.style.left = anchor.x + "px";
+    lineA.style.top  = anchor.y + "px";
+    lineA.style.width = dist + "px";
+    lineA.style.transform = `rotate(${ang}rad)`;
 
-    line1.style.display = "block";
-    line2.style.display = "block";
+    // tiny offset to make it look like two bands
+    lineB.style.left = anchor.x + "px";
+    lineB.style.top  = (anchor.y + 6) + "px";
+    lineB.style.width = dist + "px";
+    lineB.style.transform = `rotate(${ang}rad)`;
   }
 
   function hideBand(){
-    line1.style.display = "none";
-    line2.style.display = "none";
+    lineA.style.display = "none";
+    lineB.style.display = "none";
   }
 
-  function reset(){
-    cancelAnimationFrame(raf);
-    raf = null;
-    dragging = false;
-    launched = false;
-    result.style.display = "none";
-    hideBand();
-    setAnchorY();
-    x = anchor.x;
-    y = anchor.y;
-    vx = 0; vy = 0;
-    setDropPos(x,y);
+  function overlapRects(a,b){
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
   }
 
   function hitTest(){
-    const a = drop.getBoundingClientRect();
-    const b = eye.getBoundingClientRect();
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+    return overlapRects(drop.getBoundingClientRect(), eye.getBoundingClientRect());
   }
 
   function finish(){
@@ -245,14 +360,15 @@
     raf = null;
 
     const hit = hitTest();
-    const p = prize();
-    resultBig.textContent = (hit ? "🎯 Direct hit! " : "💥 Miss… ") + "You won " + p.label;
-    resultSmall.textContent = "Code (demo): " + p.code;
+    const p = hit ? prizeForHit() : prizeForMiss();
+    lastDiscount = { ...p, hit };
+
+    resultBig.textContent = (hit ? "🎯 HIT! " : "💥 MISS! ") + "You won " + p.label;
+    resultSmall.textContent = "Code (demo): " + p.code + "  •  (You can enter name/email below.)";
     result.style.display = "block";
   }
 
   function step(){
-    // update physics
     x += vx;
     y += vy;
     vy += GRAV;
@@ -261,14 +377,12 @@
 
     setDropPos(x,y);
 
-    // stop if out of bounds (or slow)
-    if (x < -80 || x > stage.clientWidth + 80 || y > stage.clientHeight + 120 || Math.hypot(vx,vy) < 0.9){
+    // end conditions
+    if (hitTest()){
       finish();
       return;
     }
-
-    // early finish if hit
-    if (hitTest()){
+    if (x < -120 || x > stage.clientWidth + 120 || y > stage.clientHeight + 160 || Math.hypot(vx,vy) < 0.85){
       finish();
       return;
     }
@@ -279,12 +393,13 @@
   function onDown(evt){
     if (launched) return;
     const p = getPointer(evt);
+
     const dr = drop.getBoundingClientRect();
     const sr = stageRect();
     const dx = dr.left - sr.left;
-    const dy = dr.top - sr.top;
+    const dy = dr.top  - sr.top;
 
-    // only start drag if touching the drop
+    // start drag only if pointer is on drop
     if (p.x >= dx && p.x <= dx + dr.width && p.y >= dy && p.y <= dy + dr.height){
       dragging = true;
       showBand(x,y);
@@ -296,8 +411,9 @@
     if (!dragging || launched) return;
     const p = getPointer(evt);
 
-    // limit pull-back distance
-    const maxPull = 140;
+    // allow longer pull for longer flight
+    const maxPull = 170;
+
     const dx = p.x - anchor.x;
     const dy = p.y - anchor.y;
     const dist = Math.hypot(dx,dy);
@@ -311,20 +427,39 @@
     evt.preventDefault();
   }
 
-  function onUp(evt){
+  function onUp(){
     if (!dragging || launched) return;
     dragging = false;
     hideBand();
 
-    // velocity is opposite of pull direction
+    // launch opposite of pull
     vx = (anchor.x - x) * POWER;
     vy = (anchor.y - y) * POWER;
 
     launched = true;
+    result.style.display = "none";
     raf = requestAnimationFrame(step);
   }
 
-  // events (mouse + touch)
+  function reset(){
+    cancelAnimationFrame(raf);
+    raf = null;
+    dragging = false;
+    launched = false;
+    hideBand();
+
+    setAnchor();
+    x = anchor.x;
+    y = anchor.y;
+    vx = 0; vy = 0;
+
+    setDropPos(x,y);
+    result.style.display = "none";
+
+    // keep lastDiscount until next play
+  }
+
+  // Mouse + touch
   drop.addEventListener("mousedown", onDown);
   drop.addEventListener("touchstart", onDown, { passive:false });
   window.addEventListener("mousemove", onMove, { passive:false });
@@ -335,6 +470,87 @@
   again.addEventListener("click", reset);
   window.addEventListener("resize", reset);
 
+  // ==========================
+  // Lead capture (name + email)
+  // ==========================
+  function getLeads(){
+    try { return JSON.parse(localStorage.getItem("odgo_leads") || "[]"); }
+    catch { return []; }
+  }
+  function setLeads(arr){
+    localStorage.setItem("odgo_leads", JSON.stringify(arr));
+  }
+  function validEmail(s){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
+  }
+
+  saveLead.addEventListener("click", () => {
+    const name = (leadName.value || "").trim();
+    const email = (leadEmail.value || "").trim();
+
+    if (!name) { alert("Please enter your name."); return; }
+    if (!validEmail(email)) { alert("Please enter a valid email."); return; }
+    if (!lastDiscount){ alert("Play the game first so we can record your discount."); return; }
+
+    const leads = getLeads();
+    leads.unshift({
+      name,
+      email,
+      discount: lastDiscount.label,
+      code: lastDiscount.code,
+      hit: lastDiscount.hit,
+      time: new Date().toISOString()
+    });
+    setLeads(leads);
+
+    // Show card for screenshot
+    leadCardName.textContent = name;
+    leadCardEmail.textContent = email;
+    leadCardDiscount.textContent = `${lastDiscount.label} (code: ${lastDiscount.code})`;
+    leadCard.style.display = "block";
+    leadList.style.display = "none";
+  });
+
+  clearLead.addEventListener("click", () => {
+    leadName.value = "";
+    leadEmail.value = "";
+    leadCard.style.display = "none";
+    leadList.style.display = "none";
+  });
+
+  viewLeads.addEventListener("click", () => {
+    const leads = getLeads();
+    if (!leads.length){
+      leadList.textContent = "No saved entries yet.";
+    } else {
+      leadList.textContent = leads
+        .map((l,i)=>`${i+1}. ${l.name} — ${l.email} — ${l.discount} (${l.code}) — ${new Date(l.time).toLocaleString()}`)
+        .join("\n");
+    }
+    leadList.style.display = "block";
+  });
+
+  exportLeads.addEventListener("click", () => {
+    const leads = getLeads();
+    if (!leads.length){ alert("No leads to export yet."); return; }
+
+    const header = "name,email,discount,code,hit,time\n";
+    const rows = leads.map(l =>
+      `"${String(l.name).replaceAll('"','""')}","${String(l.email).replaceAll('"','""')}","${l.discount}","${l.code}","${l.hit}","${l.time}"`
+    ).join("\n");
+
+    const blob = new Blob([header + rows], { type:"text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "odgo_conference_leads.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // Start
   reset();
 })();
 </script>
