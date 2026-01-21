@@ -45,7 +45,6 @@ body{
   box-shadow:0 2px 12px rgba(0,0,0,.06);
 }
 .panel.active{display:block;}
-.note{font-size:12px;color:#666;margin-top:10px;}
 .action{
   margin-top:14px;
   padding:12px 18px;
@@ -66,294 +65,15 @@ body{
   background:#f0f7ff;
   border-radius:12px;
 }
-.result .big{font-size:22px;font-weight:900;}
-.result .small{font-size:13px;color:#444;margin-top:6px;}
+.big{font-size:22px;font-weight:900;}
+.small{font-size:13px;color:#444;margin-top:6px;}
 </style>
 </head>
 
-  <script>
-(() => {
-  // ---- Safe helper (so one error won't nuke the whole page)
-  function safe(fn){
-    try { fn(); } catch(e){ console.error(e); }
-  }
-
-  // ---- Prize odds
-  const PROB_50 = 0.08; // ~8% rare
-  function choosePrize(){
-    return (Math.random() < PROB_50)
-      ? { label: "$50 OFF", code: "CONF50" }
-      : { label: "20% OFF", code: "CONF20" };
-  }
-
-  // ---- Toggle wiring (MUST match your IDs)
-  const tabs = [
-    { btn: "btnScratch", panel: "panelScratch" },
-    { btn: "btnSpin",    panel: "panelSpin"    },
-    { btn: "btnSlots",   panel: "panelSlots"   },
-    { btn: "btnFit",     panel: "panelFit"     },
-    { btn: "btnLaunch",  panel: "panelLaunch"  },
-  ];
-
-  function setActive(panelId){
-    tabs.forEach(t => {
-      const b = document.getElementById(t.btn);
-      const p = document.getElementById(t.panel);
-      if (!b || !p) return;
-
-      const on = (t.panel === panelId);
-      b.classList.toggle("active", on);
-      p.classList.toggle("active", on);
-    });
-  }
-
-  safe(() => {
-    tabs.forEach(t => {
-      const b = document.getElementById(t.btn);
-      if (!b) return;
-      b.addEventListener("click", () => setActive(t.panel));
-    });
-  });
-
-  // =========================
-  // SCRATCH (simple + reliable)
-  // =========================
-  safe(() => {
-    const canvas = document.getElementById("scratchCanvas");
-    const prizeEl = document.getElementById("scratchPrize");
-    const resetBtn = document.getElementById("scratchReset");
-    if (!canvas || !prizeEl || !resetBtn) return;
-
-    const ctx = canvas.getContext("2d");
-    let isDown = false;
-
-    function cover(){
-      ctx.globalCompositeOperation = "source-over";
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-
-      // gray cover
-      ctx.fillStyle = "#bfbfbf";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      // text
-      ctx.fillStyle = "rgba(0,0,0,0.45)";
-      ctx.font = "bold 22px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("SCRATCH HERE", canvas.width/2, canvas.height/2);
-
-      // scratch mode
-      ctx.globalCompositeOperation = "destination-out";
-    }
-
-    function pos(evt){
-      const r = canvas.getBoundingClientRect();
-      const t = evt.touches ? evt.touches[0] : evt;
-      return {
-        x: (t.clientX - r.left) * (canvas.width / r.width),
-        y: (t.clientY - r.top) * (canvas.height / r.height)
-      };
-    }
-
-    function scratch(x,y){
-      ctx.beginPath();
-      ctx.arc(x,y,18,0,Math.PI*2);
-      ctx.fill();
-    }
-
-    function newPrize(){
-      const p = choosePrize();
-      prizeEl.textContent = p.label + "  (code: " + p.code + ")";
-      cover();
-    }
-
-    canvas.addEventListener("mousedown", e => { isDown=true; const p=pos(e); scratch(p.x,p.y); });
-    canvas.addEventListener("mousemove", e => { if(!isDown) return; const p=pos(e); scratch(p.x,p.y); });
-    window.addEventListener("mouseup", () => isDown=false);
-
-    canvas.addEventListener("touchstart", e => { isDown=true; const p=pos(e); scratch(p.x,p.y); e.preventDefault(); }, {passive:false});
-    canvas.addEventListener("touchmove", e => { if(!isDown) return; const p=pos(e); scratch(p.x,p.y); e.preventDefault(); }, {passive:false});
-    canvas.addEventListener("touchend", () => isDown=false);
-
-    resetBtn.addEventListener("click", newPrize);
-    newPrize();
-  });
-
-  // =========================
-  // SPIN (simple wheel + result)
-  // =========================
-  safe(() => {
-    const wheel = document.getElementById("wheel");
-    const spinBtn = document.getElementById("spinBtn");
-    const resBox = document.getElementById("spinResult");
-    const big = document.getElementById("spinBig");
-    const small = document.getElementById("spinSmall");
-    if (!wheel || !spinBtn || !resBox || !big || !small) return;
-
-    const ctx = wheel.getContext("2d");
-    const seg = ["20%","20%","20%","20%","$50","20%","20%","20%"];
-    let angle = 0;
-    let spinning = false;
-
-    function draw(){
-      const W = wheel.width, H = wheel.height;
-      const cx = W/2, cy = H/2, r = Math.min(cx,cy) - 6;
-      ctx.clearRect(0,0,W,H);
-      const arc = (Math.PI*2)/seg.length;
-
-      for(let i=0;i<seg.length;i++){
-        const a0 = angle + i*arc;
-        const a1 = a0 + arc;
-        ctx.beginPath();
-        ctx.moveTo(cx,cy);
-        ctx.arc(cx,cy,r,a0,a1);
-        ctx.closePath();
-        ctx.fillStyle = (i%2===0) ? "#e9e9e9" : "#d9d9d9";
-        ctx.fill();
-        ctx.strokeStyle="#fff";
-        ctx.stroke();
-
-        ctx.save();
-        ctx.translate(cx,cy);
-        ctx.rotate(a0+arc/2);
-        ctx.textAlign="right";
-        ctx.fillStyle="#111";
-        ctx.font="bold 14px Arial";
-        ctx.fillText(seg[i], r-12, 5);
-        ctx.restore();
-      }
-
-      // pointer
-      ctx.fillStyle="#111";
-      ctx.beginPath();
-      ctx.moveTo(cx, cy-r-2);
-      ctx.lineTo(cx-10, cy-r+18);
-      ctx.lineTo(cx+10, cy-r+18);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    function easeOut(t){ return 1 - Math.pow(1-t,3); }
-
-    spinBtn.addEventListener("click", () => {
-      if (spinning) return;
-      spinning = true;
-      resBox.style.display="none";
-
-      const prize = choosePrize();
-      const targetLabel = (prize.label.includes("50")) ? "$50" : "20%";
-
-      // pick a segment index matching targetLabel
-      const idxs = seg.map((s,i)=>({s,i})).filter(x=>x.s===targetLabel).map(x=>x.i);
-      const idx = idxs[Math.floor(Math.random()*idxs.length)];
-
-      const arc = (Math.PI*2)/seg.length;
-      const pointerAngle = -Math.PI/2;
-      const segCenter = idx*arc + arc/2;
-
-      const targetAngle = pointerAngle - segCenter - (Math.PI*2)*(6+Math.random()*3);
-      const start = angle;
-      const t0 = performance.now();
-      const dur = 2200;
-
-      function anim(t){
-        const p = Math.min(1,(t-t0)/dur);
-        angle = start + (targetAngle-start)*easeOut(p);
-        draw();
-        if (p<1) requestAnimationFrame(anim);
-        else {
-          spinning=false;
-          big.textContent = "YOU WON " + prize.label;
-          small.textContent = "Code (demo): " + prize.code;
-          resBox.style.display="block";
-        }
-      }
-      requestAnimationFrame(anim);
-    });
-
-    draw();
-  });
-
-  // =========================
-  // SLOTS (simple)
-  // =========================
-  safe(() => {
-    const spinBtn = document.getElementById("slotsSpin");
-    const icons = document.getElementById("slotIcons");
-    const res = document.getElementById("slotsResult");
-    const big = document.getElementById("slotsBig");
-    const small = document.getElementById("slotsSmall");
-    if (!spinBtn || !icons || !res || !big || !small) return;
-
-    const pool = ["👓","🧿","💧","🔦","📏","📈","⚪️","🧠"];
-    let timer = null;
-
-    spinBtn.addEventListener("click", () => {
-      res.style.display="none";
-      clearInterval(timer);
-      let ticks = 0;
-
-      timer = setInterval(() => {
-        const a = pool[Math.floor(Math.random()*pool.length)];
-        const b = pool[Math.floor(Math.random()*pool.length)];
-        const c = pool[Math.floor(Math.random()*pool.length)];
-        icons.textContent = `${a} ${b} ${c}`;
-        ticks++;
-        if (ticks > 18){
-          clearInterval(timer);
-          const prize = choosePrize();
-          big.textContent = "YOU WON " + prize.label;
-          small.textContent = "Code (demo): " + prize.code;
-          res.style.display="block";
-        }
-      }, 70);
-    });
-  });
-
-  // =========================
-  // GLASSES (demo button)
-  // =========================
-  safe(() => {
-    const winBtn = document.getElementById("fitWin");
-    const res = document.getElementById("fitResult");
-    const big = document.getElementById("fitBig");
-    const small = document.getElementById("fitSmall");
-    if (!winBtn || !res || !big || !small) return;
-
-    winBtn.addEventListener("click", () => {
-      const prize = choosePrize();
-      big.textContent = "YOU WON " + prize.label;
-      small.textContent = "Code (demo): " + prize.code;
-      res.style.display="block";
-    });
-  });
-
-  // =========================
-  // LAUNCH (demo button)
-  // =========================
-  safe(() => {
-    const btn = document.getElementById("launchBtn");
-    const res = document.getElementById("launchResult");
-    const big = document.getElementById("launchBig");
-    const small = document.getElementById("launchSmall");
-    if (!btn || !res || !big || !small) return;
-
-    btn.addEventListener("click", () => {
-      const prize = choosePrize();
-      big.textContent = "YOU WON " + prize.label;
-      small.textContent = "Code (demo): " + prize.code;
-      res.style.display="block";
-    });
-  });
-
-  // default
-  safe(() => setActive("panelScratch"));
-})();
-</script>
-  
 <body>
 <div class="wrap">
 <h2>🎮 OD on the GO Conference Games</h2>
-<div class="note">Demo mode — no email capture yet</div>
+<div class="small">Demo mode — no email capture yet</div>
 
 <div class="toggleBar">
   <button id="btnScratch" class="toggleBtn active">🪙 Scratch</button>
@@ -368,14 +88,13 @@ body{
   <h3>🪙 Scratch to Win</h3>
   <canvas id="scratchCanvas" width="480" height="200"
     style="border-radius:12px;border:1px solid #ccc;"></canvas>
-  <div id="scratchPrize" style="font-size:28px;font-weight:900;margin-top:10px;">—</div>
+  <div id="scratchPrize" class="big">—</div>
   <button class="action" id="scratchReset">Play Again</button>
 </div>
 
 <!-- SPIN -->
 <div id="panelSpin" class="panel">
   <h3>🛞 Spin the Phoropter</h3>
-  <canvas id="wheel" width="320" height="320"></canvas>
   <button class="action" id="spinBtn">SPIN</button>
   <div id="spinResult" class="result">
     <div class="big" id="spinBig"></div>
@@ -397,8 +116,8 @@ body{
 <!-- GLASSES -->
 <div id="panelFit" class="panel">
   <h3>👓 Put the Glasses On</h3>
-  <div style="font-size:90px;margin:20px">🙂</div>
-  <button class="action" id="fitWin">Snap Glasses</button>
+  <div style="font-size:90px">🙂</div>
+  <button class="action" id="fitBtn">Snap Glasses</button>
   <div id="fitResult" class="result">
     <div class="big" id="fitBig"></div>
     <div class="small" id="fitSmall"></div>
@@ -414,5 +133,111 @@ body{
     <div class="small" id="launchSmall"></div>
   </div>
 </div>
-
 </div>
+
+<script>
+/* ---------- SHARED ---------- */
+function prize(){
+  return Math.random()<0.08
+    ? {label:"$50 OFF",code:"CONF50"}
+    : {label:"20% OFF",code:"CONF20"};
+}
+
+/* ---------- TOGGLE ---------- */
+const tabs=[
+ ["btnScratch","panelScratch"],
+ ["btnSpin","panelSpin"],
+ ["btnSlots","panelSlots"],
+ ["btnFit","panelFit"],
+ ["btnLaunch","panelLaunch"]
+];
+
+function show(panel){
+  tabs.forEach(([b,p])=>{
+    document.getElementById(b).classList.toggle("active",p===panel);
+    document.getElementById(p).classList.toggle("active",p===panel);
+  });
+}
+tabs.forEach(([b,p])=>{
+  document.getElementById(b).onclick=()=>show(p);
+});
+
+/* ---------- SCRATCH ---------- */
+const c=document.getElementById("scratchCanvas");
+const ctx=c.getContext("2d");
+const scratchPrize=document.getElementById("scratchPrize");
+let down=false;
+
+function cover(){
+  ctx.globalCompositeOperation="source-over";
+  ctx.fillStyle="#bbb";
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle="#555";
+  ctx.font="bold 22px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("SCRATCH HERE",c.width/2,c.height/2);
+  ctx.globalCompositeOperation="destination-out";
+}
+function newScratch(){
+  const p=prize();
+  scratchPrize.textContent=p.label+" ("+p.code+")";
+  cover();
+}
+c.onmousedown=e=>{down=true;draw(e)};
+c.onmousemove=e=>down&&draw(e);
+window.onmouseup=()=>down=false;
+function draw(e){
+  const r=c.getBoundingClientRect();
+  ctx.beginPath();
+  ctx.arc(e.clientX-r.left,e.clientY-r.top,18,0,Math.PI*2);
+  ctx.fill();
+}
+document.getElementById("scratchReset").onclick=newScratch;
+newScratch();
+
+/* ---------- SPIN ---------- */
+document.getElementById("spinBtn").onclick=()=>{
+  const p=prize();
+  spinBig.textContent="YOU WON "+p.label;
+  spinSmall.textContent="Code: "+p.code;
+  spinResult.style.display="block";
+};
+
+/* ---------- SLOTS ---------- */
+document.getElementById("slotsSpin").onclick=()=>{
+  const pool=["👓","🧿","💧","🔦","📏","📈"];
+  let t=0;
+  slotsResult.style.display="none";
+  const timer=setInterval(()=>{
+    slotIcons.textContent=
+      pool[Math.random()*pool.length|0]+" "+
+      pool[Math.random()*pool.length|0]+" "+
+      pool[Math.random()*pool.length|0];
+    if(++t>15){
+      clearInterval(timer);
+      const p=prize();
+      slotsBig.textContent="YOU WON "+p.label;
+      slotsSmall.textContent="Code: "+p.code;
+      slotsResult.style.display="block";
+    }
+  },80);
+};
+
+/* ---------- GLASSES ---------- */
+document.getElementById("fitBtn").onclick=()=>{
+  const p=prize();
+  fitBig.textContent="YOU WON "+p.label;
+  fitSmall.textContent="Code: "+p.code;
+  fitResult.style.display="block";
+};
+
+/* ---------- LAUNCH ---------- */
+document.getElementById("launchBtn").onclick=()=>{
+  const p=prize();
+  launchBig.textContent="YOU WON "+p.label;
+  launchSmall.textContent="Code: "+p.code;
+  launchResult.style.display="block";
+};
+</script>
+</body>
+</html>
