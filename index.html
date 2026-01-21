@@ -3,167 +3,426 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Scratch to Win</title>
+<title>OD on the GO — Conference Game Demo</title>
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #fafafa;
-    margin: 0;
-    padding: 0;
+  body { font-family: Arial, sans-serif; background:#fafafa; margin:0; }
+  .wrap { max-width: 760px; margin: 34px auto; padding: 0 16px; text-align:center; }
+
+  h2 { margin: 0 0 6px; }
+  .sub { color:#666; margin: 0 0 18px; }
+
+  .toggleBar {
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+    margin: 14px auto 22px;
   }
-  .wrap {
-    max-width: 520px;
-    margin: 40px auto;
-    text-align: center;
-    padding: 0 16px;
+  .toggleBtn {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-weight: 800;
+    cursor: pointer;
+    min-width: 160px;
   }
-  h2 {
-    margin-bottom: 6px;
+  .toggleBtn.active {
+    background:#111;
+    color:#fff;
+    border-color:#111;
   }
-  .sub {
-    color: #666;
-    margin-bottom: 20px;
+
+  .panel {
+    display:none;
+    margin: 0 auto;
+    max-width: 560px;
+    background:#fff;
+    border:1px solid #eee;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
   }
-  button {
-    margin-top: 18px;
-    padding: 12px 20px;
+  .panel.active { display:block; }
+
+  .note { margin-top: 10px; font-size:12px; color:#666; }
+
+  /* Shared button */
+  button.action {
+    width: 320px; max-width: 100%;
+    margin-top: 14px;
+    padding: 12px 16px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 900;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #111;
     color: #fff;
     cursor: pointer;
   }
+  button.action:disabled { opacity:0.5; cursor:not-allowed; }
+
+  /* ===== SCRATCH ===== */
+  .scratchStage { position:relative; width:100%; max-width:480px; margin: 0 auto; }
+  #scratchCanvas {
+    position:relative;
+    z-index:1;
+    width:100%;
+    height:auto;
+    border-radius:12px;
+    touch-action:none;
+    display:block;
+  }
+  .scratchUnderlay {
+    position:absolute;
+    inset:0;
+    z-index:0;
+    background:#f6f6f6;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #eee;
+  }
+  .scratchUnderlay .big { font-size:36px; font-weight:900; margin-top:6px; }
+
+  /* ===== SPIN ===== */
+  .stage { position:relative; width:320px; height:320px; margin: 10px auto 10px; }
+  #wheel { width:320px; height:320px; display:block; border-radius:50%; background:#fff; border:1px solid #eee; }
+
+  .pointer {
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    width:0; height:0;
+    border-left:14px solid transparent;
+    border-right:14px solid transparent;
+    border-bottom:26px solid #111;
+    z-index:5;
+  }
+
+  .badge {
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    pointer-events:none;
+  }
+  .badge .inner {
+    width:120px; height:120px; border-radius:50%;
+    background:#fff; border:1px solid #eee;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  .badge .emoji { font-size:44px; line-height:1; }
+  .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:800; letter-spacing:0.6px; }
+
+  .result {
+    margin: 12px auto 0;
+    max-width: 420px;
+    display:none;
+    padding: 12px;
+    border: 1px solid #cce5ff;
+    background: #f0f7ff;
+    border-radius: 12px;
+    text-align:center;
+  }
+  .result .big { font-size:22px; font-weight:900; }
+  .result .small { margin-top:6px; font-size:13px; color:#444; }
 </style>
 </head>
 
 <body>
+  <div class="wrap">
+    <h2>🎁 Conference Game Demo</h2>
+    <div class="sub">Try Scratch vs Spin (no email yet)</div>
 
-<div class="wrap">
-  <h2>🎁 Scratch to Win</h2>
-  <div class="sub">Demo mode — no email</div>
-
-  <div style="position:relative;width:100%;max-width:480px;margin:auto;">
-
-    <!-- UNDERLAY (PRIZE) -->
-    <div style="
-      position:absolute;
-      inset:0;
-      z-index:0;
-      background:#f6f6f6;
-      border-radius:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border:1px solid #eee;
-    ">
-      <div>
-        <div style="font-size:18px;">🎉 YOU WON</div>
-        <div id="prize" style="font-size:36px;font-weight:800;margin-top:6px;">
-          —
-        </div>
-      </div>
+    <div class="toggleBar">
+      <button id="btnScratch" class="toggleBtn active" type="button">🪙 Scratch Game</button>
+      <button id="btnSpin" class="toggleBtn" type="button">🛞 Spin the Phoropter</button>
     </div>
 
-    <!-- SCRATCH CANVAS (ON TOP) -->
-    <canvas
-      id="scratch"
-      width="480"
-      height="220"
-      style="
-        position:relative;
-        z-index:1;
-        width:100%;
-        height:auto;
-        border-radius:12px;
-        touch-action:none;
-        display:block;
-      ">
-    </canvas>
+    <!-- ===== SCRATCH PANEL ===== -->
+    <div id="panelScratch" class="panel active">
+      <h3 style="margin:0 0 10px;">🪙 Scratch to Win</h3>
+
+      <div class="scratchStage">
+        <div class="scratchUnderlay">
+          <div>
+            <div style="font-size:18px;">🎉 YOU WON</div>
+            <div id="scratchPrizeText" class="big">—</div>
+            <div style="font-size:12px;color:#666;margin-top:6px;">Scratch to reveal</div>
+          </div>
+        </div>
+
+        <canvas id="scratchCanvas" width="480" height="220"></canvas>
+      </div>
+
+      <button class="action" id="scratchReset" type="button">Play Again</button>
+      <div class="note">Odds: mostly 20% off; a few $50 off.</div>
+    </div>
+
+    <!-- ===== SPIN PANEL ===== -->
+    <div id="panelSpin" class="panel">
+      <h3 style="margin:0 0 10px;">🛞 Spin the Phoropter</h3>
+
+      <div class="stage">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="320" height="320"></canvas>
+
+        <div class="badge">
+          <div class="inner">
+            <div class="emoji">👓</div>
+            <div class="txt">PHOROPTER</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="action" id="spinBtn" type="button">SPIN</button>
+
+      <div id="spinResult" class="result">
+        <div class="big" id="spinResultBig">—</div>
+        <div class="small" id="spinResultSmall">—</div>
+      </div>
+
+      <div class="note">Odds: mostly 20% off; a few $50 off.</div>
+    </div>
   </div>
 
-  <button onclick="resetGame()">Play Again</button>
-</div>
-
 <script>
-const canvas = document.getElementById("scratch");
-const ctx = canvas.getContext("2d");
-let scratching = false;
+(() => {
+  // ===== Shared prize odds =====
+  // 92% -> 20% OFF, 8% -> $50 OFF
+  const PROB_50 = 0.08;
 
-// 92% = 20% OFF, 8% = $50 OFF
-function choosePrize() {
-  return Math.random() < 0.08 ? "$50 OFF" : "20% OFF";
-}
+  function choosePrize() {
+    return (Math.random() < PROB_50)
+      ? { label: "$50 OFF", code: "CONF50" }
+      : { label: "20% OFF", code: "CONF20" };
+  }
 
-function drawCover() {
-  ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "#bfbfbf";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // ===== Toggle logic =====
+  const btnScratch = document.getElementById("btnScratch");
+  const btnSpin = document.getElementById("btnSpin");
+  const panelScratch = document.getElementById("panelScratch");
+  const panelSpin = document.getElementById("panelSpin");
 
-  ctx.fillStyle = "rgba(0,0,0,0.4)";
-  ctx.font = "bold 22px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("SCRATCH HERE", canvas.width / 2, canvas.height / 2);
+  function showScratch() {
+    btnScratch.classList.add("active");
+    btnSpin.classList.remove("active");
+    panelScratch.classList.add("active");
+    panelSpin.classList.remove("active");
+  }
 
-  ctx.globalCompositeOperation = "destination-out";
-}
+  function showSpin() {
+    btnSpin.classList.add("active");
+    btnScratch.classList.remove("active");
+    panelSpin.classList.add("active");
+    panelScratch.classList.remove("active");
+    // Ensure wheel draws when first shown
+    drawWheel();
+  }
 
-function scratch(x, y) {
-  ctx.beginPath();
-  ctx.arc(x, y, 20, 0, Math.PI * 2);
-  ctx.fill();
-}
+  btnScratch.addEventListener("click", showScratch);
+  btnSpin.addEventListener("click", showSpin);
 
-function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches ? e.touches[0] : e;
-  return {
-    x: (touch.clientX - rect.left) * (canvas.width / rect.width),
-    y: (touch.clientY - rect.top) * (canvas.height / rect.height)
-  };
-}
+  // =========================
+  // ===== SCRATCH GAME ======
+  // =========================
+  const scratchCanvas = document.getElementById("scratchCanvas");
+  const sctx = scratchCanvas.getContext("2d");
+  const scratchPrizeText = document.getElementById("scratchPrizeText");
+  const scratchReset = document.getElementById("scratchReset");
 
-// TOUCH EVENTS (iPad / iPhone)
-canvas.addEventListener("touchstart", e => {
-  scratching = true;
-  const p = getPos(e);
-  scratch(p.x, p.y);
-  e.preventDefault();
-}, { passive: false });
+  let scratching = false;
 
-canvas.addEventListener("touchmove", e => {
-  if (!scratching) return;
-  const p = getPos(e);
-  scratch(p.x, p.y);
-  e.preventDefault();
-}, { passive: false });
+  function drawScratchCover() {
+    sctx.globalCompositeOperation = "source-over";
+    sctx.fillStyle = "#bfbfbf";
+    sctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
 
-canvas.addEventListener("touchend", () => scratching = false);
+    sctx.fillStyle = "rgba(0,0,0,0.4)";
+    sctx.font = "bold 22px Arial";
+    sctx.textAlign = "center";
+    sctx.fillText("SCRATCH HERE", scratchCanvas.width / 2, scratchCanvas.height / 2);
 
-// MOUSE EVENTS (desktop testing)
-canvas.addEventListener("mousedown", e => {
-  scratching = true;
-  const p = getPos(e);
-  scratch(p.x, p.y);
-});
+    sctx.globalCompositeOperation = "destination-out";
+  }
 
-canvas.addEventListener("mousemove", e => {
-  if (!scratching) return;
-  const p = getPos(e);
-  scratch(p.x, p.y);
-});
+  function scratchDot(x, y) {
+    sctx.beginPath();
+    sctx.arc(x, y, 20, 0, Math.PI * 2);
+    sctx.fill();
+  }
 
-window.addEventListener("mouseup", () => scratching = false);
+  function scratchPos(e) {
+    const rect = scratchCanvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return {
+      x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
+      y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height)
+    };
+  }
 
-function resetGame() {
-  document.getElementById("prize").textContent = choosePrize();
-  drawCover();
-}
+  // Touch (iPad/iPhone)
+  scratchCanvas.addEventListener("touchstart", e => {
+    scratching = true;
+    const p = scratchPos(e);
+    scratchDot(p.x, p.y);
+    e.preventDefault();
+  }, { passive:false });
 
-// INIT
-resetGame();
+  scratchCanvas.addEventListener("touchmove", e => {
+    if (!scratching) return;
+    const p = scratchPos(e);
+    scratchDot(p.x, p.y);
+    e.preventDefault();
+  }, { passive:false });
+
+  scratchCanvas.addEventListener("touchend", () => scratching = false);
+
+  // Mouse (desktop)
+  scratchCanvas.addEventListener("mousedown", e => {
+    scratching = true;
+    const p = scratchPos(e);
+    scratchDot(p.x, p.y);
+  });
+  scratchCanvas.addEventListener("mousemove", e => {
+    if (!scratching) return;
+    const p = scratchPos(e);
+    scratchDot(p.x, p.y);
+  });
+  window.addEventListener("mouseup", () => scratching = false);
+
+  function resetScratch() {
+    const prize = choosePrize();
+    scratchPrizeText.textContent = prize.label;
+    drawScratchCover();
+  }
+  scratchReset.addEventListener("click", resetScratch);
+
+  // init scratch
+  resetScratch();
+
+  // =========================
+  // ===== SPIN GAME =========
+  // =========================
+  const wheel = document.getElementById("wheel");
+  const wctx = wheel.getContext("2d");
+  const spinBtn = document.getElementById("spinBtn");
+  const spinResult = document.getElementById("spinResult");
+  const spinResultBig = document.getElementById("spinResultBig");
+  const spinResultSmall = document.getElementById("spinResultSmall");
+
+  // Wheel segments (visual)
+  const segments = [
+    { label: "20% OFF" },
+    { label: "20% OFF" },
+    { label: "20% OFF" },
+    { label: "20% OFF" },
+    { label: "$50 OFF" },
+    { label: "20% OFF" },
+    { label: "20% OFF" },
+    { label: "20% OFF" }
+  ];
+
+  const cx = wheel.width / 2;
+  const cy = wheel.height / 2;
+  const radius = 150;
+
+  let currentAngle = 0;
+  let spinning = false;
+
+  function drawWheel() {
+    wctx.clearRect(0, 0, wheel.width, wheel.height);
+
+    const n = segments.length;
+    const arc = (Math.PI * 2) / n;
+
+    for (let i = 0; i < n; i++) {
+      const start = currentAngle + i * arc;
+      const end = start + arc;
+
+      wctx.beginPath();
+      wctx.moveTo(cx, cy);
+      wctx.arc(cx, cy, radius, start, end);
+      wctx.closePath();
+      wctx.fillStyle = (i % 2 === 0) ? "#e9e9e9" : "#d9d9d9";
+      wctx.fill();
+      wctx.strokeStyle = "#ffffff";
+      wctx.stroke();
+
+      wctx.save();
+      wctx.translate(cx, cy);
+      wctx.rotate(start + arc / 2);
+      wctx.textAlign = "right";
+      wctx.fillStyle = "#111";
+      wctx.font = "bold 14px Arial";
+      wctx.fillText(segments[i].label, radius - 14, 5);
+      wctx.restore();
+    }
+
+    wctx.beginPath();
+    wctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    wctx.lineWidth = 2;
+    wctx.strokeStyle = "#eee";
+    wctx.stroke();
+  }
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function pickTargetAngleForLabel(label) {
+    const matches = segments
+      .map((s, i) => ({ s, i }))
+      .filter(x => x.s.label === label);
+
+    const chosen = matches[Math.floor(Math.random() * matches.length)];
+    const n = segments.length;
+    const arc = (Math.PI * 2) / n;
+
+    const pointerAngle = -Math.PI / 2;
+    const segmentCenter = chosen.i * arc + arc / 2;
+    return pointerAngle - segmentCenter;
+  }
+
+  function spin() {
+    if (spinning) return;
+    spinning = true;
+    spinBtn.disabled = true;
+    spinResult.style.display = "none";
+
+    const prize = choosePrize();
+    const targetBase = pickTargetAngleForLabel(prize.label);
+
+    const extraTurns = 6 + Math.random() * 3;
+    const target = targetBase - extraTurns * Math.PI * 2;
+
+    const start = currentAngle;
+    const duration = 2200 + Math.random() * 600;
+    const t0 = performance.now();
+
+    function frame(now) {
+      const t = Math.min(1, (now - t0) / duration);
+      const eased = easeOutCubic(t);
+      currentAngle = start + (target - start) * eased;
+      drawWheel();
+
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        currentAngle = target;
+        drawWheel();
+
+        spinResultBig.textContent = prize.label;
+        spinResultSmall.textContent = `Code (demo): ${prize.code}`;
+        spinResult.style.display = "block";
+
+        spinning = false;
+        spinBtn.disabled = false;
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  spinBtn.addEventListener("click", spin);
+
+  // init wheel (in case user starts on spin)
+  drawWheel();
+})();
 </script>
 
 </body>
