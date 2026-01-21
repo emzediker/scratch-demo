@@ -162,37 +162,82 @@ tabs.forEach(([b,p])=>{
   document.getElementById(b).onclick=()=>show(p);
 });
 
-/* ---------- SCRATCH ---------- */
-const c=document.getElementById("scratchCanvas");
-const ctx=c.getContext("2d");
-const scratchPrize=document.getElementById("scratchPrize");
-let down=false;
+/* ---------- SCRATCH (REAL SCRATCH-OFF) ---------- */
+const c = document.getElementById("scratchCanvas");
+const ctx = c.getContext("2d");
+const scratchPrize = document.getElementById("scratchPrize");
+const scratchReset = document.getElementById("scratchReset");
+
+let scratching = false;
 
 function cover(){
-  ctx.globalCompositeOperation="source-over";
-  ctx.fillStyle="#bbb";
+  ctx.globalCompositeOperation = "source-over";
+  ctx.clearRect(0,0,c.width,c.height);
+
+  // cover
+  ctx.fillStyle = "#bfbfbf";
   ctx.fillRect(0,0,c.width,c.height);
-  ctx.fillStyle="#555";
-  ctx.font="bold 22px Arial";
-  ctx.textAlign="center";
-  ctx.fillText("SCRATCH HERE",c.width/2,c.height/2);
-  ctx.globalCompositeOperation="destination-out";
+
+  // text
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.font = "bold 22px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("SCRATCH HERE", c.width/2, c.height/2);
+
+  // scratch mode
+  ctx.globalCompositeOperation = "destination-out";
 }
+
 function newScratch(){
-  const p=prize();
-  scratchPrize.textContent=p.label+" ("+p.code+")";
+  const p = prize();
+  scratchPrize.textContent = p.label + " (" + p.code + ")";
   cover();
 }
-c.onmousedown=e=>{down=true;draw(e)};
-c.onmousemove=e=>down&&draw(e);
-window.onmouseup=()=>down=false;
-function draw(e){
-  const r=c.getBoundingClientRect();
+
+function getPos(evt){
+  const r = c.getBoundingClientRect();
+  const t = evt.touches ? evt.touches[0] : evt;
+  return {
+    x: (t.clientX - r.left) * (c.width / r.width),
+    y: (t.clientY - r.top) * (c.height / r.height),
+  };
+}
+
+function scratchAt(x,y){
   ctx.beginPath();
-  ctx.arc(e.clientX-r.left,e.clientY-r.top,18,0,Math.PI*2);
+  ctx.arc(x,y,20,0,Math.PI*2);
   ctx.fill();
 }
-document.getElementById("scratchReset").onclick=newScratch;
+
+c.addEventListener("mousedown", (e)=>{
+  scratching = true;
+  const p = getPos(e);
+  scratchAt(p.x,p.y);
+});
+c.addEventListener("mousemove", (e)=>{
+  if(!scratching) return;
+  const p = getPos(e);
+  scratchAt(p.x,p.y);
+});
+window.addEventListener("mouseup", ()=> scratching=false);
+
+c.addEventListener("touchstart", (e)=>{
+  scratching = true;
+  const p = getPos(e);
+  scratchAt(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
+
+c.addEventListener("touchmove", (e)=>{
+  if(!scratching) return;
+  const p = getPos(e);
+  scratchAt(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
+
+c.addEventListener("touchend", ()=> scratching=false);
+
+scratchReset.onclick = newScratch;
 newScratch();
 
 /* ---------- SPIN ---------- */
