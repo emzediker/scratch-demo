@@ -7,7 +7,7 @@
 
 <style>
   body { font-family: Arial, sans-serif; background:#fafafa; margin:0; }
-  .wrap { max-width: 1100px; margin: 26px auto; padding: 0 14px; text-align:center; }
+  .wrap { max-width: 1200px; margin: 26px auto; padding: 0 14px; text-align:center; }
 
   h2 { margin: 0 0 6px; }
   .sub { color:#666; margin: 0 0 16px; }
@@ -23,7 +23,7 @@
     background: #fff;
     font-weight: 900;
     cursor: pointer;
-    min-width: 190px;
+    min-width: 200px;
   }
   .toggleBtn.active {
     background:#111;
@@ -34,7 +34,7 @@
   .panel {
     display:none;
     margin: 0 auto;
-    max-width: 820px;
+    max-width: 900px;
     background:#fff;
     border:1px solid #eee;
     border-radius: 16px;
@@ -85,10 +85,7 @@
     border-bottom:26px solid #111;
     z-index:5;
   }
-  .badge {
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    pointer-events:none;
-  }
+  .badge { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
   .badge .inner {
     width:120px; height:120px; border-radius:50%;
     background:#fff; border:1px solid #eee;
@@ -97,6 +94,7 @@
   }
   .badge .emoji { font-size:44px; line-height:1; }
   .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:900; letter-spacing:0.6px; }
+
   .result {
     margin: 12px auto 0;
     max-width: 560px;
@@ -117,7 +115,7 @@
   .game {
     position: relative;
     margin: 0 auto;
-    width: min(760px, 100%);
+    width: min(780px, 100%);
     aspect-ratio: 16 / 10;
     background: #fff;
     border: 1px solid #eee;
@@ -127,12 +125,9 @@
     touch-action: none;
   }
   .eyeWrap {
-    position:absolute;
-    left:50%;
-    top:48%;
+    position:absolute; left:50%; top:48%;
     transform: translate(-50%, -50%);
-    width: min(600px, 92%);
-    height: 60%;
+    width: min(620px, 92%); height: 60%;
   }
   .eyeWhite {
     position:absolute; inset: 18% 8% 18% 8%;
@@ -144,79 +139,56 @@
   }
   .iris {
     position:absolute;
-    width: 26%;
-    aspect-ratio:1/1;
+    width: 26%; aspect-ratio:1/1;
     border-radius:50%;
-    left: 50%;
-    top: 50%;
+    left: 50%; top: 50%;
     transform: translate(-50%, -50%);
     background: radial-gradient(circle at 35% 35%, #6aa6ff, #2b62c9 55%, #1b2b58 100%);
     border: 2px solid rgba(0,0,0,0.08);
   }
   .pupil {
-    position:absolute;
-    width: 38%;
-    aspect-ratio:1/1;
+    position:absolute; width: 38%; aspect-ratio:1/1;
     border-radius:50%;
-    left: 50%;
-    top: 50%;
+    left: 50%; top: 50%;
     transform: translate(-50%, -50%);
     background: #111;
   }
   .spark {
-    position:absolute;
-    width: 18%;
-    aspect-ratio:1/1;
+    position:absolute; width: 18%; aspect-ratio:1/1;
     border-radius:50%;
-    left: 32%;
-    top: 28%;
+    left: 32%; top: 28%;
     background: rgba(255,255,255,0.85);
   }
   .lidTop, .lidBot {
-    position:absolute; left:0; right:0;
-    height: 50%;
-    background: #fafafa;
-    z-index: 5;
+    position:absolute; left:0; right:0; height: 50%;
+    background: #fafafa; z-index: 5;
     transition: transform 110ms linear;
   }
   .lidTop { top:0; border-bottom:2px solid #eee; transform: translateY(-65%); }
   .lidBot { bottom:0; border-top:2px solid #eee; transform: translateY(65%); }
 
   .target {
-    position:absolute;
-    width: 30%;
-    aspect-ratio: 1/1;
-    left: 50%;
-    top: 50%;
+    position:absolute; width: 30%; aspect-ratio: 1/1;
+    left: 50%; top: 50%;
     transform: translate(-50%, -50%);
     border-radius: 50%;
     outline: 3px dashed rgba(0,0,0,0.10);
     outline-offset: 6px;
-    pointer-events:none;
-    z-index: 2;
+    pointer-events:none; z-index: 2;
   }
   .drop {
-    position:absolute;
-    width: 44px;
-    height: 54px;
+    position:absolute; width: 44px; height: 54px;
     border-radius: 999px;
     background: radial-gradient(circle at 35% 25%, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 35%, rgba(72,160,255,0.9) 70%, rgba(32,110,210,0.95) 100%);
     box-shadow: 0 10px 18px rgba(0,0,0,0.12);
-    cursor: grab;
-    z-index: 10;
+    cursor: grab; z-index: 10;
   }
   .drop:active { cursor: grabbing; }
   .tray {
-    position:absolute;
-    left: 14px;
-    bottom: 14px;
-    display:flex;
-    gap:10px;
-    align-items:center;
-    background:#fff;
-    border:1px solid #eee;
-    padding:10px 12px;
-    border-radius: 14px;
+    position:absolute; left: 14px; bottom: 14px;
+    display:flex; gap:10px; align-items:center;
+    background:#fff; border:1px solid #eee;
+    padding:10px 12px; border-radius: 14px;
     z-index: 20;
   }
   .tray .label { font-weight:900; }
@@ -224,23 +196,18 @@
 
   /* ========= SLOTS ========= */
   .machine {
-    margin: 0 auto;
-    max-width: 600px;
-    background:#fff;
-    border:1px solid #eee;
-    border-radius: 18px;
-    padding: 18px;
+    margin: 0 auto; max-width: 620px;
+    background:#fff; border:1px solid #eee;
+    border-radius: 18px; padding: 18px;
     box-shadow: 0 2px 14px rgba(0,0,0,0.06);
   }
   .reels { display:flex; justify-content:center; gap:12px; margin: 14px 0; flex-wrap:wrap; }
   .reel {
     width: 160px; height: 160px;
-    border-radius: 16px;
-    border: 2px solid #eee;
+    border-radius: 16px; border: 2px solid #eee;
     background: linear-gradient(#ffffff, #f6f6f6);
     display:flex; align-items:center; justify-content:center;
-    font-weight: 900;
-    position:relative; overflow:hidden;
+    font-weight: 900; position:relative; overflow:hidden;
   }
   .reelInner { text-align:center; }
   .reel .icon { font-size: 46px; line-height:1; }
@@ -250,6 +217,143 @@
     background: linear-gradient(45deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 60%);
     transform: translateX(-40%) rotate(10deg);
     pointer-events:none;
+  }
+
+  /* ========= GLASSES FIT GAME ========= */
+  .fitStage {
+    position: relative;
+    margin: 0 auto;
+    width: min(780px, 100%);
+    aspect-ratio: 16 / 9;
+    background:#fff;
+    border:1px solid #eee;
+    border-radius: 18px;
+    overflow:hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+    touch-action: none;
+  }
+  .fitHint {
+    position:absolute; left: 14px; top: 14px;
+    background:#fff; border:1px solid #eee;
+    padding:10px 12px; border-radius: 14px;
+    text-align:left;
+    z-index: 10;
+  }
+
+  .head {
+    position:absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 260px;
+    height: 320px;
+    left: 50%;
+    z-index: 2;
+  }
+  .head .face {
+    position:absolute; inset: 0;
+    background: #f3f3f3;
+    border: 2px solid #e6e6e6;
+    border-radius: 120px 120px 140px 140px;
+  }
+  .head .hair {
+    position:absolute; left: 12px; right: 12px; top: 6px;
+    height: 86px;
+    background:#e8e8e8;
+    border-radius: 120px 120px 80px 80px;
+    border:1px solid #e6e6e6;
+  }
+  .head .eyes {
+    position:absolute; left: 0; right: 0; top: 120px;
+    display:flex; justify-content:center; gap: 48px;
+  }
+  .head .eye {
+    width: 44px; height: 28px;
+    border-radius: 999px;
+    background:#ffffff;
+    border: 2px solid #e6e6e6;
+    position:relative;
+  }
+  .head .eye:after{
+    content:"";
+    position:absolute; width: 12px; height: 12px; border-radius:50%;
+    background:#111;
+    left: 16px; top: 8px;
+  }
+  .head .nose {
+    position:absolute; left:50%; top: 158px;
+    width: 18px; height: 36px;
+    transform: translateX(-50%);
+    border-left: 2px solid #e0e0e0;
+    border-right: 2px solid #e0e0e0;
+    border-bottom: 2px solid #e0e0e0;
+    border-radius: 0 0 10px 10px;
+    background: transparent;
+  }
+
+  /* Glasses target zone on the face */
+  .glassesTarget {
+    position:absolute;
+    left: 50%;
+    top: 132px;
+    transform: translateX(-50%);
+    width: 170px;
+    height: 68px;
+    border-radius: 16px;
+    outline: 3px dashed rgba(0,0,0,0.10);
+    outline-offset: 6px;
+    pointer-events:none;
+    z-index: 3;
+  }
+
+  .glasses {
+    position:absolute;
+    width: 200px;
+    height: 80px;
+    left: 20px;
+    bottom: 18px;
+    z-index: 6;
+    cursor: grab;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:none;
+  }
+  .glasses:active { cursor: grabbing; }
+  .frame {
+    position:absolute; inset: 0;
+  }
+  .lens {
+    position:absolute;
+    width: 78px; height: 54px;
+    top: 12px;
+    border-radius: 16px;
+    border: 4px solid #111;
+    background: rgba(255,255,255,0.2);
+  }
+  .lens.left { left: 12px; }
+  .lens.right { right: 12px; }
+  .bridge {
+    position:absolute; left: 50%; top: 36px;
+    width: 30px; height: 10px;
+    transform: translateX(-50%);
+    border-top: 4px solid #111;
+    border-radius: 10px;
+  }
+  .arm {
+    position:absolute; top: 32px;
+    width: 32px; height: 8px;
+    background:#111;
+    border-radius: 8px;
+  }
+  .arm.left { left: -18px; }
+  .arm.right { right: -18px; }
+
+  .snap {
+    animation: snap 160ms ease-out;
+  }
+  @keyframes snap {
+    0% { transform: scale(1); }
+    60% { transform: scale(1.06); }
+    100% { transform: scale(1); }
   }
 </style>
 </head>
@@ -264,6 +368,7 @@
       <button id="btnSpin" class="toggleBtn" type="button">🛞 Spin</button>
       <button id="btnDrop" class="toggleBtn" type="button">💧 Drop</button>
       <button id="btnSlots" class="toggleBtn" type="button">🎰 Slots</button>
+      <button id="btnFit" class="toggleBtn" type="button">👤 Glasses</button>
     </div>
 
     <!-- ===== SCRATCH ===== -->
@@ -378,6 +483,48 @@
       </div>
     </div>
 
+    <!-- ===== GLASSES FIT ===== -->
+    <div id="panelFit" class="panel">
+      <h3 style="margin:0 0 6px;">👤 Put the Glasses On</h3>
+      <div class="sub" style="margin:0 0 10px;">Drag the glasses onto the moving face. When they snap on, you win.</div>
+
+      <div id="fitStage" class="fitStage" aria-label="Glasses fitting game">
+        <div class="fitHint">
+          <div style="font-weight:900;">👓 Drag glasses → dashed zone</div>
+          <div class="tiny">Head moves left/right</div>
+        </div>
+
+        <div id="head" class="head">
+          <div class="face"></div>
+          <div class="hair"></div>
+          <div class="eyes">
+            <div class="eye"></div>
+            <div class="eye"></div>
+          </div>
+          <div class="nose"></div>
+          <div id="glassesTarget" class="glassesTarget"></div>
+        </div>
+
+        <div id="glasses" class="glasses" title="Drag me">
+          <div class="frame">
+            <div class="arm left"></div>
+            <div class="arm right"></div>
+            <div class="lens left"></div>
+            <div class="lens right"></div>
+            <div class="bridge"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="fitResult" class="result">
+        <div class="big" id="fitResultBig">—</div>
+        <div class="small" id="fitResultSmall">—</div>
+        <button id="fitAgainBtn" class="action" type="button">Play Again</button>
+      </div>
+
+      <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
+    </div>
+
   </div>
 
 <script>
@@ -395,31 +542,37 @@
   const btnSpin = document.getElementById("btnSpin");
   const btnDrop = document.getElementById("btnDrop");
   const btnSlots = document.getElementById("btnSlots");
+  const btnFit = document.getElementById("btnFit");
 
   const panelScratch = document.getElementById("panelScratch");
   const panelSpin = document.getElementById("panelSpin");
   const panelDrop = document.getElementById("panelDrop");
   const panelSlots = document.getElementById("panelSlots");
+  const panelFit = document.getElementById("panelFit");
 
   function setActive(which) {
     btnScratch.classList.toggle("active", which === "scratch");
     btnSpin.classList.toggle("active", which === "spin");
     btnDrop.classList.toggle("active", which === "drop");
     btnSlots.classList.toggle("active", which === "slots");
+    btnFit.classList.toggle("active", which === "fit");
 
     panelScratch.classList.toggle("active", which === "scratch");
     panelSpin.classList.toggle("active", which === "spin");
     panelDrop.classList.toggle("active", which === "drop");
     panelSlots.classList.toggle("active", which === "slots");
+    panelFit.classList.toggle("active", which === "fit");
 
     if (which === "spin") drawWheel();
     if (which === "drop") setDropToStart();
+    if (which === "fit") fitResetPositions();
   }
 
   btnScratch.addEventListener("click", () => setActive("scratch"));
   btnSpin.addEventListener("click", () => setActive("spin"));
   btnDrop.addEventListener("click", () => setActive("drop"));
   btnSlots.addEventListener("click", () => setActive("slots"));
+  btnFit.addEventListener("click", () => setActive("fit"));
 
   // =========================
   // ===== SCRATCH GAME ======
@@ -428,7 +581,6 @@
   const sctx = scratchCanvas.getContext("2d");
   const scratchPrizeText = document.getElementById("scratchPrizeText");
   const scratchReset = document.getElementById("scratchReset");
-
   let scratching = false;
 
   function drawScratchCover() {
@@ -443,48 +595,19 @@
 
     sctx.globalCompositeOperation = "destination-out";
   }
-
-  function scratchDot(x, y) {
-    sctx.beginPath();
-    sctx.arc(x, y, 20, 0, Math.PI * 2);
-    sctx.fill();
-  }
-
+  function scratchDot(x, y) { sctx.beginPath(); sctx.arc(x, y, 20, 0, Math.PI * 2); sctx.fill(); }
   function scratchPos(e) {
     const rect = scratchCanvas.getBoundingClientRect();
     const t = e.touches ? e.touches[0] : e;
-    return {
-      x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
-      y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height)
-    };
+    return { x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
+             y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height) };
   }
 
-  scratchCanvas.addEventListener("touchstart", e => {
-    scratching = true;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-    e.preventDefault();
-  }, { passive:false });
-
-  scratchCanvas.addEventListener("touchmove", e => {
-    if (!scratching) return;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-    e.preventDefault();
-  }, { passive:false });
-
+  scratchCanvas.addEventListener("touchstart", e => { scratching = true; const p = scratchPos(e); scratchDot(p.x,p.y); e.preventDefault(); }, { passive:false });
+  scratchCanvas.addEventListener("touchmove", e => { if (!scratching) return; const p = scratchPos(e); scratchDot(p.x,p.y); e.preventDefault(); }, { passive:false });
   scratchCanvas.addEventListener("touchend", () => scratching = false);
-
-  scratchCanvas.addEventListener("mousedown", e => {
-    scratching = true;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-  });
-  scratchCanvas.addEventListener("mousemove", e => {
-    if (!scratching) return;
-    const p = scratchPos(e);
-    scratchDot(p.x, p.y);
-  });
+  scratchCanvas.addEventListener("mousedown", e => { scratching = true; const p = scratchPos(e); scratchDot(p.x,p.y); });
+  scratchCanvas.addEventListener("mousemove", e => { if (!scratching) return; const p = scratchPos(e); scratchDot(p.x,p.y); });
   window.addEventListener("mouseup", () => scratching = false);
 
   function resetScratch() {
@@ -510,7 +633,6 @@
     { label: "$50 OFF" },
     { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }
   ];
-
   const cx = wheel.width / 2, cy = wheel.height / 2, radius = 150;
   let currentAngle = 0, spinning = false;
 
@@ -541,16 +663,13 @@
       wctx.fillText(segments[i].label, radius - 14, 5);
       wctx.restore();
     }
-
     wctx.beginPath();
     wctx.arc(cx, cy, radius, 0, Math.PI * 2);
     wctx.lineWidth = 2;
     wctx.strokeStyle = "#eee";
     wctx.stroke();
   }
-
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-
   function pickTargetAngleForLabel(label) {
     const matches = segments.map((s, i) => ({ s, i })).filter(x => x.s.label === label);
     const chosen = matches[Math.floor(Math.random() * matches.length)];
@@ -560,7 +679,6 @@
     const segmentCenter = chosen.i * arc + arc / 2;
     return pointerAngle - segmentCenter;
   }
-
   function spin() {
     if (spinning) return;
     spinning = true;
@@ -595,7 +713,6 @@
     }
     requestAnimationFrame(frame);
   }
-
   spinBtn.addEventListener("click", spin);
   drawWheel();
 
@@ -629,10 +746,8 @@
   function setDropToStart() {
     if (!dropGame) return;
     const rect = dropGame.getBoundingClientRect();
-    const x = 24;
-    const y = rect.height - 84;
-    drop.style.left = x + "px";
-    drop.style.top = y + "px";
+    drop.style.left = "24px";
+    drop.style.top = (rect.height - 84) + "px";
   }
 
   function blinkOnce() {
@@ -643,29 +758,24 @@
       lidBot.style.transform = "translateY(65%)";
     }, 130);
   }
-
   function scheduleBlinking() {
     clearInterval(blinkTimer);
     blinkTimer = setInterval(() => { if (playing) blinkOnce(); }, rand(900, 1400));
   }
-
   function moveEye() {
     const x = rand(-26, 26);
     const y = rand(-14, 14);
     iris.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
   }
-
   function scheduleMovement() {
     clearInterval(moveTimer);
     moveTimer = setInterval(() => { if (playing) moveEye(); }, rand(650, 1050));
   }
-
   function pointerPos(evt) {
     const r = dropGame.getBoundingClientRect();
     const p = evt.touches ? evt.touches[0] : evt;
     return { x: p.clientX - r.left, y: p.clientY - r.top };
   }
-
   function onDown(evt) {
     if (!playing) return;
     const p = pointerPos(evt);
@@ -681,7 +791,6 @@
       evt.preventDefault();
     }
   }
-
   function onMove(evt) {
     if (!dragging || !playing) return;
     const p = pointerPos(evt);
@@ -693,11 +802,9 @@
     drop.style.top = newY + "px";
     evt.preventDefault();
   }
-
   function rectsOverlap(a, b) {
     return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
   }
-
   function onUp(evt) {
     if (!dragging || !playing) return;
     dragging = false;
@@ -719,7 +826,6 @@
 
     if (shots >= 10) finishDropGame();
   }
-
   function finishDropGame() {
     playing = false;
     clearInterval(blinkTimer);
@@ -730,7 +836,6 @@
     dropResultSmall.textContent = `Score: ${score}/10 • Code (demo): ${prize.code}`;
     dropResult.style.display = "block";
   }
-
   function resetDropGame() {
     shots = 0; score = 0; streak = 0; playing = true;
     shotsEl.textContent = shots;
@@ -746,15 +851,12 @@
     scheduleBlinking();
     scheduleMovement();
   }
-
   dropGame.addEventListener("touchstart", onDown, { passive:false });
   dropGame.addEventListener("touchmove", onMove, { passive:false });
   dropGame.addEventListener("touchend", onUp, { passive:false });
-
   dropGame.addEventListener("mousedown", onDown);
   dropGame.addEventListener("mousemove", onMove);
   window.addEventListener("mouseup", onUp);
-
   dropPlayAgain.addEventListener("click", resetDropGame);
   resetDropGame();
 
@@ -781,20 +883,15 @@
     { icon:"🔦", text:"Slit Lamp" },
     { icon:"🧠", text:"Neuro" }
   ];
-
   function randSym(){ return symbols[Math.floor(Math.random()*symbols.length)]; }
-
   function setReel(idx, sym){
     if (idx === 1){ sI1.textContent = sym.icon; sT1.textContent = sym.text; }
     if (idx === 2){ sI2.textContent = sym.icon; sT2.textContent = sym.text; }
     if (idx === 3){ sI3.textContent = sym.icon; sT3.textContent = sym.text; }
   }
-
   let slotsSpinning = false;
   let timers = [];
-
   function clearTimers(){ timers.forEach(id => clearInterval(id)); timers = []; }
-
   function slotsReset(){
     clearTimers();
     slotsResult.style.display = "none";
@@ -802,7 +899,6 @@
     setReel(2, randSym());
     setReel(3, randSym());
   }
-
   function slotsSpin(){
     if (slotsSpinning) return;
     slotsSpinning = true;
@@ -828,12 +924,158 @@
       slotsSpinBtn.disabled = false;
     }, 1700);
   }
-
   slotsSpinBtn.addEventListener("click", slotsSpin);
   slotsAgainBtn.addEventListener("click", slotsReset);
   slotsReset();
 
-  // Default
+  // =========================
+  // ===== GLASSES FIT GAME ===
+  // =========================
+  const fitStage = document.getElementById("fitStage");
+  const head = document.getElementById("head");
+  const glasses = document.getElementById("glasses");
+  const glassesTarget = document.getElementById("glassesTarget");
+
+  const fitResult = document.getElementById("fitResult");
+  const fitResultBig = document.getElementById("fitResultBig");
+  const fitResultSmall = document.getElementById("fitResultSmall");
+  const fitAgainBtn = document.getElementById("fitAgainBtn");
+
+  let fitDragging = false;
+  let fitOffsetX = 0, fitOffsetY = 0;
+  let fitWon = false;
+
+  // Move head left/right smoothly
+  let fitAnimId = null;
+  let fitStart = performance.now();
+
+  function fitResetPositions() {
+    // reset glasses bottom-left
+    glasses.style.left = "20px";
+    glasses.style.bottom = "18px";
+    glasses.style.top = ""; // clear top if set
+    fitResult.style.display = "none";
+    fitWon = false;
+  }
+
+  function fitPointerPos(evt) {
+    const r = fitStage.getBoundingClientRect();
+    const p = evt.touches ? evt.touches[0] : evt;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+
+  function fitGetElPosInStage(el) {
+    const sr = fitStage.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    return {
+      left: er.left - sr.left,
+      top: er.top - sr.top,
+      right: er.right - sr.left,
+      bottom: er.bottom - sr.top,
+      width: er.width,
+      height: er.height
+    };
+  }
+
+  function fitRectsOverlap(a, b) {
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+  }
+
+  function fitOnDown(evt) {
+    if (fitWon) return;
+    const p = fitPointerPos(evt);
+    const g = fitGetElPosInStage(glasses);
+
+    // start drag if touch is on glasses box
+    if (p.x >= g.left && p.x <= g.right && p.y >= g.top && p.y <= g.bottom) {
+      fitDragging = true;
+      fitOffsetX = p.x - g.left;
+      fitOffsetY = p.y - g.top;
+      glasses.style.bottom = ""; // switch to top/left for drag
+      glasses.style.top = g.top + "px";
+      glasses.style.left = g.left + "px";
+      evt.preventDefault();
+    }
+  }
+
+  function fitOnMove(evt) {
+    if (!fitDragging || fitWon) return;
+    const p = fitPointerPos(evt);
+
+    const maxX = fitStage.clientWidth - glasses.offsetWidth;
+    const maxY = fitStage.clientHeight - glasses.offsetHeight;
+
+    const x = Math.max(0, Math.min(maxX, p.x - fitOffsetX));
+    const y = Math.max(0, Math.min(maxY, p.y - fitOffsetY));
+
+    glasses.style.left = x + "px";
+    glasses.style.top = y + "px";
+    evt.preventDefault();
+  }
+
+  function fitWin() {
+    fitWon = true;
+    fitDragging = false;
+
+    // Snap glasses to target (centered)
+    const t = fitGetElPosInStage(glassesTarget);
+    const gx = t.left + (t.width - glasses.offsetWidth) / 2;
+    const gy = t.top + (t.height - glasses.offsetHeight) / 2;
+
+    glasses.classList.remove("snap");
+    // force reflow
+    void glasses.offsetWidth;
+    glasses.classList.add("snap");
+
+    glasses.style.left = gx + "px";
+    glasses.style.top = gy + "px";
+
+    const prize = choosePrize();
+    fitResultBig.textContent = `🎉 You won ${prize.label}`;
+    fitResultSmall.textContent = `Code (demo): ${prize.code}`;
+    fitResult.style.display = "block";
+  }
+
+  function fitOnUp(evt) {
+    if (!fitDragging || fitWon) return;
+    fitDragging = false;
+
+    const g = fitGetElPosInStage(glasses);
+    const t = fitGetElPosInStage(glassesTarget);
+
+    if (fitRectsOverlap(g, t)) {
+      fitWin();
+    } else {
+      // reset glasses to start position
+      fitResetPositions();
+    }
+  }
+
+  // Head animation loop
+  function animateHead(now) {
+    const elapsed = (now - fitStart) / 1000;
+    const amplitude = Math.min(220, fitStage.clientWidth * 0.28); // responsive
+    const center = fitStage.clientWidth / 2;
+    const x = center + Math.sin(elapsed * 1.6) * amplitude; // speed
+    head.style.left = x + "px";
+    fitAnimId = requestAnimationFrame(animateHead);
+  }
+
+  // Fit events
+  fitStage.addEventListener("touchstart", fitOnDown, { passive:false });
+  fitStage.addEventListener("touchmove", fitOnMove, { passive:false });
+  fitStage.addEventListener("touchend", fitOnUp, { passive:false });
+  fitStage.addEventListener("mousedown", fitOnDown);
+  fitStage.addEventListener("mousemove", fitOnMove);
+  window.addEventListener("mouseup", fitOnUp);
+
+  fitAgainBtn.addEventListener("click", () => fitResetPositions());
+
+  // Start anim
+  fitResetPositions();
+  fitAnimId = requestAnimationFrame(animateHead);
+
+  // Default tab
   setActive("scratch");
 })();
 </script>
