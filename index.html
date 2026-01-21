@@ -2,557 +2,1083 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>OD on the GO – Launch the Eye Drop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OD on the GO — Conference Game Demos</title>
 
 <style>
-  body{ font-family: Arial, sans-serif; background:#fafafa; margin:0; text-align:center; }
-  .wrap{ max-width:1100px; margin:22px auto; padding:0 14px; }
-  h2{ margin:0 0 6px; }
-  .sub{ color:#666; margin:0 0 14px; font-size:14px; }
+  body { font-family: Arial, sans-serif; background:#fafafa; margin:0; }
+  .wrap { max-width: 1200px; margin: 26px auto; padding: 0 14px; text-align:center; }
 
-  /* Bigger/wider stage for more flight distance */
-  .stage{
-    position:relative;
-    margin:0 auto;
-    width:min(1060px, 100%);
-    height:520px;                 /* taller */
+  h2 { margin: 0 0 6px; }
+  .sub { color:#666; margin: 0 0 16px; }
+
+  .toggleBar {
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+    margin: 14px auto 22px;
+  }
+  .toggleBtn {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-weight: 900;
+    cursor: pointer;
+    min-width: 200px;
+  }
+  .toggleBtn.active {
+    background:#111;
+    color:#fff;
+    border-color:#111;
+  }
+
+  .panel {
+    display:none;
+    margin: 0 auto;
+    max-width: 900px;
     background:#fff;
     border:1px solid #eee;
-    border-radius:18px;
-    overflow:hidden;
-    box-shadow:0 2px 14px rgba(0,0,0,0.06);
-    touch-action:none;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
   }
-  @media (max-width: 650px){
-    .stage{ height:420px; }
-  }
+  .panel.active { display:block; }
 
-  .hint{
-    position:absolute; left:14px; top:14px;
-    background:#fff; border:1px solid #eee;
-    padding:10px 12px; border-radius:14px;
-    text-align:left; z-index:10;
-  }
-  .hint .t{ font-weight:900; }
-  .hint .s{ font-size:12px; color:#666; margin-top:4px; }
+  .note { margin-top: 10px; font-size:12px; color:#666; }
 
-  .eye{
-    position:absolute;
-    right:120px;
-    top:50%;
-    transform:translateY(-50%);
-    width:220px; height:140px;
-    background:#f7f7f7;
-    border:3px solid #e0e0e0;
-    border-radius:999px;
+  button.action {
+    width: 320px; max-width: 100%;
+    margin-top: 14px;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 900;
+    border: none;
+    border-radius: 10px;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
   }
-  .eye .pupil{
-    position:absolute;
-    left:50%; top:50%;
-    transform:translate(-50%,-50%);
-    width:58px; height:58px;
-    border-radius:50%;
-    background:#111;
-  }
-  .eye .ring{
-    position:absolute;
-    left:50%; top:50%;
-    transform:translate(-50%,-50%);
-    width:105px; height:105px;
-    border-radius:50%;
-    border:3px dashed rgba(0,0,0,0.08);
-  }
+  button.action:disabled { opacity:0.5; cursor:not-allowed; }
 
-  .drop{
-    position:absolute;
-    left:180px; top:50%;
-    transform:translate(-50%,-50%);
-    width:52px; height:66px;
-    border-radius:999px;
-    background: radial-gradient(circle at 35% 25%, #fff, #6aa6ff 70%, #1b4fd6);
-    box-shadow:0 10px 18px rgba(0,0,0,0.2);
-    cursor:grab;
-    touch-action:none;
+  /* ========= SCRATCH ========= */
+  .scratchStage { position:relative; width:100%; max-width:480px; margin: 0 auto; }
+  #scratchCanvas {
+    position:relative; z-index:1;
+    width:100%; height:auto; border-radius:12px;
+    touch-action:none; display:block;
+  }
+  .scratchUnderlay {
+    position:absolute; inset:0; z-index:0;
+    background:#f6f6f6; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid #eee;
+  }
+  .scratchUnderlay .big { font-size:36px; font-weight:900; margin-top:6px; }
+
+  /* ========= SPIN ========= */
+  .spinStage { position:relative; width:320px; height:320px; margin: 10px auto 10px; }
+  #wheel { width:320px; height:320px; display:block; border-radius:50%; background:#fff; border:1px solid #eee; }
+  .pointer {
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    width:0; height:0;
+    border-left:14px solid transparent;
+    border-right:14px solid transparent;
+    border-bottom:26px solid #111;
     z-index:5;
   }
-  .drop:active{ cursor:grabbing; }
+  .badge { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  .badge .inner {
+    width:120px; height:120px; border-radius:50%;
+    background:#fff; border:1px solid #eee;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  .badge .emoji { font-size:44px; line-height:1; }
+  .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:900; letter-spacing:0.6px; }
 
-  /* slingshot band visuals */
-  .line{
+  .result {
+    margin: 12px auto 0;
+    max-width: 560px;
+    display:none;
+    padding: 12px;
+    border: 1px solid #cce5ff;
+    background: #f0f7ff;
+    border-radius: 12px;
+    text-align:center;
+  }
+  .result .big { font-size:22px; font-weight:900; }
+  .result .small { margin-top:6px; font-size:13px; color:#444; }
+
+  /* ========= DROP GAME ========= */
+  .hud { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin: 10px 0 14px; }
+  .pill { background:#fff; border:1px solid #eee; border-radius:999px; padding:10px 14px; font-weight:900; }
+
+  .game {
+    position: relative;
+    margin: 0 auto;
+    width: min(780px, 100%);
+    aspect-ratio: 16 / 10;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 18px;
+    overflow:hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+    touch-action: none;
+  }
+  .eyeWrap {
+    position:absolute; left:50%; top:48%;
+    transform: translate(-50%, -50%);
+    width: min(620px, 92%); height: 60%;
+  }
+  .eyeWhite {
+    position:absolute; inset: 18% 8% 18% 8%;
+    background: #f7f7f7;
+    border-radius: 999px;
+    border: 2px solid #e6e6e6;
+    box-shadow: inset 0 0 0 8px #ffffff;
+    overflow:hidden;
+  }
+  .iris {
     position:absolute;
-    left:0; top:0;
-    height:3px;
-    background:rgba(0,0,0,0.18);
-    transform-origin:0 50%;
-    border-radius:999px;
-    display:none;
-    z-index:2;
+    width: 26%; aspect-ratio:1/1;
+    border-radius:50%;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at 35% 35%, #6aa6ff, #2b62c9 55%, #1b2b58 100%);
+    border: 2px solid rgba(0,0,0,0.08);
+  }
+  .pupil {
+    position:absolute; width: 38%; aspect-ratio:1/1;
+    border-radius:50%;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: #111;
+  }
+  .spark {
+    position:absolute; width: 18%; aspect-ratio:1/1;
+    border-radius:50%;
+    left: 32%; top: 28%;
+    background: rgba(255,255,255,0.85);
+  }
+  .lidTop, .lidBot {
+    position:absolute; left:0; right:0; height: 50%;
+    background: #fafafa; z-index: 5;
+    transition: transform 110ms linear;
+  }
+  .lidTop { top:0; border-bottom:2px solid #eee; transform: translateY(-65%); }
+  .lidBot { bottom:0; border-top:2px solid #eee; transform: translateY(65%); }
+
+  .target {
+    position:absolute; width: 30%; aspect-ratio: 1/1;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    outline: 3px dashed rgba(0,0,0,0.10);
+    outline-offset: 6px;
+    pointer-events:none; z-index: 2;
+  }
+  .drop {
+    position:absolute; width: 44px; height: 54px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 35% 25%, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 35%, rgba(72,160,255,0.9) 70%, rgba(32,110,210,0.95) 100%);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+    cursor: grab; z-index: 10;
+  }
+  .drop:active { cursor: grabbing; }
+  .tray {
+    position:absolute; left: 14px; bottom: 14px;
+    display:flex; gap:10px; align-items:center;
+    background:#fff; border:1px solid #eee;
+    padding:10px 12px; border-radius: 14px;
+    z-index: 20;
+  }
+  .tray .label { font-weight:900; }
+  .tiny { font-size:12px; color:#666; }
+
+  /* ========= SLOTS ========= */
+  .machine {
+    margin: 0 auto; max-width: 620px;
+    background:#fff; border:1px solid #eee;
+    border-radius: 18px; padding: 18px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+  }
+  .reels { display:flex; justify-content:center; gap:12px; margin: 14px 0; flex-wrap:wrap; }
+  .reel {
+    width: 160px; height: 160px;
+    border-radius: 16px; border: 2px solid #eee;
+    background: linear-gradient(#ffffff, #f6f6f6);
+    display:flex; align-items:center; justify-content:center;
+    font-weight: 900; position:relative; overflow:hidden;
+  }
+  .reelInner { text-align:center; }
+  .reel .icon { font-size: 46px; line-height:1; }
+  .reel .label { margin-top:10px; font-size:14px; color:#222; }
+  .shine {
+    position:absolute; inset:-40%;
+    background: linear-gradient(45deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 60%);
+    transform: translateX(-40%) rotate(10deg);
+    pointer-events:none;
   }
 
-  /* Results box */
-  .result{
-    display:none;
-    margin:14px auto 0;
-    max-width:760px;
-    padding:14px;
-    border:1px solid #cce5ff;
-    background:#f0f7ff;
-    border-radius:12px;
-    text-align:left;
-  }
-  .result .big{ font-size:22px; font-weight:900; }
-  .result .small{ margin-top:6px; font-size:13px; color:#444; }
-
-  .btn{
-    margin-top:12px;
-    padding:12px 16px;
-    font-weight:900;
-    border:none;
-    border-radius:10px;
-    background:#111;
-    color:#fff;
-    cursor:pointer;
-    width:260px;
-    max-width:100%;
-  }
-
-  /* Lead capture panel */
-  .leadWrap{
-    max-width:1060px;
-    margin:14px auto 0;
-    text-align:left;
-  }
-  .leadPanel{
+  /* ========= GLASSES FIT GAME ========= */
+  .fitStage {
+    position: relative;
+    margin: 0 auto;
+    width: min(780px, 100%);
+    aspect-ratio: 16 / 9;
     background:#fff;
     border:1px solid #eee;
-    border-radius:16px;
-    padding:14px;
-    box-shadow:0 2px 12px rgba(0,0,0,.06);
+    border-radius: 18px;
+    overflow:hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+    touch-action: none;
   }
-  .leadTitle{ font-weight:900; margin-bottom:8px; }
-  label{ display:block; font-weight:900; margin:10px 0 6px; }
-  input{
-    width:100%;
-    padding:12px;
-    border:1px solid #ddd;
-    border-radius:10px;
-    font-size:16px;
+  .fitHint {
+    position:absolute; left: 14px; top: 14px;
+    background:#fff; border:1px solid #eee;
+    padding:10px 12px; border-radius: 14px;
+    text-align:left;
+    z-index: 10;
   }
-  .leadBtn{
-    margin-top:12px;
-    width:100%;
-    padding:12px 16px;
-    border:none;
-    border-radius:10px;
+
+  .head {
+    position:absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 260px;
+    height: 320px;
+    left: 50%;
+    z-index: 2;
+  }
+  .head .face {
+    position:absolute; inset: 0;
+    background: #f3f3f3;
+    border: 2px solid #e6e6e6;
+    border-radius: 120px 120px 140px 140px;
+  }
+  .head .hair {
+    position:absolute; left: 12px; right: 12px; top: 6px;
+    height: 86px;
+    background:#e8e8e8;
+    border-radius: 120px 120px 80px 80px;
+    border:1px solid #e6e6e6;
+  }
+  .head .eyes {
+    position:absolute; left: 0; right: 0; top: 120px;
+    display:flex; justify-content:center; gap: 48px;
+  }
+  .head .eye {
+    width: 44px; height: 28px;
+    border-radius: 999px;
+    background:#ffffff;
+    border: 2px solid #e6e6e6;
+    position:relative;
+  }
+  .head .eye:after{
+    content:"";
+    position:absolute; width: 12px; height: 12px; border-radius:50%;
     background:#111;
-    color:#fff;
-    font-weight:900;
-    font-size:16px;
-    cursor:pointer;
+    left: 16px; top: 8px;
   }
-  .leadCard{
-    display:none;
-    margin-top:12px;
-    padding:12px;
-    border-radius:12px;
-    border:1px solid #cce5ff;
-    background:#f0f7ff;
+  .head .nose {
+    position:absolute; left:50%; top: 158px;
+    width: 18px; height: 36px;
+    transform: translateX(-50%);
+    border-left: 2px solid #e0e0e0;
+    border-right: 2px solid #e0e0e0;
+    border-bottom: 2px solid #e0e0e0;
+    border-radius: 0 0 10px 10px;
+    background: transparent;
   }
-  .leadCard small{ color:#555; }
-  .rowBtns{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:10px;
+
+  /* Glasses target zone on the face */
+  .glassesTarget {
+    position:absolute;
+    left: 50%;
+    top: 132px;
+    transform: translateX(-50%);
+    width: 170px;
+    height: 68px;
+    border-radius: 16px;
+    outline: 3px dashed rgba(0,0,0,0.10);
+    outline-offset: 6px;
+    pointer-events:none;
+    z-index: 3;
   }
-  .ghostBtn{
-    padding:10px 14px;
-    border-radius:10px;
-    border:1px solid #ddd;
-    background:#fff;
-    font-weight:900;
-    cursor:pointer;
+
+  .glasses {
+    position:absolute;
+    width: 200px;
+    height: 80px;
+    left: 20px;
+    bottom: 18px;
+    z-index: 6;
+    cursor: grab;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:none;
   }
-  #leadList{
-    display:none;
-    margin-top:10px;
-    font-size:13px;
-    color:#333;
-    white-space:pre-wrap;
+  .glasses:active { cursor: grabbing; }
+  .frame {
+    position:absolute; inset: 0;
+  }
+  .lens {
+    position:absolute;
+    width: 78px; height: 54px;
+    top: 12px;
+    border-radius: 16px;
+    border: 4px solid #111;
+    background: rgba(255,255,255,0.2);
+  }
+  .lens.left { left: 12px; }
+  .lens.right { right: 12px; }
+  .bridge {
+    position:absolute; left: 50%; top: 36px;
+    width: 30px; height: 10px;
+    transform: translateX(-50%);
+    border-top: 4px solid #111;
+    border-radius: 10px;
+  }
+  .arm {
+    position:absolute; top: 32px;
+    width: 32px; height: 8px;
+    background:#111;
+    border-radius: 8px;
+  }
+  .arm.left { left: -18px; }
+  .arm.right { right: -18px; }
+
+  .snap {
+    animation: snap 160ms ease-out;
+  }
+  @keyframes snap {
+    0% { transform: scale(1); }
+    60% { transform: scale(1.06); }
+    100% { transform: scale(1); }
   }
 </style>
 </head>
 
 <body>
-<div class="wrap">
-  <h2>🏹 Launch the Eye Drop</h2>
-  <div class="sub">Pull back the drop and release. Hit the eye for a bigger discount.</div>
+  <div class="wrap">
+    <h2>🎮 OD on the GO Mini-Game Demos</h2>
+    <div class="sub">Pick one for your conference booth (no email yet).</div>
 
-  <div id="stage" class="stage">
-    <div class="hint">
-      <div class="t">💧 Pull back + release</div>
-      <div class="s">Hit = 20% / $50 • Miss = 10%</div>
+    <div class="toggleBar">
+      <button id="btnScratch" class="toggleBtn active" type="button">🪙 Scratch</button>
+      <button id="btnSpin" class="toggleBtn" type="button">🛞 Spin</button>
+      <button id="btnDrop" class="toggleBtn" type="button">💧 Drop</button>
+      <button id="btnSlots" class="toggleBtn" type="button">🎰 Slots</button>
+      <button id="btnFit" class="toggleBtn" type="button">👤 Glasses</button>
     </div>
 
-    <div id="eye" class="eye">
-      <div class="ring"></div>
-      <div class="pupil"></div>
-    </div>
+    <!-- ===== SCRATCH ===== -->
+    <div id="panelScratch" class="panel active">
+      <h3 style="margin:0 0 10px;">🪙 Scratch to Win</h3>
 
-    <div id="lineA" class="line"></div>
-    <div id="lineB" class="line"></div>
-
-    <div id="drop" class="drop" title="Pull back then release"></div>
-  </div>
-
-  <!-- Lead capture panel -->
-  <div class="leadWrap">
-    <div class="leadPanel">
-      <div class="leadTitle">✅ Claim your discount</div>
-
-      <label>Name</label>
-      <input id="leadName" type="text" placeholder="First + last name" autocomplete="name">
-
-      <label>Email</label>
-      <input id="leadEmail" type="email" placeholder="name@email.com" autocomplete="email">
-
-      <button id="saveLead" class="leadBtn" type="button">Save (for screenshot)</button>
-
-      <div id="leadCard" class="leadCard">
-        <div style="font-weight:900;font-size:18px;">Saved ✅</div>
-        <div style="margin-top:6px;"><strong>Name:</strong> <span id="leadCardName"></span></div>
-        <div><strong>Email:</strong> <span id="leadCardEmail"></span></div>
-        <div><strong>Discount:</strong> <span id="leadCardDiscount"></span></div>
-        <small>Tip: screenshot this screen for booth tracking.</small>
-
-        <div class="rowBtns">
-          <button id="clearLead" class="ghostBtn" type="button">Clear</button>
-          <button id="viewLeads" class="ghostBtn" type="button">View saved list</button>
-          <button id="exportLeads" class="ghostBtn" type="button">Export CSV</button>
+      <div class="scratchStage">
+        <div class="scratchUnderlay">
+          <div>
+            <div style="font-size:18px;">🎉 YOU WON</div>
+            <div id="scratchPrizeText" class="big">—</div>
+            <div style="font-size:12px;color:#666;margin-top:6px;">Scratch to reveal</div>
+          </div>
         </div>
 
-        <div id="leadList"></div>
+        <canvas id="scratchCanvas" width="480" height="220"></canvas>
+      </div>
+
+      <button class="action" id="scratchReset" type="button">Play Again</button>
+      <div class="note">Odds: mostly 20% off; a few $50 off.</div>
+    </div>
+
+    <!-- ===== SPIN ===== -->
+    <div id="panelSpin" class="panel">
+      <h3 style="margin:0 0 10px;">🛞 Spin the Phoropter</h3>
+
+      <div class="spinStage">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="320" height="320"></canvas>
+
+        <div class="badge">
+          <div class="inner">
+            <div class="emoji">👓</div>
+            <div class="txt">PHOROPTER</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="action" id="spinBtn" type="button">SPIN</button>
+
+      <div id="spinResult" class="result">
+        <div class="big" id="spinResultBig">—</div>
+        <div class="small" id="spinResultSmall">—</div>
+      </div>
+
+      <div class="note">Odds: mostly 20% off; a few $50 off.</div>
+    </div>
+
+    <!-- ===== DROP ===== -->
+    <div id="panelDrop" class="panel">
+      <h3 style="margin:0 0 6px;">💧 Drop the Drop</h3>
+      <div class="sub" style="margin:0 0 10px;">Drag the drop into the dashed circle before the eye blinks or looks away.</div>
+
+      <div class="hud">
+        <div class="pill">Score: <span id="score">0</span></div>
+        <div class="pill">Drops: <span id="shots">0</span>/10</div>
+        <div class="pill">Streak: <span id="streak">0</span></div>
+      </div>
+
+      <div id="dropGame" class="game" aria-label="Drop game">
+        <div class="eyeWrap">
+          <div class="eyeWhite">
+            <div id="iris" class="iris">
+              <div class="pupil"></div>
+              <div class="spark"></div>
+            </div>
+            <div id="target" class="target"></div>
+          </div>
+
+          <div id="lidTop" class="lidTop"></div>
+          <div id="lidBot" class="lidBot"></div>
+        </div>
+
+        <div class="tray">
+          <div class="label">💧 Drag the drop</div>
+          <div class="tiny">Aim for dashed circle</div>
+        </div>
+
+        <div id="drop" class="drop" title="Drag me"></div>
+      </div>
+
+      <div id="dropResult" class="result">
+        <div class="big" id="dropResultBig">—</div>
+        <div class="small" id="dropResultSmall">—</div>
+        <button id="dropPlayAgain" class="action" type="button">Play Again</button>
+      </div>
+
+      <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
+    </div>
+
+    <!-- ===== SLOTS ===== -->
+    <div id="panelSlots" class="panel">
+      <h3 style="margin:0 0 6px;">🎰 Optometry Slots</h3>
+      <div class="sub" style="margin:0 0 10px;">Tap SPIN and see what you win (demo mode — no email).</div>
+
+      <div class="machine">
+        <div class="reels">
+          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI1" class="icon">👓</div><div id="sT1" class="label">Phoropter</div></div></div>
+          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI2" class="icon">🧿</div><div id="sT2" class="label">OCT</div></div></div>
+          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI3" class="icon">💧</div><div id="sT3" class="label">Eye Drops</div></div></div>
+        </div>
+
+        <button id="slotsSpinBtn" class="action" type="button">SPIN</button>
+
+        <div id="slotsResult" class="result">
+          <div class="big" id="slotsResultBig">—</div>
+          <div class="small" id="slotsResultSmall">—</div>
+          <button id="slotsAgainBtn" class="action" type="button" style="margin-top:12px;">Play Again</button>
+        </div>
+
+        <div class="note">Odds: mostly 20% off; a few $50 off.</div>
       </div>
     </div>
-  </div>
 
-  <!-- Result box (game) -->
-  <div id="result" class="result">
-    <div id="resultBig" class="big">—</div>
-    <div id="resultSmall" class="small">—</div>
-    <button id="again" class="btn" type="button">Play Again</button>
+    <!-- ===== GLASSES FIT ===== -->
+    <div id="panelFit" class="panel">
+      <h3 style="margin:0 0 6px;">👤 Put the Glasses On</h3>
+      <div class="sub" style="margin:0 0 10px;">Drag the glasses onto the moving face. When they snap on, you win.</div>
+
+      <div id="fitStage" class="fitStage" aria-label="Glasses fitting game">
+        <div class="fitHint">
+          <div style="font-weight:900;">👓 Drag glasses → dashed zone</div>
+          <div class="tiny">Head moves left/right</div>
+        </div>
+
+        <div id="head" class="head">
+          <div class="face"></div>
+          <div class="hair"></div>
+          <div class="eyes">
+            <div class="eye"></div>
+            <div class="eye"></div>
+          </div>
+          <div class="nose"></div>
+          <div id="glassesTarget" class="glassesTarget"></div>
+        </div>
+
+        <div id="glasses" class="glasses" title="Drag me">
+          <div class="frame">
+            <div class="arm left"></div>
+            <div class="arm right"></div>
+            <div class="lens left"></div>
+            <div class="lens right"></div>
+            <div class="bridge"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="fitResult" class="result">
+        <div class="big" id="fitResultBig">—</div>
+        <div class="small" id="fitResultSmall">—</div>
+        <button id="fitAgainBtn" class="action" type="button">Play Again</button>
+      </div>
+
+      <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
+    </div>
+
   </div>
-</div>
 
 <script>
 (() => {
-  const stage = document.getElementById("stage");
-  const drop = document.getElementById("drop");
-  const eye  = document.getElementById("eye");
-
-  const lineA = document.getElementById("lineA");
-  const lineB = document.getElementById("lineB");
-
-  const result = document.getElementById("result");
-  const resultBig = document.getElementById("resultBig");
-  const resultSmall = document.getElementById("resultSmall");
-  const again = document.getElementById("again");
-
-  // Lead capture elements
-  const leadName = document.getElementById("leadName");
-  const leadEmail = document.getElementById("leadEmail");
-  const saveLead = document.getElementById("saveLead");
-  const leadCard = document.getElementById("leadCard");
-  const leadCardName = document.getElementById("leadCardName");
-  const leadCardEmail = document.getElementById("leadCardEmail");
-  const leadCardDiscount = document.getElementById("leadCardDiscount");
-  const clearLead = document.getElementById("clearLead");
-  const viewLeads = document.getElementById("viewLeads");
-  const exportLeads = document.getElementById("exportLeads");
-  const leadList = document.getElementById("leadList");
-
-  // ---- Prize logic per your rules ----
-  // HIT -> 20% most of the time, $50 rarely
-  // MISS -> 10%
-  const HIT_PROB_50 = 0.08; // rare $50 on hit
-
-  function prizeForHit(){
-    return (Math.random() < HIT_PROB_50)
+  // ===== Shared odds =====
+  const PROB_50 = 0.08;
+  function choosePrize() {
+    return (Math.random() < PROB_50)
       ? { label: "$50 OFF", code: "CONF50" }
       : { label: "20% OFF", code: "CONF20" };
   }
-  function prizeForMiss(){
-    return { label: "10% OFF", code: "CONF10" };
+
+  // ===== Toggle =====
+  const btnScratch = document.getElementById("btnScratch");
+  const btnSpin = document.getElementById("btnSpin");
+  const btnDrop = document.getElementById("btnDrop");
+  const btnSlots = document.getElementById("btnSlots");
+  const btnFit = document.getElementById("btnFit");
+
+  const panelScratch = document.getElementById("panelScratch");
+  const panelSpin = document.getElementById("panelSpin");
+  const panelDrop = document.getElementById("panelDrop");
+  const panelSlots = document.getElementById("panelSlots");
+  const panelFit = document.getElementById("panelFit");
+
+  function setActive(which) {
+    btnScratch.classList.toggle("active", which === "scratch");
+    btnSpin.classList.toggle("active", which === "spin");
+    btnDrop.classList.toggle("active", which === "drop");
+    btnSlots.classList.toggle("active", which === "slots");
+    btnFit.classList.toggle("active", which === "fit");
+
+    panelScratch.classList.toggle("active", which === "scratch");
+    panelSpin.classList.toggle("active", which === "spin");
+    panelDrop.classList.toggle("active", which === "drop");
+    panelSlots.classList.toggle("active", which === "slots");
+    panelFit.classList.toggle("active", which === "fit");
+
+    if (which === "spin") drawWheel();
+    if (which === "drop") setDropToStart();
+    if (which === "fit") fitResetPositions();
   }
 
-  // We'll store the latest game outcome so the lead card can show it.
-  let lastDiscount = null; // {label, code, hit:boolean}
+  btnScratch.addEventListener("click", () => setActive("scratch"));
+  btnSpin.addEventListener("click", () => setActive("spin"));
+  btnDrop.addEventListener("click", () => setActive("drop"));
+  btnSlots.addEventListener("click", () => setActive("slots"));
+  btnFit.addEventListener("click", () => setActive("fit"));
 
-  // ---- Physics tuning (longer flight + smoother arc) ----
-  const GRAV  = 0.78;   // gravity (lower = longer float)
-  const DAMP  = 0.995;  // drag
-  const POWER = 0.30;   // launch strength (higher = further)
+  // =========================
+  // ===== SCRATCH GAME ======
+  // =========================
+  const scratchCanvas = document.getElementById("scratchCanvas");
+  const sctx = scratchCanvas.getContext("2d");
+  const scratchPrizeText = document.getElementById("scratchPrizeText");
+  const scratchReset = document.getElementById("scratchReset");
+  let scratching = false;
 
-  const anchor = { x: 180, y: 0 };
+  function drawScratchCover() {
+    sctx.globalCompositeOperation = "source-over";
+    sctx.fillStyle = "#bfbfbf";
+    sctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+
+    sctx.fillStyle = "rgba(0,0,0,0.4)";
+    sctx.font = "bold 22px Arial";
+    sctx.textAlign = "center";
+    sctx.fillText("SCRATCH HERE", scratchCanvas.width / 2, scratchCanvas.height / 2);
+
+    sctx.globalCompositeOperation = "destination-out";
+  }
+  function scratchDot(x, y) { sctx.beginPath(); sctx.arc(x, y, 20, 0, Math.PI * 2); sctx.fill(); }
+  function scratchPos(e) {
+    const rect = scratchCanvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
+             y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height) };
+  }
+
+  scratchCanvas.addEventListener("touchstart", e => { scratching = true; const p = scratchPos(e); scratchDot(p.x,p.y); e.preventDefault(); }, { passive:false });
+  scratchCanvas.addEventListener("touchmove", e => { if (!scratching) return; const p = scratchPos(e); scratchDot(p.x,p.y); e.preventDefault(); }, { passive:false });
+  scratchCanvas.addEventListener("touchend", () => scratching = false);
+  scratchCanvas.addEventListener("mousedown", e => { scratching = true; const p = scratchPos(e); scratchDot(p.x,p.y); });
+  scratchCanvas.addEventListener("mousemove", e => { if (!scratching) return; const p = scratchPos(e); scratchDot(p.x,p.y); });
+  window.addEventListener("mouseup", () => scratching = false);
+
+  function resetScratch() {
+    const prize = choosePrize();
+    scratchPrizeText.textContent = prize.label;
+    drawScratchCover();
+  }
+  scratchReset.addEventListener("click", resetScratch);
+  resetScratch();
+
+  // =========================
+  // ===== SPIN GAME =========
+  // =========================
+  const wheel = document.getElementById("wheel");
+  const wctx = wheel.getContext("2d");
+  const spinBtn = document.getElementById("spinBtn");
+  const spinResult = document.getElementById("spinResult");
+  const spinResultBig = document.getElementById("spinResultBig");
+  const spinResultSmall = document.getElementById("spinResultSmall");
+
+  const segments = [
+    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" },
+    { label: "$50 OFF" },
+    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }
+  ];
+  const cx = wheel.width / 2, cy = wheel.height / 2, radius = 150;
+  let currentAngle = 0, spinning = false;
+
+  function drawWheel() {
+    wctx.clearRect(0, 0, wheel.width, wheel.height);
+    const n = segments.length;
+    const arc = (Math.PI * 2) / n;
+
+    for (let i = 0; i < n; i++) {
+      const start = currentAngle + i * arc;
+      const end = start + arc;
+
+      wctx.beginPath();
+      wctx.moveTo(cx, cy);
+      wctx.arc(cx, cy, radius, start, end);
+      wctx.closePath();
+      wctx.fillStyle = (i % 2 === 0) ? "#e9e9e9" : "#d9d9d9";
+      wctx.fill();
+      wctx.strokeStyle = "#ffffff";
+      wctx.stroke();
+
+      wctx.save();
+      wctx.translate(cx, cy);
+      wctx.rotate(start + arc / 2);
+      wctx.textAlign = "right";
+      wctx.fillStyle = "#111";
+      wctx.font = "bold 14px Arial";
+      wctx.fillText(segments[i].label, radius - 14, 5);
+      wctx.restore();
+    }
+    wctx.beginPath();
+    wctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    wctx.lineWidth = 2;
+    wctx.strokeStyle = "#eee";
+    wctx.stroke();
+  }
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function pickTargetAngleForLabel(label) {
+    const matches = segments.map((s, i) => ({ s, i })).filter(x => x.s.label === label);
+    const chosen = matches[Math.floor(Math.random() * matches.length)];
+    const n = segments.length;
+    const arc = (Math.PI * 2) / n;
+    const pointerAngle = -Math.PI / 2;
+    const segmentCenter = chosen.i * arc + arc / 2;
+    return pointerAngle - segmentCenter;
+  }
+  function spin() {
+    if (spinning) return;
+    spinning = true;
+    spinBtn.disabled = true;
+    spinResult.style.display = "none";
+
+    const prize = choosePrize();
+    const targetBase = pickTargetAngleForLabel(prize.label);
+    const extraTurns = 6 + Math.random() * 3;
+    const target = targetBase - extraTurns * Math.PI * 2;
+
+    const start = currentAngle;
+    const duration = 2200 + Math.random() * 600;
+    const t0 = performance.now();
+
+    function frame(now) {
+      const t = Math.min(1, (now - t0) / duration);
+      const eased = easeOutCubic(t);
+      currentAngle = start + (target - start) * eased;
+      drawWheel();
+
+      if (t < 1) requestAnimationFrame(frame);
+      else {
+        currentAngle = target;
+        drawWheel();
+        spinResultBig.textContent = prize.label;
+        spinResultSmall.textContent = `Code (demo): ${prize.code}`;
+        spinResult.style.display = "block";
+        spinning = false;
+        spinBtn.disabled = false;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  spinBtn.addEventListener("click", spin);
+  drawWheel();
+
+  // =========================
+  // ===== DROP GAME =========
+  // =========================
+  const dropGame = document.getElementById("dropGame");
+  const drop = document.getElementById("drop");
+  const iris = document.getElementById("iris");
+  const target = document.getElementById("target");
+  const lidTop = document.getElementById("lidTop");
+  const lidBot = document.getElementById("lidBot");
+
+  const scoreEl = document.getElementById("score");
+  const shotsEl = document.getElementById("shots");
+  const streakEl = document.getElementById("streak");
+
+  const dropResult = document.getElementById("dropResult");
+  const dropResultBig = document.getElementById("dropResultBig");
+  const dropResultSmall = document.getElementById("dropResultSmall");
+  const dropPlayAgain = document.getElementById("dropPlayAgain");
+
   let dragging = false;
-  let launched = false;
+  let offsetX = 0, offsetY = 0;
+  let shots = 0, score = 0, streak = 0, playing = true;
+  let blinkTimer = null, moveTimer = null;
 
-  // physics state (in stage coords)
-  let x=0, y=0, vx=0, vy=0;
-  let raf = null;
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-  function setAnchor(){
-    anchor.y = stage.clientHeight / 2;
+  function setDropToStart() {
+    if (!dropGame) return;
+    const rect = dropGame.getBoundingClientRect();
+    drop.style.left = "24px";
+    drop.style.top = (rect.height - 84) + "px";
   }
 
-  function setDropPos(px,py){
-    drop.style.left = px + "px";
-    drop.style.top  = py + "px";
-    drop.style.transform = "translate(-50%,-50%)";
+  function blinkOnce() {
+    lidTop.style.transform = "translateY(0%)";
+    lidBot.style.transform = "translateY(0%)";
+    setTimeout(() => {
+      lidTop.style.transform = "translateY(-65%)";
+      lidBot.style.transform = "translateY(65%)";
+    }, 130);
+  }
+  function scheduleBlinking() {
+    clearInterval(blinkTimer);
+    blinkTimer = setInterval(() => { if (playing) blinkOnce(); }, rand(900, 1400));
+  }
+  function moveEye() {
+    const x = rand(-26, 26);
+    const y = rand(-14, 14);
+    iris.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+  }
+  function scheduleMovement() {
+    clearInterval(moveTimer);
+    moveTimer = setInterval(() => { if (playing) moveEye(); }, rand(650, 1050));
+  }
+  function pointerPos(evt) {
+    const r = dropGame.getBoundingClientRect();
+    const p = evt.touches ? evt.touches[0] : evt;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+  function onDown(evt) {
+    if (!playing) return;
+    const p = pointerPos(evt);
+    const d = drop.getBoundingClientRect();
+    const gr = dropGame.getBoundingClientRect();
+    const dropX = d.left - gr.left;
+    const dropY = d.top - gr.top;
+
+    if (p.x >= dropX && p.x <= dropX + d.width && p.y >= dropY && p.y <= dropY + d.height) {
+      dragging = true;
+      offsetX = p.x - dropX;
+      offsetY = p.y - dropY;
+      evt.preventDefault();
+    }
+  }
+  function onMove(evt) {
+    if (!dragging || !playing) return;
+    const p = pointerPos(evt);
+
+    const newX = clamp(p.x - offsetX, 0, dropGame.clientWidth - drop.clientWidth);
+    const newY = clamp(p.y - offsetY, 0, dropGame.clientHeight - drop.clientHeight);
+
+    drop.style.left = newX + "px";
+    drop.style.top = newY + "px";
+    evt.preventDefault();
+  }
+  function rectsOverlap(a, b) {
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+  }
+  function onUp(evt) {
+    if (!dragging || !playing) return;
+    dragging = false;
+
+    shots += 1;
+    shotsEl.textContent = shots;
+
+    const dr = drop.getBoundingClientRect();
+    const tr = target.getBoundingClientRect();
+    const hit = rectsOverlap(dr, tr);
+
+    if (hit) { score += 1; streak += 1; blinkOnce(); }
+    else { streak = 0; }
+
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+
+    setDropToStart();
+
+    if (shots >= 10) finishDropGame();
+  }
+  function finishDropGame() {
+    playing = false;
+    clearInterval(blinkTimer);
+    clearInterval(moveTimer);
+
+    const prize = choosePrize();
+    dropResultBig.textContent = `🎉 You won ${prize.label}`;
+    dropResultSmall.textContent = `Score: ${score}/10 • Code (demo): ${prize.code}`;
+    dropResult.style.display = "block";
+  }
+  function resetDropGame() {
+    shots = 0; score = 0; streak = 0; playing = true;
+    shotsEl.textContent = shots;
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+
+    dropResult.style.display = "none";
+    iris.style.transform = "translate(-50%, -50%)";
+    lidTop.style.transform = "translateY(-65%)";
+    lidBot.style.transform = "translateY(65%)";
+
+    setDropToStart();
+    scheduleBlinking();
+    scheduleMovement();
+  }
+  dropGame.addEventListener("touchstart", onDown, { passive:false });
+  dropGame.addEventListener("touchmove", onMove, { passive:false });
+  dropGame.addEventListener("touchend", onUp, { passive:false });
+  dropGame.addEventListener("mousedown", onDown);
+  dropGame.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  dropPlayAgain.addEventListener("click", resetDropGame);
+  resetDropGame();
+
+  // =========================
+  // ===== SLOTS GAME =========
+  // =========================
+  const slotsSpinBtn = document.getElementById("slotsSpinBtn");
+  const slotsAgainBtn = document.getElementById("slotsAgainBtn");
+  const slotsResult = document.getElementById("slotsResult");
+  const slotsResultBig = document.getElementById("slotsResultBig");
+  const slotsResultSmall = document.getElementById("slotsResultSmall");
+
+  const sI1 = document.getElementById("sI1"), sT1 = document.getElementById("sT1");
+  const sI2 = document.getElementById("sI2"), sT2 = document.getElementById("sT2");
+  const sI3 = document.getElementById("sI3"), sT3 = document.getElementById("sT3");
+
+  const symbols = [
+    { icon:"👓", text:"Phoropter" },
+    { icon:"🧿", text:"OCT" },
+    { icon:"💧", text:"Eye Drops" },
+    { icon:"📏", text:"Lensometer" },
+    { icon:"📈", text:"Visual Field" },
+    { icon:"⚪️", text:"Tonometry" },
+    { icon:"🔦", text:"Slit Lamp" },
+    { icon:"🧠", text:"Neuro" }
+  ];
+  function randSym(){ return symbols[Math.floor(Math.random()*symbols.length)]; }
+  function setReel(idx, sym){
+    if (idx === 1){ sI1.textContent = sym.icon; sT1.textContent = sym.text; }
+    if (idx === 2){ sI2.textContent = sym.icon; sT2.textContent = sym.text; }
+    if (idx === 3){ sI3.textContent = sym.icon; sT3.textContent = sym.text; }
+  }
+  let slotsSpinning = false;
+  let timers = [];
+  function clearTimers(){ timers.forEach(id => clearInterval(id)); timers = []; }
+  function slotsReset(){
+    clearTimers();
+    slotsResult.style.display = "none";
+    setReel(1, randSym());
+    setReel(2, randSym());
+    setReel(3, randSym());
+  }
+  function slotsSpin(){
+    if (slotsSpinning) return;
+    slotsSpinning = true;
+    slotsSpinBtn.disabled = true;
+    slotsResult.style.display = "none";
+
+    const id1 = setInterval(() => setReel(1, randSym()), 70);
+    const id2 = setInterval(() => setReel(2, randSym()), 70);
+    const id3 = setInterval(() => setReel(3, randSym()), 70);
+    timers.push(id1,id2,id3);
+
+    setTimeout(() => clearInterval(id1), 900);
+    setTimeout(() => clearInterval(id2), 1300);
+    setTimeout(() => {
+      clearInterval(id3);
+
+      const prize = choosePrize();
+      slotsResultBig.textContent = `🎉 You won ${prize.label}`;
+      slotsResultSmall.textContent = `Code (demo): ${prize.code}`;
+      slotsResult.style.display = "block";
+
+      slotsSpinning = false;
+      slotsSpinBtn.disabled = false;
+    }, 1700);
+  }
+  slotsSpinBtn.addEventListener("click", slotsSpin);
+  slotsAgainBtn.addEventListener("click", slotsReset);
+  slotsReset();
+
+  // =========================
+  // ===== GLASSES FIT GAME ===
+  // =========================
+  const fitStage = document.getElementById("fitStage");
+  const head = document.getElementById("head");
+  const glasses = document.getElementById("glasses");
+  const glassesTarget = document.getElementById("glassesTarget");
+
+  const fitResult = document.getElementById("fitResult");
+  const fitResultBig = document.getElementById("fitResultBig");
+  const fitResultSmall = document.getElementById("fitResultSmall");
+  const fitAgainBtn = document.getElementById("fitAgainBtn");
+
+  let fitDragging = false;
+  let fitOffsetX = 0, fitOffsetY = 0;
+  let fitWon = false;
+
+  // Move head left/right smoothly
+  let fitAnimId = null;
+  let fitStart = performance.now();
+
+  function fitResetPositions() {
+    // reset glasses bottom-left
+    glasses.style.left = "20px";
+    glasses.style.bottom = "18px";
+    glasses.style.top = ""; // clear top if set
+    fitResult.style.display = "none";
+    fitWon = false;
   }
 
-  function stageRect(){ return stage.getBoundingClientRect(); }
-
-  function getPointer(evt){
-    const r = stageRect();
+  function fitPointerPos(evt) {
+    const r = fitStage.getBoundingClientRect();
     const p = evt.touches ? evt.touches[0] : evt;
     return { x: p.clientX - r.left, y: p.clientY - r.top };
   }
 
-  function showBand(px,py){
-    const dx = px - anchor.x;
-    const dy = py - anchor.y;
-    const dist = Math.hypot(dx,dy);
-    const ang = Math.atan2(dy,dx);
-
-    lineA.style.display = "block";
-    lineB.style.display = "block";
-
-    lineA.style.left = anchor.x + "px";
-    lineA.style.top  = anchor.y + "px";
-    lineA.style.width = dist + "px";
-    lineA.style.transform = `rotate(${ang}rad)`;
-
-    // tiny offset to make it look like two bands
-    lineB.style.left = anchor.x + "px";
-    lineB.style.top  = (anchor.y + 6) + "px";
-    lineB.style.width = dist + "px";
-    lineB.style.transform = `rotate(${ang}rad)`;
+  function fitGetElPosInStage(el) {
+    const sr = fitStage.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    return {
+      left: er.left - sr.left,
+      top: er.top - sr.top,
+      right: er.right - sr.left,
+      bottom: er.bottom - sr.top,
+      width: er.width,
+      height: er.height
+    };
   }
 
-  function hideBand(){
-    lineA.style.display = "none";
-    lineB.style.display = "none";
-  }
-
-  function overlapRects(a,b){
+  function fitRectsOverlap(a, b) {
     return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
   }
 
-  function hitTest(){
-    return overlapRects(drop.getBoundingClientRect(), eye.getBoundingClientRect());
-  }
+  function fitOnDown(evt) {
+    if (fitWon) return;
+    const p = fitPointerPos(evt);
+    const g = fitGetElPosInStage(glasses);
 
-  function finish(){
-    launched = false;
-    cancelAnimationFrame(raf);
-    raf = null;
-
-    const hit = hitTest();
-    const p = hit ? prizeForHit() : prizeForMiss();
-    lastDiscount = { ...p, hit };
-
-    resultBig.textContent = (hit ? "🎯 HIT! " : "💥 MISS! ") + "You won " + p.label;
-    resultSmall.textContent = "Code (demo): " + p.code + "  •  (You can enter name/email below.)";
-    result.style.display = "block";
-  }
-
-  function step(){
-    x += vx;
-    y += vy;
-    vy += GRAV;
-    vx *= DAMP;
-    vy *= DAMP;
-
-    setDropPos(x,y);
-
-    // end conditions
-    if (hitTest()){
-      finish();
-      return;
-    }
-    if (x < -120 || x > stage.clientWidth + 120 || y > stage.clientHeight + 160 || Math.hypot(vx,vy) < 0.85){
-      finish();
-      return;
-    }
-
-    raf = requestAnimationFrame(step);
-  }
-
-  function onDown(evt){
-    if (launched) return;
-    const p = getPointer(evt);
-
-    const dr = drop.getBoundingClientRect();
-    const sr = stageRect();
-    const dx = dr.left - sr.left;
-    const dy = dr.top  - sr.top;
-
-    // start drag only if pointer is on drop
-    if (p.x >= dx && p.x <= dx + dr.width && p.y >= dy && p.y <= dy + dr.height){
-      dragging = true;
-      showBand(x,y);
+    // start drag if touch is on glasses box
+    if (p.x >= g.left && p.x <= g.right && p.y >= g.top && p.y <= g.bottom) {
+      fitDragging = true;
+      fitOffsetX = p.x - g.left;
+      fitOffsetY = p.y - g.top;
+      glasses.style.bottom = ""; // switch to top/left for drag
+      glasses.style.top = g.top + "px";
+      glasses.style.left = g.left + "px";
       evt.preventDefault();
     }
   }
 
-  function onMove(evt){
-    if (!dragging || launched) return;
-    const p = getPointer(evt);
+  function fitOnMove(evt) {
+    if (!fitDragging || fitWon) return;
+    const p = fitPointerPos(evt);
 
-    // allow longer pull for longer flight
-    const maxPull = 170;
+    const maxX = fitStage.clientWidth - glasses.offsetWidth;
+    const maxY = fitStage.clientHeight - glasses.offsetHeight;
 
-    const dx = p.x - anchor.x;
-    const dy = p.y - anchor.y;
-    const dist = Math.hypot(dx,dy);
-    const scale = dist > maxPull ? (maxPull / dist) : 1;
+    const x = Math.max(0, Math.min(maxX, p.x - fitOffsetX));
+    const y = Math.max(0, Math.min(maxY, p.y - fitOffsetY));
 
-    x = anchor.x + dx * scale;
-    y = anchor.y + dy * scale;
-
-    setDropPos(x,y);
-    showBand(x,y);
+    glasses.style.left = x + "px";
+    glasses.style.top = y + "px";
     evt.preventDefault();
   }
 
-  function onUp(){
-    if (!dragging || launched) return;
-    dragging = false;
-    hideBand();
+  function fitWin() {
+    fitWon = true;
+    fitDragging = false;
 
-    // launch opposite of pull
-    vx = (anchor.x - x) * POWER;
-    vy = (anchor.y - y) * POWER;
+    // Snap glasses to target (centered)
+    const t = fitGetElPosInStage(glassesTarget);
+    const gx = t.left + (t.width - glasses.offsetWidth) / 2;
+    const gy = t.top + (t.height - glasses.offsetHeight) / 2;
 
-    launched = true;
-    result.style.display = "none";
-    raf = requestAnimationFrame(step);
+    glasses.classList.remove("snap");
+    // force reflow
+    void glasses.offsetWidth;
+    glasses.classList.add("snap");
+
+    glasses.style.left = gx + "px";
+    glasses.style.top = gy + "px";
+
+    const prize = choosePrize();
+    fitResultBig.textContent = `🎉 You won ${prize.label}`;
+    fitResultSmall.textContent = `Code (demo): ${prize.code}`;
+    fitResult.style.display = "block";
   }
 
-  function reset(){
-    cancelAnimationFrame(raf);
-    raf = null;
-    dragging = false;
-    launched = false;
-    hideBand();
+  function fitOnUp(evt) {
+    if (!fitDragging || fitWon) return;
+    fitDragging = false;
 
-    setAnchor();
-    x = anchor.x;
-    y = anchor.y;
-    vx = 0; vy = 0;
+    const g = fitGetElPosInStage(glasses);
+    const t = fitGetElPosInStage(glassesTarget);
 
-    setDropPos(x,y);
-    result.style.display = "none";
-
-    // keep lastDiscount until next play
-  }
-
-  // Mouse + touch
-  drop.addEventListener("mousedown", onDown);
-  drop.addEventListener("touchstart", onDown, { passive:false });
-  window.addEventListener("mousemove", onMove, { passive:false });
-  window.addEventListener("touchmove", onMove, { passive:false });
-  window.addEventListener("mouseup", onUp, { passive:false });
-  window.addEventListener("touchend", onUp, { passive:false });
-
-  again.addEventListener("click", reset);
-  window.addEventListener("resize", reset);
-
-  // ==========================
-  // Lead capture (name + email)
-  // ==========================
-  function getLeads(){
-    try { return JSON.parse(localStorage.getItem("odgo_leads") || "[]"); }
-    catch { return []; }
-  }
-  function setLeads(arr){
-    localStorage.setItem("odgo_leads", JSON.stringify(arr));
-  }
-  function validEmail(s){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
-  }
-
-  saveLead.addEventListener("click", () => {
-    const name = (leadName.value || "").trim();
-    const email = (leadEmail.value || "").trim();
-
-    if (!name) { alert("Please enter your name."); return; }
-    if (!validEmail(email)) { alert("Please enter a valid email."); return; }
-    if (!lastDiscount){ alert("Play the game first so we can record your discount."); return; }
-
-    const leads = getLeads();
-    leads.unshift({
-      name,
-      email,
-      discount: lastDiscount.label,
-      code: lastDiscount.code,
-      hit: lastDiscount.hit,
-      time: new Date().toISOString()
-    });
-    setLeads(leads);
-
-    // Show card for screenshot
-    leadCardName.textContent = name;
-    leadCardEmail.textContent = email;
-    leadCardDiscount.textContent = `${lastDiscount.label} (code: ${lastDiscount.code})`;
-    leadCard.style.display = "block";
-    leadList.style.display = "none";
-  });
-
-  clearLead.addEventListener("click", () => {
-    leadName.value = "";
-    leadEmail.value = "";
-    leadCard.style.display = "none";
-    leadList.style.display = "none";
-  });
-
-  viewLeads.addEventListener("click", () => {
-    const leads = getLeads();
-    if (!leads.length){
-      leadList.textContent = "No saved entries yet.";
+    if (fitRectsOverlap(g, t)) {
+      fitWin();
     } else {
-      leadList.textContent = leads
-        .map((l,i)=>`${i+1}. ${l.name} — ${l.email} — ${l.discount} (${l.code}) — ${new Date(l.time).toLocaleString()}`)
-        .join("\n");
+      // reset glasses to start position
+      fitResetPositions();
     }
-    leadList.style.display = "block";
-  });
+  }
 
-  exportLeads.addEventListener("click", () => {
-    const leads = getLeads();
-    if (!leads.length){ alert("No leads to export yet."); return; }
+  // Head animation loop
+  function animateHead(now) {
+    const elapsed = (now - fitStart) / 1000;
+    const amplitude = Math.min(220, fitStage.clientWidth * 0.28); // responsive
+    const center = fitStage.clientWidth / 2;
+    const x = center + Math.sin(elapsed * 1.6) * amplitude; // speed
+    head.style.left = x + "px";
+    fitAnimId = requestAnimationFrame(animateHead);
+  }
 
-    const header = "name,email,discount,code,hit,time\n";
-    const rows = leads.map(l =>
-      `"${String(l.name).replaceAll('"','""')}","${String(l.email).replaceAll('"','""')}","${l.discount}","${l.code}","${l.hit}","${l.time}"`
-    ).join("\n");
+  // Fit events
+  fitStage.addEventListener("touchstart", fitOnDown, { passive:false });
+  fitStage.addEventListener("touchmove", fitOnMove, { passive:false });
+  fitStage.addEventListener("touchend", fitOnUp, { passive:false });
+  fitStage.addEventListener("mousedown", fitOnDown);
+  fitStage.addEventListener("mousemove", fitOnMove);
+  window.addEventListener("mouseup", fitOnUp);
 
-    const blob = new Blob([header + rows], { type:"text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "odgo_conference_leads.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
+  fitAgainBtn.addEventListener("click", () => fitResetPositions());
 
-  // Start
-  reset();
+  // Start anim
+  fitResetPositions();
+  fitAnimId = requestAnimationFrame(animateHead);
+
+  // Default tab
+  setActive("scratch");
 })();
 </script>
+
 </body>
 </html>
