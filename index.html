@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scratch Demo</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#fafafa; }
+  .wrap { max-width:520px; margin:40px auto; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h2>🎁 Scratch to Win</h2>
+  <p>Demo mode — no email</p>
+
+  <div style="position:relative;width:100%;max-width:480px;margin:auto;">
+    <div style="position:absolute;inset:0;background:#f6f6f6;border-radius:12px;
+                display:flex;align-items:center;justify-content:center;">
+      <div>
+        <div style="font-size:18px;">🎉 YOU WON</div>
+        <div id="prize" style="font-size:34px;font-weight:800;">—</div>
+      </div>
+    </div>
+
+    <canvas id="scratch" width="480" height="220"
+      style="width:100%;border-radius:12px;touch-action:none;"></canvas>
+  </div>
+
+  <button onclick="resetGame()" style="margin-top:20px;padding:12px 20px;font-weight:bold;">
+    Play Again
+  </button>
+</div>
+
+<script>
+const canvas = document.getElementById("scratch");
+const ctx = canvas.getContext("2d");
+let scratching = false;
+
+function choosePrize(){
+  return Math.random() < 0.08 ? "$50 OFF" : "20% OFF";
+}
+
+function cover(){
+  ctx.globalCompositeOperation="source-over";
+  ctx.fillStyle="#bfbfbf";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="rgba(0,0,0,.4)";
+  ctx.font="bold 22px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("SCRATCH HERE",canvas.width/2,canvas.height/2);
+  ctx.globalCompositeOperation="destination-out";
+}
+
+function scratch(x,y){
+  ctx.beginPath();
+  ctx.arc(x,y,20,0,Math.PI*2);
+  ctx.fill();
+}
+
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return {
+    x:(t.clientX-r.left)*(canvas.width/r.width),
+    y:(t.clientY-r.top)*(canvas.height/r.height)
+  };
+}
+
+canvas.addEventListener("touchstart",e=>{
+  scratching=true;
+  const p=pos(e);
+  scratch(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
+
+canvas.addEventListener("touchmove",e=>{
+  if(!scratching) return;
+  const p=pos(e);
+  scratch(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
+
+canvas.addEventListener("touchend",()=>scratching=false);
+
+function resetGame(){
+  document.getElementById("prize").textContent = choosePrize();
+  cover();
+}
+
+resetGame();
+</script>
+
+</body>
+</html>
