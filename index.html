@@ -3,286 +3,340 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>OD on the GO – Conference Games</title>
-
+<title>Launch the Eye Drop</title>
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#fafafa;
-  margin:0;
-}
-.wrap{
-  max-width:1100px;
-  margin:24px auto;
-  padding:0 14px;
-  text-align:center;
-}
-.toggleBar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  justify-content:center;
-  margin:16px 0 20px;
-}
-.toggleBtn{
-  padding:12px 16px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  background:#fff;
-  font-weight:900;
-  cursor:pointer;
-}
-.toggleBtn.active{
-  background:#111;
-  color:#fff;
-}
-.panel{
-  display:none;
-  background:#fff;
-  border:1px solid #eee;
-  border-radius:16px;
-  padding:18px;
-  box-shadow:0 2px 12px rgba(0,0,0,.06);
-}
-.panel.active{display:block;}
-.action{
-  margin-top:14px;
-  padding:12px 18px;
-  font-size:16px;
-  font-weight:900;
-  border:none;
-  border-radius:10px;
-  background:#111;
-  color:#fff;
-  cursor:pointer;
-}
-.result{
-  display:none;
-  margin:14px auto 0;
-  padding:14px;
-  max-width:520px;
-  border:1px solid #cce5ff;
-  background:#f0f7ff;
-  border-radius:12px;
-}
-.big{font-size:22px;font-weight:900;}
-.small{font-size:13px;color:#444;margin-top:6px;}
+  body{ font-family: Arial, sans-serif; background:#fafafa; margin:0; text-align:center; }
+  .wrap{ max-width:900px; margin:22px auto; padding:0 14px; }
+  h2{ margin:0 0 6px; }
+  .sub{ color:#666; margin:0 0 14px; font-size:14px; }
+
+  .stage{
+    position:relative;
+    margin:0 auto;
+    width:min(860px, 100%);
+    aspect-ratio:16/9;
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 2px 14px rgba(0,0,0,0.06);
+    touch-action:none;
+  }
+
+  .hint{
+    position:absolute; left:14px; top:14px;
+    background:#fff; border:1px solid #eee;
+    padding:10px 12px; border-radius:14px;
+    text-align:left; z-index:10;
+  }
+  .hint .t{ font-weight:900; }
+  .hint .s{ font-size:12px; color:#666; margin-top:4px; }
+
+  .eye{
+    position:absolute;
+    right:90px;
+    top:50%;
+    transform:translateY(-50%);
+    width:190px; height:120px;
+    background:#f7f7f7;
+    border:3px solid #e0e0e0;
+    border-radius:999px;
+  }
+  .eye .pupil{
+    position:absolute;
+    left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    width:52px; height:52px;
+    border-radius:50%;
+    background:#111;
+  }
+  .eye .ring{
+    position:absolute;
+    left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    width:92px; height:92px;
+    border-radius:50%;
+    border:3px dashed rgba(0,0,0,0.08);
+  }
+
+  .drop{
+    position:absolute;
+    left:150px; top:50%;
+    transform:translate(-50%,-50%);
+    width:48px; height:60px;
+    border-radius:999px;
+    background: radial-gradient(circle at 35% 25%, #fff, #6aa6ff 70%, #1b4fd6);
+    box-shadow:0 10px 18px rgba(0,0,0,0.2);
+    cursor:grab;
+    touch-action:none;
+    z-index:5;
+  }
+  .drop:active{ cursor:grabbing; }
+
+  .band{
+    position:absolute;
+    left:150px; top:50%;
+    width:0; height:0;
+    z-index:2;
+  }
+  .line{
+    position:absolute;
+    left:0; top:0;
+    height:3px;
+    background:rgba(0,0,0,0.18);
+    transform-origin:0 50%;
+    border-radius:999px;
+  }
+
+  .result{
+    display:none;
+    margin:14px auto 0;
+    max-width:560px;
+    padding:14px;
+    border:1px solid #cce5ff;
+    background:#f0f7ff;
+    border-radius:12px;
+  }
+  .result .big{ font-size:22px; font-weight:900; }
+  .result .small{ margin-top:6px; font-size:13px; color:#444; }
+  .btn{
+    margin-top:12px;
+    padding:12px 16px;
+    font-weight:900;
+    border:none;
+    border-radius:10px;
+    background:#111;
+    color:#fff;
+    cursor:pointer;
+    width:260px;
+    max-width:100%;
+  }
 </style>
 </head>
-
 <body>
-<div class="wrap">
-<h2>🎮 OD on the GO Conference Games</h2>
-<div class="small">Demo mode — no email capture yet</div>
+  <div class="wrap">
+    <h2>🏹 Launch the Eye Drop</h2>
+    <div class="sub">Pull back the drop and release. Hit the eye to win a discount (demo).</div>
 
-<div class="toggleBar">
-  <button id="btnScratch" class="toggleBtn active">🪙 Scratch</button>
-  <button id="btnSpin" class="toggleBtn">🛞 Spin</button>
-  <button id="btnSlots" class="toggleBtn">🎰 Slots</button>
-  <button id="btnFit" class="toggleBtn">👓 Glasses</button>
-  <button id="btnLaunch" class="toggleBtn">🏹 Launch</button>
-</div>
+    <div id="stage" class="stage">
+      <div class="hint">
+        <div class="t">💧 Pull back + release</div>
+        <div class="s">Works on iPad + desktop</div>
+      </div>
 
-<!-- SCRATCH -->
-<div id="panelScratch" class="panel active">
-  <h3>🪙 Scratch to Win</h3>
-  <canvas id="scratchCanvas" width="480" height="200"
-    style="border-radius:12px;border:1px solid #ccc;"></canvas>
-  <div id="scratchPrize" class="big">—</div>
-  <button class="action" id="scratchReset">Play Again</button>
-</div>
+      <div id="eye" class="eye">
+        <div class="ring"></div>
+        <div class="pupil"></div>
+      </div>
 
-<!-- SPIN -->
-<div id="panelSpin" class="panel">
-  <h3>🛞 Spin the Phoropter</h3>
-  <button class="action" id="spinBtn">SPIN</button>
-  <div id="spinResult" class="result">
-    <div class="big" id="spinBig"></div>
-    <div class="small" id="spinSmall"></div>
+      <!-- elastic band (visual) -->
+      <div class="band">
+        <div id="line1" class="line"></div>
+        <div id="line2" class="line"></div>
+      </div>
+
+      <div id="drop" class="drop" title="Pull back then release"></div>
+    </div>
+
+    <div id="result" class="result">
+      <div id="resultBig" class="big">—</div>
+      <div id="resultSmall" class="small">—</div>
+      <button id="again" class="btn" type="button">Play Again</button>
+    </div>
   </div>
-</div>
-
-<!-- SLOTS -->
-<div id="panelSlots" class="panel">
-  <h3>🎰 Optometry Slots</h3>
-  <div style="font-size:64px" id="slotIcons">👓 🧿 💧</div>
-  <button class="action" id="slotsSpin">SPIN</button>
-  <div id="slotsResult" class="result">
-    <div class="big" id="slotsBig"></div>
-    <div class="small" id="slotsSmall"></div>
-  </div>
-</div>
-
-<!-- GLASSES -->
-<div id="panelFit" class="panel">
-  <h3>👓 Put the Glasses On</h3>
-  <div style="font-size:90px">🙂</div>
-  <button class="action" id="fitBtn">Snap Glasses</button>
-  <div id="fitResult" class="result">
-    <div class="big" id="fitBig"></div>
-    <div class="small" id="fitSmall"></div>
-  </div>
-</div>
-
-<!-- LAUNCH -->
-<div id="panelLaunch" class="panel">
-  <h3>🏹 Launch the Eye Drop</h3>
-  <button class="action" id="launchBtn">LAUNCH</button>
-  <div id="launchResult" class="result">
-    <div class="big" id="launchBig"></div>
-    <div class="small" id="launchSmall"></div>
-  </div>
-</div>
-</div>
 
 <script>
-/* ---------- SHARED ---------- */
-function prize(){
-  return Math.random()<0.08
-    ? {label:"$50 OFF",code:"CONF50"}
-    : {label:"20% OFF",code:"CONF20"};
-}
+(() => {
+  const stage = document.getElementById("stage");
+  const drop = document.getElementById("drop");
+  const eye = document.getElementById("eye");
 
-/* ---------- TOGGLE ---------- */
-const tabs=[
- ["btnScratch","panelScratch"],
- ["btnSpin","panelSpin"],
- ["btnSlots","panelSlots"],
- ["btnFit","panelFit"],
- ["btnLaunch","panelLaunch"]
-];
+  const result = document.getElementById("result");
+  const resultBig = document.getElementById("resultBig");
+  const resultSmall = document.getElementById("resultSmall");
+  const again = document.getElementById("again");
 
-function show(panel){
-  tabs.forEach(([b,p])=>{
-    document.getElementById(b).classList.toggle("active",p===panel);
-    document.getElementById(p).classList.toggle("active",p===panel);
-  });
-}
-tabs.forEach(([b,p])=>{
-  document.getElementById(b).onclick=()=>show(p);
-});
+  const line1 = document.getElementById("line1");
+  const line2 = document.getElementById("line2");
 
-/* ---------- SCRATCH (REAL SCRATCH-OFF) ---------- */
-const c = document.getElementById("scratchCanvas");
-const ctx = c.getContext("2d");
-const scratchPrize = document.getElementById("scratchPrize");
-const scratchReset = document.getElementById("scratchReset");
+  // slingshot anchor point in stage coordinates
+  const anchor = { x: 150, y: null }; // y set after layout
+  let dragging = false;
+  let launched = false;
 
-let scratching = false;
+  // physics state
+  let x=0,y=0,vx=0,vy=0;
+  let raf = null;
 
-function cover(){
-  ctx.globalCompositeOperation = "source-over";
-  ctx.clearRect(0,0,c.width,c.height);
+  const GRAV = 0.85;   // gravity
+  const DAMP = 0.995;  // air drag
+  const POWER = 0.26;  // launch strength
 
-  // cover
-  ctx.fillStyle = "#bfbfbf";
-  ctx.fillRect(0,0,c.width,c.height);
+  const PROB_50 = 0.08;
+  function prize(){
+    return Math.random() < PROB_50
+      ? { label:"$50 OFF", code:"CONF50" }
+      : { label:"20% OFF", code:"CONF20" };
+  }
 
-  // text
-  ctx.fillStyle = "rgba(0,0,0,0.45)";
-  ctx.font = "bold 22px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("SCRATCH HERE", c.width/2, c.height/2);
+  function stageRect(){ return stage.getBoundingClientRect(); }
 
-  // scratch mode
-  ctx.globalCompositeOperation = "destination-out";
-}
+  function setAnchorY(){
+    anchor.y = stage.clientHeight / 2;
+  }
 
-function newScratch(){
-  const p = prize();
-  scratchPrize.textContent = p.label + " (" + p.code + ")";
-  cover();
-}
+  function setDropPos(px,py){
+    drop.style.left = px + "px";
+    drop.style.top = py + "px";
+    drop.style.transform = "translate(-50%,-50%)";
+  }
 
-function getPos(evt){
-  const r = c.getBoundingClientRect();
-  const t = evt.touches ? evt.touches[0] : evt;
-  return {
-    x: (t.clientX - r.left) * (c.width / r.width),
-    y: (t.clientY - r.top) * (c.height / r.height),
-  };
-}
+  function getPointer(evt){
+    const r = stageRect();
+    const p = evt.touches ? evt.touches[0] : evt;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
 
-function scratchAt(x,y){
-  ctx.beginPath();
-  ctx.arc(x,y,20,0,Math.PI*2);
-  ctx.fill();
-}
+  function showBand(px,py){
+    // two lines for a little "V" effect
+    const dx = px - anchor.x;
+    const dy = py - anchor.y;
+    const dist = Math.hypot(dx,dy);
+    const ang = Math.atan2(dy,dx);
 
-c.addEventListener("mousedown", (e)=>{
-  scratching = true;
-  const p = getPos(e);
-  scratchAt(p.x,p.y);
-});
-c.addEventListener("mousemove", (e)=>{
-  if(!scratching) return;
-  const p = getPos(e);
-  scratchAt(p.x,p.y);
-});
-window.addEventListener("mouseup", ()=> scratching=false);
+    line1.style.width = dist + "px";
+    line1.style.transform = `rotate(${ang}rad)`;
 
-c.addEventListener("touchstart", (e)=>{
-  scratching = true;
-  const p = getPos(e);
-  scratchAt(p.x,p.y);
-  e.preventDefault();
-},{passive:false});
+    line2.style.width = dist + "px";
+    line2.style.transform = `rotate(${ang}rad)`;
 
-c.addEventListener("touchmove", (e)=>{
-  if(!scratching) return;
-  const p = getPos(e);
-  scratchAt(p.x,p.y);
-  e.preventDefault();
-},{passive:false});
+    line1.style.display = "block";
+    line2.style.display = "block";
+  }
 
-c.addEventListener("touchend", ()=> scratching=false);
+  function hideBand(){
+    line1.style.display = "none";
+    line2.style.display = "none";
+  }
 
-scratchReset.onclick = newScratch;
-newScratch();
+  function reset(){
+    cancelAnimationFrame(raf);
+    raf = null;
+    dragging = false;
+    launched = false;
+    result.style.display = "none";
+    hideBand();
+    setAnchorY();
+    x = anchor.x;
+    y = anchor.y;
+    vx = 0; vy = 0;
+    setDropPos(x,y);
+  }
 
-/* ---------- SPIN ---------- */
-document.getElementById("spinBtn").onclick=()=>{
-  const p=prize();
-  spinBig.textContent="YOU WON "+p.label;
-  spinSmall.textContent="Code: "+p.code;
-  spinResult.style.display="block";
-};
+  function hitTest(){
+    const a = drop.getBoundingClientRect();
+    const b = eye.getBoundingClientRect();
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+  }
 
-/* ---------- SLOTS ---------- */
-document.getElementById("slotsSpin").onclick=()=>{
-  const pool=["👓","🧿","💧","🔦","📏","📈"];
-  let t=0;
-  slotsResult.style.display="none";
-  const timer=setInterval(()=>{
-    slotIcons.textContent=
-      pool[Math.random()*pool.length|0]+" "+
-      pool[Math.random()*pool.length|0]+" "+
-      pool[Math.random()*pool.length|0];
-    if(++t>15){
-      clearInterval(timer);
-      const p=prize();
-      slotsBig.textContent="YOU WON "+p.label;
-      slotsSmall.textContent="Code: "+p.code;
-      slotsResult.style.display="block";
+  function finish(){
+    launched = false;
+    cancelAnimationFrame(raf);
+    raf = null;
+
+    const hit = hitTest();
+    const p = prize();
+    resultBig.textContent = (hit ? "🎯 Direct hit! " : "💥 Miss… ") + "You won " + p.label;
+    resultSmall.textContent = "Code (demo): " + p.code;
+    result.style.display = "block";
+  }
+
+  function step(){
+    // update physics
+    x += vx;
+    y += vy;
+    vy += GRAV;
+    vx *= DAMP;
+    vy *= DAMP;
+
+    setDropPos(x,y);
+
+    // stop if out of bounds (or slow)
+    if (x < -80 || x > stage.clientWidth + 80 || y > stage.clientHeight + 120 || Math.hypot(vx,vy) < 0.9){
+      finish();
+      return;
     }
-  },80);
-};
 
-/* ---------- GLASSES ---------- */
-document.getElementById("fitBtn").onclick=()=>{
-  const p=prize();
-  fitBig.textContent="YOU WON "+p.label;
-  fitSmall.textContent="Code: "+p.code;
-  fitResult.style.display="block";
-};
+    // early finish if hit
+    if (hitTest()){
+      finish();
+      return;
+    }
 
-/* ---------- LAUNCH ---------- */
-document.getElementById("launchBtn").onclick=()=>{
-  const p=prize();
-  launchBig.textContent="YOU WON "+p.label;
-  launchSmall.textContent="Code: "+p.code;
-  launchResult.style.display="block";
-};
+    raf = requestAnimationFrame(step);
+  }
+
+  function onDown(evt){
+    if (launched) return;
+    const p = getPointer(evt);
+    const dr = drop.getBoundingClientRect();
+    const sr = stageRect();
+    const dx = dr.left - sr.left;
+    const dy = dr.top - sr.top;
+
+    // only start drag if touching the drop
+    if (p.x >= dx && p.x <= dx + dr.width && p.y >= dy && p.y <= dy + dr.height){
+      dragging = true;
+      showBand(x,y);
+      evt.preventDefault();
+    }
+  }
+
+  function onMove(evt){
+    if (!dragging || launched) return;
+    const p = getPointer(evt);
+
+    // limit pull-back distance
+    const maxPull = 140;
+    const dx = p.x - anchor.x;
+    const dy = p.y - anchor.y;
+    const dist = Math.hypot(dx,dy);
+    const scale = dist > maxPull ? (maxPull / dist) : 1;
+
+    x = anchor.x + dx * scale;
+    y = anchor.y + dy * scale;
+
+    setDropPos(x,y);
+    showBand(x,y);
+    evt.preventDefault();
+  }
+
+  function onUp(evt){
+    if (!dragging || launched) return;
+    dragging = false;
+    hideBand();
+
+    // velocity is opposite of pull direction
+    vx = (anchor.x - x) * POWER;
+    vy = (anchor.y - y) * POWER;
+
+    launched = true;
+    raf = requestAnimationFrame(step);
+  }
+
+  // events (mouse + touch)
+  drop.addEventListener("mousedown", onDown);
+  drop.addEventListener("touchstart", onDown, { passive:false });
+  window.addEventListener("mousemove", onMove, { passive:false });
+  window.addEventListener("touchmove", onMove, { passive:false });
+  window.addEventListener("mouseup", onUp, { passive:false });
+  window.addEventListener("touchend", onUp, { passive:false });
+
+  again.addEventListener("click", reset);
+  window.addEventListener("resize", reset);
+
+  reset();
+})();
 </script>
 </body>
 </html>
