@@ -1,1367 +1,283 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>OD on the GO — Conference Game Demos</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OD on the GO – Conference Scratcher</title>
 
 <style>
-  body { font-family: Arial, sans-serif; background:#fafafa; margin:0; }
-  .wrap { max-width: 1200px; margin: 26px auto; padding: 0 14px; text-align:center; }
+body {
+  font-family: Arial, sans-serif;
+  background:#f7f7f7;
+  margin:0;
+  text-align:center;
+}
 
-  h2 { margin: 0 0 6px; }
-  .sub { color:#666; margin: 0 0 16px; }
+.wrap {
+  max-width:700px;
+  margin:40px auto;
+  padding:20px;
+}
 
-  .toggleBar {
-    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
-    margin: 14px auto 22px;
-  }
-  .toggleBtn {
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    background: #fff;
-    font-weight: 900;
-    cursor: pointer;
-    min-width: 200px;
-  }
-  .toggleBtn.active {
-    background:#111;
-    color:#fff;
-    border-color:#111;
-  }
+.card {
+  background:#fff;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
+}
 
-  .panel {
-    display:none;
-    margin: 0 auto;
-    max-width: 900px;
-    background:#fff;
-    border:1px solid #eee;
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
-  }
-  .panel.active { display:block; }
+input {
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
 
-  .note { margin-top: 10px; font-size:12px; color:#666; }
+button {
+  margin-top:14px;
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  background:#111;
+  color:#fff;
+  cursor:pointer;
+}
 
-  button.action {
-    width: 320px; max-width: 100%;
-    margin-top: 14px;
-    padding: 12px 16px;
-    font-size: 16px;
-    font-weight: 900;
-    border: none;
-    border-radius: 10px;
-    background: #111;
-    color: #fff;
-    cursor: pointer;
-  }
-  button.action:disabled { opacity:0.5; cursor:not-allowed; }
+button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
 
-  .result {
-    margin: 12px auto 0;
-    max-width: 560px;
-    display:none;
-    padding: 12px;
-    border: 1px solid #cce5ff;
-    background: #f0f7ff;
-    border-radius: 12px;
-    text-align:center;
-  }
-  .result .big { font-size:22px; font-weight:900; }
-  .result .small { margin-top:6px; font-size:13px; color:#444; }
+canvas {
+  margin-top:20px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  touch-action:none;
+}
 
-  /* ========= LEAD CAPTURE (SCRATCH ONLY) ========= */
-  .leadGate{
-    max-width:520px;
-    margin:0 auto 14px;
-    text-align:left;
-    background:#fff;
-    border:1px solid #eee;
-    border-radius:14px;
-    padding:14px;
-  }
-  .leadGate .title{ font-weight:900; margin-bottom:8px; }
-  .leadGate label{ display:block; font-weight:900; margin:10px 0 6px; }
-  .leadGate input{
-    width:100%;
-    padding:12px;
-    border:1px solid #ddd;
-    border-radius:10px;
-    font-size:16px;
-    box-sizing:border-box;
-  }
-  .leadGate .startBtn{
-    margin-top:12px;
-    width:100%;
-    padding:12px 16px;
-    border:none;
-    border-radius:10px;
-    background:#111;
-    color:#fff;
-    font-weight:900;
-    font-size:16px;
-    cursor:pointer;
-  }
-  .savedCard{
-    display:none;
-    margin-top:12px;
-    padding:12px;
-    border-radius:12px;
-    border:1px solid #cce5ff;
-    background:#f0f7ff;
-  }
-  .savedCard .big{ font-weight:900; font-size:16px; }
-  .savedCard .row{ margin-top:6px; font-size:14px; }
-  .savedCard small{ display:block; margin-top:8px; color:#555; }
+.prizeText {
+  font-size:26px;
+  font-weight:900;
+  margin-top:10px;
+}
 
-  .adminRow{
-    max-width:520px;
-    margin:10px auto 0;
-    text-align:left;
-  }
-  .ghostBtn{
-    padding:10px 14px;
-    border-radius:10px;
-    border:1px solid #ddd;
-    background:#fff;
-    font-weight:900;
-    cursor:pointer;
-    margin-right:8px;
-    margin-top:8px;
-  }
-  #leadList{
-    display:none;
-    margin-top:10px;
-    font-size:13px;
-    color:#333;
-    white-space:pre-wrap;
-    background:#fff;
-    border:1px solid #eee;
-    border-radius:12px;
-    padding:10px;
-  }
+.grand {
+  color:#c70000;
+  animation:pulse 1s infinite alternate;
+}
 
-  /* ========= SCRATCH ========= */
-  .scratchStage { position:relative; width:100%; max-width:520px; margin: 0 auto; }
-  #scratchCanvas {
-    position:relative; z-index:1;
-    width:100%; height:auto; border-radius:12px;
-    touch-action:none; display:block;
-    border:1px solid #ddd;
-  }
-  .scratchUnderlay {
-    position:absolute; inset:0; z-index:0;
-    background:#f6f6f6; border-radius:12px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    border:1px solid #eee;
-  }
-  .scratchUnderlay .big { font-size:34px; font-weight:900; margin-top:6px; }
+@keyframes pulse {
+  from { transform:scale(1); }
+  to { transform:scale(1.05); }
+}
 
-  /* ========= SPIN ========= */
-  .spinStage { position:relative; width:320px; height:320px; margin: 10px auto 10px; }
-  #wheel { width:320px; height:320px; display:block; border-radius:50%; background:#fff; border:1px solid #eee; }
-  .pointer {
-    position:absolute; top:-10px; left:50%; transform:translateX(-50%);
-    width:0; height:0;
-    border-left:14px solid transparent;
-    border-right:14px solid transparent;
-    border-bottom:26px solid #111;
-    z-index:5;
-  }
-  .badge { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
-  .badge .inner {
-    width:120px; height:120px; border-radius:50%;
-    background:#fff; border:1px solid #eee;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-  }
-  .badge .emoji { font-size:44px; line-height:1; }
-  .badge .txt { font-size:12px; color:#555; margin-top:6px; font-weight:900; letter-spacing:0.6px; }
+.admin {
+  margin-top:30px;
+  text-align:left;
+  font-size:13px;
+}
 
-  /* ========= DROP GAME ========= */
-  .hud { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin: 10px 0 14px; }
-  .pill { background:#fff; border:1px solid #eee; border-radius:999px; padding:10px 14px; font-weight:900; }
-
-  .game {
-    position: relative;
-    margin: 0 auto;
-    width: min(780px, 100%);
-    aspect-ratio: 16 / 10;
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 18px;
-    overflow:hidden;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
-    touch-action: none;
-  }
-  .eyeWrap {
-    position:absolute; left:50%; top:48%;
-    transform: translate(-50%, -50%);
-    width: min(620px, 92%); height: 60%;
-  }
-  .eyeWhite {
-    position:absolute; inset: 18% 8% 18% 8%;
-    background: #f7f7f7;
-    border-radius: 999px;
-    border: 2px solid #e6e6e6;
-    box-shadow: inset 0 0 0 8px #ffffff;
-    overflow:hidden;
-  }
-  .iris {
-    position:absolute;
-    width: 26%; aspect-ratio:1/1;
-    border-radius:50%;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(circle at 35% 35%, #6aa6ff, #2b62c9 55%, #1b2b58 100%);
-    border: 2px solid rgba(0,0,0,0.08);
-  }
-  .pupil {
-    position:absolute; width: 38%; aspect-ratio:1/1;
-    border-radius:50%;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    background: #111;
-  }
-  .spark {
-    position:absolute; width: 18%; aspect-ratio:1/1;
-    border-radius:50%;
-    left: 32%; top: 28%;
-    background: rgba(255,255,255,0.85);
-  }
-  .lidTop, .lidBot {
-    position:absolute; left:0; right:0; height: 50%;
-    background: #fafafa; z-index: 5;
-    transition: transform 110ms linear;
-  }
-  .lidTop { top:0; border-bottom:2px solid #eee; transform: translateY(-65%); }
-  .lidBot { bottom:0; border-top:2px solid #eee; transform: translateY(65%); }
-
-  .target {
-    position:absolute; width: 30%; aspect-ratio: 1/1;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    outline: 3px dashed rgba(0,0,0,0.10);
-    outline-offset: 6px;
-    pointer-events:none; z-index: 2;
-  }
-  .drop {
-    position:absolute; width: 44px; height: 54px;
-    border-radius: 999px;
-    background: radial-gradient(circle at 35% 25%, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 35%, rgba(72,160,255,0.9) 70%, rgba(32,110,210,0.95) 100%);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.12);
-    cursor: grab; z-index: 10;
-  }
-  .drop:active { cursor: grabbing; }
-  .tray {
-    position:absolute; left: 14px; bottom: 14px;
-    display:flex; gap:10px; align-items:center;
-    background:#fff; border:1px solid #eee;
-    padding:10px 12px; border-radius: 14px;
-    z-index: 20;
-  }
-  .tray .label { font-weight:900; }
-  .tiny { font-size:12px; color:#666; }
-
-  /* ========= SLOTS ========= */
-  .machine {
-    margin: 0 auto; max-width: 620px;
-    background:#fff; border:1px solid #eee;
-    border-radius: 18px; padding: 18px;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
-  }
-  .reels { display:flex; justify-content:center; gap:12px; margin: 14px 0; flex-wrap:wrap; }
-  .reel {
-    width: 160px; height: 160px;
-    border-radius: 16px; border: 2px solid #eee;
-    background: linear-gradient(#ffffff, #f6f6f6);
-    display:flex; align-items:center; justify-content:center;
-    font-weight: 900; position:relative; overflow:hidden;
-  }
-  .reelInner { text-align:center; }
-  .reel .icon { font-size: 46px; line-height:1; }
-  .reel .label { margin-top:10px; font-size:14px; color:#222; }
-  .shine {
-    position:absolute; inset:-40%;
-    background: linear-gradient(45deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 60%);
-    transform: translateX(-40%) rotate(10deg);
-    pointer-events:none;
-  }
-
-  /* ========= GLASSES FIT GAME ========= */
-  .fitStage {
-    position: relative;
-    margin: 0 auto;
-    width: min(780px, 100%);
-    aspect-ratio: 16 / 9;
-    background:#fff;
-    border:1px solid #eee;
-    border-radius: 18px;
-    overflow:hidden;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
-    touch-action: none;
-  }
-  .fitHint {
-    position:absolute; left: 14px; top: 14px;
-    background:#fff; border:1px solid #eee;
-    padding:10px 12px; border-radius: 14px;
-    text-align:left;
-    z-index: 10;
-  }
-
-  .head {
-    position:absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 260px;
-    height: 320px;
-    left: 50%;
-    z-index: 2;
-  }
-  .head .face {
-    position:absolute; inset: 0;
-    background: #f3f3f3;
-    border: 2px solid #e6e6e6;
-    border-radius: 120px 120px 140px 140px;
-  }
-  .head .hair {
-    position:absolute; left: 12px; right: 12px; top: 6px;
-    height: 86px;
-    background:#e8e8e8;
-    border-radius: 120px 120px 80px 80px;
-    border:1px solid #e6e6e6;
-  }
-  .head .eyes {
-    position:absolute; left: 0; right: 0; top: 120px;
-    display:flex; justify-content:center; gap: 48px;
-  }
-  .head .eye {
-    width: 44px; height: 28px;
-    border-radius: 999px;
-    background:#ffffff;
-    border: 2px solid #e6e6e6;
-    position:relative;
-  }
-  .head .eye:after{
-    content:"";
-    position:absolute; width: 12px; height: 12px; border-radius:50%;
-    background:#111;
-    left: 16px; top: 8px;
-  }
-  .head .nose {
-    position:absolute; left:50%; top: 158px;
-    width: 18px; height: 36px;
-    transform: translateX(-50%);
-    border-left: 2px solid #e0e0e0;
-    border-right: 2px solid #e0e0e0;
-    border-bottom: 2px solid #e0e0e0;
-    border-radius: 0 0 10px 10px;
-    background: transparent;
-  }
-
-  .glassesTarget {
-    position:absolute;
-    left: 50%;
-    top: 132px;
-    transform: translateX(-50%);
-    width: 170px;
-    height: 68px;
-    border-radius: 16px;
-    outline: 3px dashed rgba(0,0,0,0.10);
-    outline-offset: 6px;
-    pointer-events:none;
-    z-index: 3;
-  }
-
-  .glasses {
-    position:absolute;
-    width: 200px;
-    height: 80px;
-    left: 20px;
-    bottom: 18px;
-    z-index: 6;
-    cursor: grab;
-    user-select:none;
-    -webkit-user-select:none;
-    touch-action:none;
-  }
-  .glasses:active { cursor: grabbing; }
-  .lens {
-    position:absolute;
-    width: 78px; height: 54px;
-    top: 12px;
-    border-radius: 16px;
-    border: 4px solid #111;
-    background: rgba(255,255,255,0.2);
-  }
-  .lens.left { left: 12px; }
-  .lens.right { right: 12px; }
-  .bridge {
-    position:absolute; left: 50%; top: 36px;
-    width: 30px; height: 10px;
-    transform: translateX(-50%);
-    border-top: 4px solid #111;
-    border-radius: 10px;
-  }
-  .arm {
-    position:absolute; top: 32px;
-    width: 32px; height: 8px;
-    background:#111;
-    border-radius: 8px;
-  }
-  .arm.left { left: -18px; }
-  .arm.right { right: -18px; }
-
-  .snap { animation: snap 160ms ease-out; }
-  @keyframes snap {
-    0% { transform: scale(1); }
-    60% { transform: scale(1.06); }
-    100% { transform: scale(1); }
-  }
+.admin button {
+  margin-right:8px;
+}
 </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <h2>🎮 OD on the GO Mini-Game Demos</h2>
-    <div class="sub">Pick one for your conference booth.</div>
 
-    <div class="toggleBar">
-      <button id="btnScratch" class="toggleBtn active" type="button">🪙 Scratch</button>
-      <button id="btnSpin" class="toggleBtn" type="button">🛞 Spin</button>
-      <button id="btnDrop" class="toggleBtn" type="button">💧 Drop</button>
-      <button id="btnSlots" class="toggleBtn" type="button">🎰 Slots</button>
-      <button id="btnFit" class="toggleBtn" type="button">👤 Glasses</button>
+<div class="wrap">
+  <div class="card">
+    <h2>🎉 Scratch to Win</h2>
+
+    <div id="leadGate">
+      <input id="name" placeholder="Full Name">
+      <input id="email" placeholder="Email Address">
+      <button id="startBtn">Start Game</button>
     </div>
 
-    <!-- ===== SCRATCH (with email capture) ===== -->
-    <div id="panelScratch" class="panel active">
-      <h3 style="margin:0 0 10px;">🪙 Scratch to Win</h3>
-
-      <!-- Lead gate (required before scratch) -->
-      <div class="leadGate">
-        <div class="title">✅ Enter your info to play</div>
-
-        <label>Name</label>
-        <input id="leadName" type="text" placeholder="First + last name" autocomplete="name">
-
-        <label>Email</label>
-        <input id="leadEmail" type="email" placeholder="name@email.com" autocomplete="email">
-
-        <button id="startGame" class="startBtn" type="button">Start Scratch Game</button>
-
-        <div id="leadSavedCard" class="savedCard">
-          <div class="big">Saved ✅ (you can screenshot this)</div>
-          <div class="row"><strong>Name:</strong> <span id="savedName"></span></div>
-          <div class="row"><strong>Email:</strong> <span id="savedEmail"></span></div>
-          <div class="row"><strong>Status:</strong> <span id="savedStatus">(started)</span></div>
-          <small>Now scratch below to reveal your discount.</small>
-        </div>
-      </div>
-
-      <div class="scratchStage">
-        <div class="scratchUnderlay">
-          <div style="font-size:18px;">🎉 YOU WON</div>
-          <div id="scratchPrizeText" class="big">—</div>
-          <div id="scratchCodeText" style="font-size:12px;color:#666;margin-top:6px;">Code: —</div>
-          <div style="font-size:12px;color:#666;margin-top:6px;">Scratch to reveal</div>
-        </div>
-
-        <canvas id="scratchCanvas" width="480" height="220"></canvas>
-      </div>
-
-      <button class="action" id="scratchReset" type="button" disabled>Reset for next student</button>
-      <div class="note">Leads save on this device. Export CSV at end of day.</div>
-
-      <div class="adminRow">
-        <button id="viewLeads" class="ghostBtn" type="button">View saved list</button>
-        <button id="exportLeads" class="ghostBtn" type="button">Export CSV</button>
-        <button id="clearAllLeads" class="ghostBtn" type="button">Clear saved leads</button>
-        <div id="leadList"></div>
-      </div>
-    </div>
-
-    <!-- ===== SPIN ===== -->
-    <div id="panelSpin" class="panel">
-      <h3 style="margin:0 0 10px;">🛞 Spin the Phoropter</h3>
-
-      <div class="spinStage">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="320" height="320"></canvas>
-
-        <div class="badge">
-          <div class="inner">
-            <div class="emoji">👓</div>
-            <div class="txt">PHOROPTER</div>
-          </div>
-        </div>
-      </div>
-
-      <button class="action" id="spinBtn" type="button">SPIN</button>
-
-      <div id="spinResult" class="result">
-        <div class="big" id="spinResultBig">—</div>
-        <div class="small" id="spinResultSmall">—</div>
-      </div>
-
-      <div class="note">Odds: mostly 20% off; a few $50 off.</div>
-    </div>
-
-    <!-- ===== DROP ===== -->
-    <div id="panelDrop" class="panel">
-      <h3 style="margin:0 0 6px;">💧 Drop the Drop</h3>
-      <div class="sub" style="margin:0 0 10px;">Drag the drop into the dashed circle before the eye blinks or looks away.</div>
-
-      <div class="hud">
-        <div class="pill">Score: <span id="score">0</span></div>
-        <div class="pill">Drops: <span id="shots">0</span>/10</div>
-        <div class="pill">Streak: <span id="streak">0</span></div>
-      </div>
-
-      <div id="dropGame" class="game" aria-label="Drop game">
-        <div class="eyeWrap">
-          <div class="eyeWhite">
-            <div id="iris" class="iris">
-              <div class="pupil"></div>
-              <div class="spark"></div>
-            </div>
-            <div id="target" class="target"></div>
-          </div>
-
-          <div id="lidTop" class="lidTop"></div>
-          <div id="lidBot" class="lidBot"></div>
-        </div>
-
-        <div class="tray">
-          <div class="label">💧 Drag the drop</div>
-          <div class="tiny">Aim for dashed circle</div>
-        </div>
-
-        <div id="drop" class="drop" title="Drag me"></div>
-      </div>
-
-      <div id="dropResult" class="result">
-        <div class="big" id="dropResultBig">—</div>
-        <div class="small" id="dropResultSmall">—</div>
-        <button id="dropPlayAgain" class="action" type="button">Play Again</button>
-      </div>
-
-      <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
-    </div>
-
-    <!-- ===== SLOTS ===== -->
-    <div id="panelSlots" class="panel">
-      <h3 style="margin:0 0 6px;">🎰 Optometry Slots</h3>
-      <div class="sub" style="margin:0 0 10px;">Tap SPIN and see what you win (demo mode — no email).</div>
-
-      <div class="machine">
-        <div class="reels">
-          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI1" class="icon">👓</div><div id="sT1" class="label">Phoropter</div></div></div>
-          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI2" class="icon">🧿</div><div id="sT2" class="label">OCT</div></div></div>
-          <div class="reel"><div class="shine"></div><div class="reelInner"><div id="sI3" class="icon">💧</div><div id="sT3" class="label">Eye Drops</div></div></div>
-        </div>
-
-        <button id="slotsSpinBtn" class="action" type="button">SPIN</button>
-
-        <div id="slotsResult" class="result">
-          <div class="big" id="slotsResultBig">—</div>
-          <div class="small" id="slotsResultSmall">—</div>
-          <button id="slotsAgainBtn" class="action" type="button" style="margin-top:12px;">Play Again</button>
-        </div>
-
-        <div class="note">Odds: mostly 20% off; a few $50 off.</div>
-      </div>
-    </div>
-
-    <!-- ===== GLASSES FIT ===== -->
-    <div id="panelFit" class="panel">
-      <h3 style="margin:0 0 6px;">👤 Put the Glasses On</h3>
-      <div class="sub" style="margin:0 0 10px;">Drag the glasses onto the moving face. When they snap on, you win.</div>
-
-      <div id="fitStage" class="fitStage" aria-label="Glasses fitting game">
-        <div class="fitHint">
-          <div style="font-weight:900;">👓 Drag glasses → dashed zone</div>
-          <div class="tiny">Head moves left/right</div>
-        </div>
-
-        <div id="head" class="head">
-          <div class="face"></div>
-          <div class="hair"></div>
-          <div class="eyes">
-            <div class="eye"></div>
-            <div class="eye"></div>
-          </div>
-          <div class="nose"></div>
-          <div id="glassesTarget" class="glassesTarget"></div>
-        </div>
-
-        <div id="glasses" class="glasses" title="Drag me">
-          <div class="arm left"></div>
-          <div class="arm right"></div>
-          <div class="lens left"></div>
-          <div class="lens right"></div>
-          <div class="bridge"></div>
-        </div>
-      </div>
-
-      <div id="fitResult" class="result">
-        <div class="big" id="fitResultBig">—</div>
-        <div class="small" id="fitResultSmall">—</div>
-        <button id="fitAgainBtn" class="action" type="button">Play Again</button>
-      </div>
-
-      <div class="note">Demo only (no email). Odds later: mostly 20% off; a few $50 off.</div>
+    <div id="gameArea" style="display:none;">
+      <div id="prizeLabel" class="prizeText">—</div>
+      <canvas id="scratchCanvas" width="500" height="220"></canvas>
+      <button id="resetBtn" disabled>Next Student</button>
     </div>
   </div>
 
+  <div class="admin">
+    <button id="exportBtn">Export CSV</button>
+  </div>
+</div>
+
 <script>
-(() => {
-  // ===== Shared odds =====
-  const PROB_50 = 0.08;
-  function choosePrize() {
-    return (Math.random() < PROB_50)
-      ? { label: "$50 OFF", code: "CONF50" }
-      : { label: "20% OFF", code: "CONF20" };
+const STORAGE_KEY = "odgo_leads_v1";
+
+function getLeads(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+}
+
+function setLeads(data){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+/* ===== PRIZE POOL ===== */
+
+function buildPrizePool(){
+
+  let pool = [];
+
+  // Grand prizes (unique codes – replace later)
+  pool.push({label:"FREE PART 1 COURSE", code:"P1_CODE_1", grand:true});
+  pool.push({label:"FREE PART 1 COURSE", code:"P1_CODE_2", grand:true});
+  pool.push({label:"FREE PART 2 COURSE", code:"P2_CODE_1", grand:true});
+  pool.push({label:"FREE PART 2 COURSE", code:"P2_CODE_2", grand:true});
+  pool.push({label:"FREE PART 3 COURSE", code:"P3_CODE_1", grand:true});
+  pool.push({label:"FREE PART 3 COURSE", code:"P3_CODE_2", grand:true});
+
+  for(let i=0;i<50;i++){
+    pool.push({label:"$50 OFF ANY COURSE", code:"CONF50", grand:false});
   }
 
-  // ===== Toggle =====
-  const btnScratch = document.getElementById("btnScratch");
-  const btnSpin = document.getElementById("btnSpin");
-  const btnDrop = document.getElementById("btnDrop");
-  const btnSlots = document.getElementById("btnSlots");
-  const btnFit = document.getElementById("btnFit");
-
-  const panelScratch = document.getElementById("panelScratch");
-  const panelSpin = document.getElementById("panelSpin");
-  const panelDrop = document.getElementById("panelDrop");
-  const panelSlots = document.getElementById("panelSlots");
-  const panelFit = document.getElementById("panelFit");
-
-  function setActive(which) {
-    btnScratch.classList.toggle("active", which === "scratch");
-    btnSpin.classList.toggle("active", which === "spin");
-    btnDrop.classList.toggle("active", which === "drop");
-    btnSlots.classList.toggle("active", which === "slots");
-    btnFit.classList.toggle("active", which === "fit");
-
-    panelScratch.classList.toggle("active", which === "scratch");
-    panelSpin.classList.toggle("active", which === "spin");
-    panelDrop.classList.toggle("active", which === "drop");
-    panelSlots.classList.toggle("active", which === "slots");
-    panelFit.classList.toggle("active", which === "fit");
-
-    if (which === "spin") drawWheel();
-    if (which === "drop") setDropToStart();
-    if (which === "fit") fitResetPositions();
+  for(let i=0;i<500;i++){
+    pool.push({label:"20% OFF ANY COURSE", code:"CONF20", grand:false});
   }
 
-  btnScratch.addEventListener("click", () => setActive("scratch"));
-  btnSpin.addEventListener("click", () => setActive("spin"));
-  btnDrop.addEventListener("click", () => setActive("drop"));
-  btnSlots.addEventListener("click", () => setActive("slots"));
-  btnFit.addEventListener("click", () => setActive("fit"));
-
-  // =========================
-  // ===== LEADS (SCRATCH) ====
-  // =========================
-  const STORAGE_KEY = "odgo_scratcher_leads_v1";
-  function getLeads(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-    catch { return []; }
-  }
-  function setLeads(arr){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-  }
-  function validEmail(s){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
-  }
-  function newId(){
-    return (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2));
+  // shuffle
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]]=[pool[j],pool[i]];
   }
 
-  const leadName = document.getElementById("leadName");
-  const leadEmail = document.getElementById("leadEmail");
-  const startGame = document.getElementById("startGame");
-  const leadSavedCard = document.getElementById("leadSavedCard");
-  const savedName = document.getElementById("savedName");
-  const savedEmail = document.getElementById("savedEmail");
-  const savedStatus = document.getElementById("savedStatus");
+  return pool;
+}
 
-  const viewLeads = document.getElementById("viewLeads");
-  const exportLeads = document.getElementById("exportLeads");
-  const clearAllLeads = document.getElementById("clearAllLeads");
-  const leadList = document.getElementById("leadList");
+let prizePool = buildPrizePool();
+let currentPrize = null;
 
-  let currentLeadId = null;
+/* ===== SCRATCHER ===== */
 
-  // =========================
-  // ===== SCRATCH GAME ======
-  // =========================
-  const scratchCanvas = document.getElementById("scratchCanvas");
-  const sctx = scratchCanvas.getContext("2d");
-  const scratchPrizeText = document.getElementById("scratchPrizeText");
-  const scratchCodeText = document.getElementById("scratchCodeText");
-  const scratchReset = document.getElementById("scratchReset");
+const canvas = document.getElementById("scratchCanvas");
+const ctx = canvas.getContext("2d");
 
-  let scratchEnabled = false;
-  let scratching = false;
-  let revealed = false;
-  let currentPrize = null;
+function drawCover(){
+  ctx.globalCompositeOperation="source-over";
+  ctx.fillStyle="#bfbfbf";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="rgba(0,0,0,.5)";
+  ctx.font="bold 26px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("SCRATCH HERE",canvas.width/2,canvas.height/2);
+  ctx.globalCompositeOperation="destination-out";
+}
 
-  function drawScratchCover() {
-    sctx.globalCompositeOperation = "source-over";
-    sctx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+function scratch(x,y){
+  ctx.beginPath();
+  ctx.arc(x,y,22,0,Math.PI*2);
+  ctx.fill();
+}
 
-    sctx.fillStyle = "#bfbfbf";
-    sctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+function getPos(e){
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return {
+    x:(t.clientX-r.left)*(canvas.width/r.width),
+    y:(t.clientY-r.top)*(canvas.height/r.height)
+  };
+}
 
-    sctx.fillStyle = "rgba(0,0,0,0.4)";
-    sctx.font = "bold 22px Arial";
-    sctx.textAlign = "center";
-    sctx.fillText("SCRATCH HERE", scratchCanvas.width / 2, scratchCanvas.height / 2);
+let scratching=false;
 
-    sctx.globalCompositeOperation = "destination-out";
-  }
-  function scratchDot(x, y) {
-    sctx.beginPath();
-    sctx.arc(x, y, 20, 0, Math.PI * 2);
-    sctx.fill();
-  }
-  function scratchPos(e) {
-    const rect = scratchCanvas.getBoundingClientRect();
-    const t = e.touches ? e.touches[0] : e;
-    return {
-      x: (t.clientX - rect.left) * (scratchCanvas.width / rect.width),
-      y: (t.clientY - rect.top) * (scratchCanvas.height / rect.height)
-    };
-  }
+canvas.addEventListener("mousedown",e=>{
+  scratching=true;
+  const p=getPos(e);
+  scratch(p.x,p.y);
+});
 
-  function percentCleared(){
-    const img = sctx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height).data;
-    let cleared = 0;
-    for (let i = 3; i < img.length; i += 4) if (img[i] === 0) cleared++;
-    return cleared / (img.length / 4);
-  }
+canvas.addEventListener("mousemove",e=>{
+  if(!scratching) return;
+  const p=getPos(e);
+  scratch(p.x,p.y);
+});
 
-  function updateLead(fields){
-    if (!currentLeadId) return;
-    const leads = getLeads();
-    const idx = leads.findIndex(l => l.id === currentLeadId);
-    if (idx === -1) return;
-    leads[idx] = { ...leads[idx], ...fields };
-    setLeads(leads);
-  }
+window.addEventListener("mouseup",()=>scratching=false);
 
-  function checkComplete(){
-    if (revealed) return;
-    if (percentCleared() >= 0.55) {
-      revealed = true;
+canvas.addEventListener("touchstart",e=>{
+  scratching=true;
+  const p=getPos(e);
+  scratch(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
 
-      updateLead({
-        completedAt: new Date().toISOString(),
-        prizeLabel: currentPrize?.label || null,
-        prizeCode: currentPrize?.code || null
-      });
+canvas.addEventListener("touchmove",e=>{
+  if(!scratching) return;
+  const p=getPos(e);
+  scratch(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
 
-      savedStatus.textContent = `completed — ${currentPrize.label} (${currentPrize.code})`;
-      scratchReset.disabled = false;
-    }
+canvas.addEventListener("touchend",()=>scratching=false);
+
+/* ===== FLOW ===== */
+
+document.getElementById("startBtn").addEventListener("click",()=>{
+
+  const name=document.getElementById("name").value.trim();
+  const email=document.getElementById("email").value.trim();
+
+  if(!name || !email){
+    alert("Please enter name and email.");
+    return;
   }
 
-  function resetScratchRound(){
-    revealed = false;
-    currentPrize = choosePrize();
-    scratchPrizeText.textContent = currentPrize.label;
-    scratchCodeText.textContent = "Code: " + currentPrize.code;
-    drawScratchCover();
+  if(prizePool.length===0){
+    alert("All prizes claimed.");
+    return;
   }
 
-  // Scratch events (GATED)
-  scratchCanvas.addEventListener("touchstart", e => {
-    if (!scratchEnabled) return;
-    scratching = true;
-    const p = scratchPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-    e.preventDefault();
-  }, { passive:false });
+  currentPrize = prizePool.pop();
 
-  scratchCanvas.addEventListener("touchmove", e => {
-    if (!scratchEnabled || !scratching) return;
-    const p = scratchPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-    e.preventDefault();
-  }, { passive:false });
+  document.getElementById("leadGate").style.display="none";
+  document.getElementById("gameArea").style.display="block";
 
-  scratchCanvas.addEventListener("touchend", () => scratching = false);
+  const label=document.getElementById("prizeLabel");
+  label.textContent=currentPrize.label;
 
-  scratchCanvas.addEventListener("mousedown", e => {
-    if (!scratchEnabled) return;
-    scratching = true;
-    const p = scratchPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-  });
-
-  scratchCanvas.addEventListener("mousemove", e => {
-    if (!scratchEnabled || !scratching) return;
-    const p = scratchPos(e);
-    scratchDot(p.x,p.y);
-    checkComplete();
-  });
-
-  window.addEventListener("mouseup", () => scratching = false);
-
-  // Gate: save lead BEFORE scratch starts
-  startGame.addEventListener("click", () => {
-    const name = (leadName.value || "").trim();
-    const email = (leadEmail.value || "").trim();
-    if (!name) { alert("Please enter your name."); return; }
-    if (!validEmail(email)) { alert("Please enter a valid email."); return; }
-
-    const id = newId();
-    const leads = getLeads();
-    leads.unshift({
-      id, name, email,
-      startedAt: new Date().toISOString(),
-      completedAt: null,
-      prizeLabel: null,
-      prizeCode: null
-    });
-    setLeads(leads);
-
-    currentLeadId = id;
-    scratchEnabled = true;
-
-    leadName.disabled = true;
-    leadEmail.disabled = true;
-    startGame.disabled = true;
-    startGame.textContent = "Ready — scratch below!";
-
-    savedName.textContent = name;
-    savedEmail.textContent = email;
-    savedStatus.textContent = "(started)";
-    leadSavedCard.style.display = "block";
-
-    scratchReset.disabled = true; // only enable once completed
-    resetScratchRound();
-  });
-
-  // Reset for next student (booth workflow)
-  scratchReset.addEventListener("click", () => {
-    // reset gate
-    leadName.value = "";
-    leadEmail.value = "";
-    leadName.disabled = false;
-    leadEmail.disabled = false;
-    startGame.disabled = false;
-    startGame.textContent = "Start Scratch Game";
-    leadSavedCard.style.display = "none";
-
-    // reset state
-    scratchEnabled = false;
-    currentLeadId = null;
-    currentPrize = null;
-    revealed = false;
-    scratchReset.disabled = true;
-
-    // cover again
-    drawScratchCover();
-    scratchPrizeText.textContent = "—";
-    scratchCodeText.textContent = "Code: —";
-  });
-
-  // Admin buttons
-  viewLeads.addEventListener("click", () => {
-    const leads = getLeads();
-    leadList.textContent = leads.length
-      ? leads.map((l,i)=>`${i+1}. ${l.name} — ${l.email} — ${l.prizeLabel || "(not finished)"} ${l.prizeCode ? "(" + l.prizeCode + ")" : ""} — started ${new Date(l.startedAt).toLocaleString()}`).join("\n")
-      : "No saved leads yet.";
-    leadList.style.display = "block";
-  });
-
-  exportLeads.addEventListener("click", () => {
-    const leads = getLeads();
-    if (!leads.length) { alert("No leads to export yet."); return; }
-
-    const header = "name,email,startedAt,completedAt,prizeLabel,prizeCode\n";
-    const rows = leads.map(l =>
-      `"${String(l.name).replaceAll('"','""')}","${String(l.email).replaceAll('"','""')}","${l.startedAt}","${l.completedAt || ""}","${l.prizeLabel || ""}","${l.prizeCode || ""}"`
-    ).join("\n");
-
-    const blob = new Blob([header + rows], { type:"text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "odgo_scratcher_leads.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  clearAllLeads.addEventListener("click", () => {
-    if (!confirm("Clear all saved leads on this device?")) return;
-    setLeads([]);
-    leadList.style.display = "none";
-    alert("Saved leads cleared.");
-  });
-
-  // init scratch locked
-  drawScratchCover();
-
-  // =========================
-  // ===== SPIN GAME =========
-  // =========================
-  const wheel = document.getElementById("wheel");
-  const wctx = wheel.getContext("2d");
-  const spinBtn = document.getElementById("spinBtn");
-  const spinResult = document.getElementById("spinResult");
-  const spinResultBig = document.getElementById("spinResultBig");
-  const spinResultSmall = document.getElementById("spinResultSmall");
-
-  const segments = [
-    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" },
-    { label: "$50 OFF" },
-    { label: "20% OFF" }, { label: "20% OFF" }, { label: "20% OFF" }
-  ];
-  const cx = wheel.width / 2, cy = wheel.height / 2, radius = 150;
-  let currentAngle = 0, spinning = false;
-
-  function drawWheel() {
-    wctx.clearRect(0, 0, wheel.width, wheel.height);
-    const n = segments.length;
-    const arc = (Math.PI * 2) / n;
-
-    for (let i = 0; i < n; i++) {
-      const start = currentAngle + i * arc;
-      const end = start + arc;
-
-      wctx.beginPath();
-      wctx.moveTo(cx, cy);
-      wctx.arc(cx, cy, radius, start, end);
-      wctx.closePath();
-      wctx.fillStyle = (i % 2 === 0) ? "#e9e9e9" : "#d9d9d9";
-      wctx.fill();
-      wctx.strokeStyle = "#ffffff";
-      wctx.stroke();
-
-      wctx.save();
-      wctx.translate(cx, cy);
-      wctx.rotate(start + arc / 2);
-      wctx.textAlign = "right";
-      wctx.fillStyle = "#111";
-      wctx.font = "bold 14px Arial";
-      wctx.fillText(segments[i].label, radius - 14, 5);
-      wctx.restore();
-    }
-    wctx.beginPath();
-    wctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    wctx.lineWidth = 2;
-    wctx.strokeStyle = "#eee";
-    wctx.stroke();
-  }
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-  function pickTargetAngleForLabel(label) {
-    const matches = segments.map((s, i) => ({ s, i })).filter(x => x.s.label === label);
-    const chosen = matches[Math.floor(Math.random() * matches.length)];
-    const n = segments.length;
-    const arc = (Math.PI * 2) / n;
-    const pointerAngle = -Math.PI / 2;
-    const segmentCenter = chosen.i * arc + arc / 2;
-    return pointerAngle - segmentCenter;
-  }
-  function spin() {
-    if (spinning) return;
-    spinning = true;
-    spinBtn.disabled = true;
-    spinResult.style.display = "none";
-
-    const prize = choosePrize();
-    const targetBase = pickTargetAngleForLabel(prize.label);
-    const extraTurns = 6 + Math.random() * 3;
-    const target = targetBase - extraTurns * Math.PI * 2;
-
-    const start = currentAngle;
-    const duration = 2200 + Math.random() * 600;
-    const t0 = performance.now();
-
-    function frame(now) {
-      const t = Math.min(1, (now - t0) / duration);
-      const eased = easeOutCubic(t);
-      currentAngle = start + (target - start) * eased;
-      drawWheel();
-
-      if (t < 1) requestAnimationFrame(frame);
-      else {
-        currentAngle = target;
-        drawWheel();
-        spinResultBig.textContent = prize.label;
-        spinResultSmall.textContent = `Code (demo): ${prize.code}`;
-        spinResult.style.display = "block";
-        spinning = false;
-        spinBtn.disabled = false;
-      }
-    }
-    requestAnimationFrame(frame);
-  }
-  spinBtn.addEventListener("click", spin);
-  drawWheel();
-
-  // =========================
-  // ===== DROP GAME =========
-  // =========================
-  const dropGame = document.getElementById("dropGame");
-  const drop = document.getElementById("drop");
-  const iris = document.getElementById("iris");
-  const target = document.getElementById("target");
-  const lidTop = document.getElementById("lidTop");
-  const lidBot = document.getElementById("lidBot");
-
-  const scoreEl = document.getElementById("score");
-  const shotsEl = document.getElementById("shots");
-  const streakEl = document.getElementById("streak");
-
-  const dropResult = document.getElementById("dropResult");
-  const dropResultBig = document.getElementById("dropResultBig");
-  const dropResultSmall = document.getElementById("dropResultSmall");
-  const dropPlayAgain = document.getElementById("dropPlayAgain");
-
-  let dragging = false;
-  let offsetX = 0, offsetY = 0;
-  let shots = 0, score = 0, streak = 0, playing = true;
-  let blinkTimer = null, moveTimer = null;
-
-  function rand(min, max) { return Math.random() * (max - min) + min; }
-  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-
-  function setDropToStart() {
-    if (!dropGame) return;
-    const rect = dropGame.getBoundingClientRect();
-    drop.style.left = "24px";
-    drop.style.top = (rect.height - 84) + "px";
+  if(currentPrize.grand){
+    label.classList.add("grand");
+  } else {
+    label.classList.remove("grand");
   }
 
-  function blinkOnce() {
-    lidTop.style.transform = "translateY(0%)";
-    lidBot.style.transform = "translateY(0%)";
-    setTimeout(() => {
-      lidTop.style.transform = "translateY(-65%)";
-      lidBot.style.transform = "translateY(65%)";
-    }, 130);
-  }
-  function scheduleBlinking() {
-    clearInterval(blinkTimer);
-    blinkTimer = setInterval(() => { if (playing) blinkOnce(); }, rand(900, 1400));
-  }
-  function moveEye() {
-    const x = rand(-26, 26);
-    const y = rand(-14, 14);
-    iris.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-  }
-  function scheduleMovement() {
-    clearInterval(moveTimer);
-    moveTimer = setInterval(() => { if (playing) moveEye(); }, rand(650, 1050));
-  }
-  function pointerPos(evt) {
-    const r = dropGame.getBoundingClientRect();
-    const p = evt.touches ? evt.touches[0] : evt;
-    return { x: p.clientX - r.left, y: p.clientY - r.top };
-  }
-  function onDown(evt) {
-    if (!playing) return;
-    const p = pointerPos(evt);
-    const d = drop.getBoundingClientRect();
-    const gr = dropGame.getBoundingClientRect();
-    const dropX = d.left - gr.left;
-    const dropY = d.top - gr.top;
+  drawCover();
+});
 
-    if (p.x >= dropX && p.x <= dropX + d.width && p.y >= dropY && p.y <= dropY + d.height) {
-      dragging = true;
-      offsetX = p.x - dropX;
-      offsetY = p.y - dropY;
-      evt.preventDefault();
-    }
-  }
-  function onMove(evt) {
-    if (!dragging || !playing) return;
-    const p = pointerPos(evt);
+/* ===== RESET + SAVE ===== */
 
-    const newX = clamp(p.x - offsetX, 0, dropGame.clientWidth - drop.clientWidth);
-    const newY = clamp(p.y - offsetY, 0, dropGame.clientHeight - drop.clientHeight);
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  location.reload();
+});
 
-    drop.style.left = newX + "px";
-    drop.style.top = newY + "px";
-    evt.preventDefault();
-  }
-  function rectsOverlap(a, b) {
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-  }
-  function onUp(evt) {
-    if (!dragging || !playing) return;
-    dragging = false;
+/* ===== EXPORT ===== */
 
-    shots += 1;
-    shotsEl.textContent = shots;
-
-    const dr = drop.getBoundingClientRect();
-    const tr = target.getBoundingClientRect();
-    const hit = rectsOverlap(dr, tr);
-
-    if (hit) { score += 1; streak += 1; blinkOnce(); }
-    else { streak = 0; }
-
-    scoreEl.textContent = score;
-    streakEl.textContent = streak;
-
-    setDropToStart();
-
-    if (shots >= 10) finishDropGame();
-  }
-  function finishDropGame() {
-    playing = false;
-    clearInterval(blinkTimer);
-    clearInterval(moveTimer);
-
-    const prize = choosePrize();
-    dropResultBig.textContent = `🎉 You won ${prize.label}`;
-    dropResultSmall.textContent = `Score: ${score}/10 • Code (demo): ${prize.code}`;
-    dropResult.style.display = "block";
-  }
-  function resetDropGame() {
-    shots = 0; score = 0; streak = 0; playing = true;
-    shotsEl.textContent = shots;
-    scoreEl.textContent = score;
-    streakEl.textContent = streak;
-
-    dropResult.style.display = "none";
-    iris.style.transform = "translate(-50%, -50%)";
-    lidTop.style.transform = "translateY(-65%)";
-    lidBot.style.transform = "translateY(65%)";
-
-    setDropToStart();
-    scheduleBlinking();
-    scheduleMovement();
-  }
-  dropGame.addEventListener("touchstart", onDown, { passive:false });
-  dropGame.addEventListener("touchmove", onMove, { passive:false });
-  dropGame.addEventListener("touchend", onUp, { passive:false });
-  dropGame.addEventListener("mousedown", onDown);
-  dropGame.addEventListener("mousemove", onMove);
-  window.addEventListener("mouseup", onUp);
-  dropPlayAgain.addEventListener("click", resetDropGame);
-  resetDropGame();
-
-  // =========================
-  // ===== SLOTS GAME =========
-  // =========================
-  const slotsSpinBtn = document.getElementById("slotsSpinBtn");
-  const slotsAgainBtn = document.getElementById("slotsAgainBtn");
-  const slotsResult = document.getElementById("slotsResult");
-  const slotsResultBig = document.getElementById("slotsResultBig");
-  const slotsResultSmall = document.getElementById("slotsResultSmall");
-
-  const sI1 = document.getElementById("sI1"), sT1 = document.getElementById("sT1");
-  const sI2 = document.getElementById("sI2"), sT2 = document.getElementById("sT2");
-  const sI3 = document.getElementById("sI3"), sT3 = document.getElementById("sT3");
-
-  const symbols = [
-    { icon:"👓", text:"Phoropter" },
-    { icon:"🧿", text:"OCT" },
-    { icon:"💧", text:"Eye Drops" },
-    { icon:"📏", text:"Lensometer" },
-    { icon:"📈", text:"Visual Field" },
-    { icon:"⚪️", text:"Tonometry" },
-    { icon:"🔦", text:"Slit Lamp" },
-    { icon:"🧠", text:"Neuro" }
-  ];
-  function randSym(){ return symbols[Math.floor(Math.random()*symbols.length)]; }
-  function setReel(idx, sym){
-    if (idx === 1){ sI1.textContent = sym.icon; sT1.textContent = sym.text; }
-    if (idx === 2){ sI2.textContent = sym.icon; sT2.textContent = sym.text; }
-    if (idx === 3){ sI3.textContent = sym.icon; sT3.textContent = sym.text; }
-  }
-  let slotsSpinning = false;
-  let timers = [];
-  function clearTimers(){ timers.forEach(id => clearInterval(id)); timers = []; }
-  function slotsReset(){
-    clearTimers();
-    slotsResult.style.display = "none";
-    setReel(1, randSym());
-    setReel(2, randSym());
-    setReel(3, randSym());
-  }
-  function slotsSpin(){
-    if (slotsSpinning) return;
-    slotsSpinning = true;
-    slotsSpinBtn.disabled = true;
-    slotsResult.style.display = "none";
-
-    const id1 = setInterval(() => setReel(1, randSym()), 70);
-    const id2 = setInterval(() => setReel(2, randSym()), 70);
-    const id3 = setInterval(() => setReel(3, randSym()), 70);
-    timers.push(id1,id2,id3);
-
-    setTimeout(() => clearInterval(id1), 900);
-    setTimeout(() => clearInterval(id2), 1300);
-    setTimeout(() => {
-      clearInterval(id3);
-
-      const prize = choosePrize();
-      slotsResultBig.textContent = `🎉 You won ${prize.label}`;
-      slotsResultSmall.textContent = `Code (demo): ${prize.code}`;
-      slotsResult.style.display = "block";
-
-      slotsSpinning = false;
-      slotsSpinBtn.disabled = false;
-    }, 1700);
-  }
-  slotsSpinBtn.addEventListener("click", slotsSpin);
-  slotsAgainBtn.addEventListener("click", slotsReset);
-  slotsReset();
-
-  // =========================
-  // ===== GLASSES FIT GAME ===
-  // =========================
-  const fitStage = document.getElementById("fitStage");
-  const head = document.getElementById("head");
-  const glasses = document.getElementById("glasses");
-  const glassesTarget = document.getElementById("glassesTarget");
-
-  const fitResult = document.getElementById("fitResult");
-  const fitResultBig = document.getElementById("fitResultBig");
-  const fitResultSmall = document.getElementById("fitResultSmall");
-  const fitAgainBtn = document.getElementById("fitAgainBtn");
-
-  let fitDragging = false;
-  let fitOffsetX = 0, fitOffsetY = 0;
-  let fitWon = false;
-
-  let fitAnimId = null;
-  let fitStart = performance.now();
-
-  function fitResetPositions() {
-    glasses.style.left = "20px";
-    glasses.style.bottom = "18px";
-    glasses.style.top = "";
-    fitResult.style.display = "none";
-    fitWon = false;
+document.getElementById("exportBtn").addEventListener("click",()=>{
+  const leads=getLeads();
+  if(!leads.length){
+    alert("No leads yet.");
+    return;
   }
 
-  function fitPointerPos(evt) {
-    const r = fitStage.getBoundingClientRect();
-    const p = evt.touches ? evt.touches[0] : evt;
-    return { x: p.clientX - r.left, y: p.clientY - r.top };
-  }
+  const header="name,email,prize,code\n";
+  const rows=leads.map(l=>`${l.name},${l.email},${l.prize},${l.code}`).join("\n");
 
-  function fitGetElPosInStage(el) {
-    const sr = fitStage.getBoundingClientRect();
-    const er = el.getBoundingClientRect();
-    return {
-      left: er.left - sr.left,
-      top: er.top - sr.top,
-      right: er.right - sr.left,
-      bottom: er.bottom - sr.top,
-      width: er.width,
-      height: er.height
-    };
-  }
-
-  function fitRectsOverlap(a, b) {
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-  }
-
-  function fitOnDown(evt) {
-    if (fitWon) return;
-    const p = fitPointerPos(evt);
-    const g = fitGetElPosInStage(glasses);
-
-    if (p.x >= g.left && p.x <= g.right && p.y >= g.top && p.y <= g.bottom) {
-      fitDragging = true;
-      fitOffsetX = p.x - g.left;
-      fitOffsetY = p.y - g.top;
-      glasses.style.bottom = "";
-      glasses.style.top = g.top + "px";
-      glasses.style.left = g.left + "px";
-      evt.preventDefault();
-    }
-  }
-
-  function fitOnMove(evt) {
-    if (!fitDragging || fitWon) return;
-    const p = fitPointerPos(evt);
-
-    const maxX = fitStage.clientWidth - glasses.offsetWidth;
-    const maxY = fitStage.clientHeight - glasses.offsetHeight;
-
-    const x = Math.max(0, Math.min(maxX, p.x - fitOffsetX));
-    const y = Math.max(0, Math.min(maxY, p.y - fitOffsetY));
-
-    glasses.style.left = x + "px";
-    glasses.style.top = y + "px";
-    evt.preventDefault();
-  }
-
-  function fitWin() {
-    fitWon = true;
-    fitDragging = false;
-
-    const t = fitGetElPosInStage(glassesTarget);
-    const gx = t.left + (t.width - glasses.offsetWidth) / 2;
-    const gy = t.top + (t.height - glasses.offsetHeight) / 2;
-
-    glasses.classList.remove("snap");
-    void glasses.offsetWidth;
-    glasses.classList.add("snap");
-
-    glasses.style.left = gx + "px";
-    glasses.style.top = gy + "px";
-
-    const prize = choosePrize();
-    fitResultBig.textContent = `🎉 You won ${prize.label}`;
-    fitResultSmall.textContent = `Code (demo): ${prize.code}`;
-    fitResult.style.display = "block";
-  }
-
-  function fitOnUp(evt) {
-    if (!fitDragging || fitWon) return;
-    fitDragging = false;
-
-    const g = fitGetElPosInStage(glasses);
-    const t = fitGetElPosInStage(glassesTarget);
-
-    if (fitRectsOverlap(g, t)) fitWin();
-    else fitResetPositions();
-  }
-
-  function animateHead(now) {
-    const elapsed = (now - fitStart) / 1000;
-    const amplitude = Math.min(220, fitStage.clientWidth * 0.28);
-    const center = fitStage.clientWidth / 2;
-    const x = center + Math.sin(elapsed * 1.6) * amplitude;
-    head.style.left = x + "px";
-    fitAnimId = requestAnimationFrame(animateHead);
-  }
-
-  fitStage.addEventListener("touchstart", fitOnDown, { passive:false });
-  fitStage.addEventListener("touchmove", fitOnMove, { passive:false });
-  fitStage.addEventListener("touchend", fitOnUp, { passive:false });
-  fitStage.addEventListener("mousedown", fitOnDown);
-  fitStage.addEventListener("mousemove", fitOnMove);
-  window.addEventListener("mouseup", fitOnUp);
-
-  fitAgainBtn.addEventListener("click", () => fitResetPositions());
-
-  fitResetPositions();
-  fitAnimId = requestAnimationFrame(animateHead);
-
-  // Default tab
-  setActive("scratch");
-})();
+  const blob=new Blob([header+rows],{type:"text/csv"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="odgo_leads.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
 </script>
 
 </body>
