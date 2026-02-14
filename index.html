@@ -3,412 +3,669 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>OD on the GO – Conference Scratcher</title>
+<title>OD on the GO — Conference Scratcher</title>
 
 <style>
-  body{ font-family: Arial, sans-serif; background:#f7f7f7; margin:0; text-align:center; }
-  .wrap{ max-width:900px; margin:28px auto; padding:0 14px; }
+  :root{
+    --bg:#fafafa;
+    --card:#ffffff;
+    --text:#111;
+    --muted:#666;
+    --line:#e9e9e9;
+    --btn:#111;
+    --btnText:#fff;
+    --danger:#c0392b;
+  }
+  body{ margin:0; font-family: Arial, sans-serif; background:var(--bg); color:var(--text); }
+  .wrap{ max-width: 1100px; margin: 26px auto; padding: 0 14px; text-align:center; }
   .card{
-    background:#fff; border-radius:18px; padding:22px;
-    box-shadow:0 4px 18px rgba(0,0,0,.08);
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
   }
-  h2{ margin:0 0 10px; }
-  .sub{ color:#666; margin:0 0 18px; font-size:14px; }
+  h1{ margin:0 0 6px; font-size:28px; }
+  .sub{ margin:0 0 18px; color:var(--muted); font-size:14px; }
 
-  .leadGate{ max-width:520px; margin:0 auto; text-align:left; }
-  .leadGate label{ display:block; font-weight:900; margin:12px 0 6px; }
-  .leadGate input{
-    width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;
-    font-size:16px; box-sizing:border-box;
+  .formRow{
+    max-width:680px;
+    margin: 0 auto 16px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+    text-align:left;
   }
-
-  .btn{
-    margin-top:14px; padding:12px 16px; border:none; border-radius:10px;
-    font-weight:900; background:#111; color:#fff; cursor:pointer;
+  @media (max-width:760px){
+    .formRow{ grid-template-columns: 1fr; }
+  }
+  label{ font-weight:900; font-size:13px; margin-bottom:6px; display:block; }
+  input{
     width:100%;
-  }
-  .btn:disabled{ opacity:.5; cursor:not-allowed; }
-
-  #gameArea{ display:none; margin-top:10px; }
-
-  .prizeWrap{
-    margin-top:10px;
-    padding:12px;
-    border-radius:14px;
-    background:#fafafa;
-    border:1px solid #eee;
-  }
-  #prizeTitle{ font-size:12px; color:#666; margin:0 0 6px; }
-  #prizeLabel{ font-size:26px; font-weight:900; margin:0; }
-  #prizeCode{ font-size:14px; color:#333; margin-top:6px; display:none; }
-
-  .grandGlow{
-    color:#b00000;
-    animation:pulse 1s infinite alternate;
-  }
-  @keyframes pulse{ from{ transform:scale(1); } to{ transform:scale(1.04); } }
-
-  canvas{
-    margin-top:14px;
-    border-radius:14px;
+    padding:14px;
     border:1px solid #ddd;
-    touch-action:none;
-    width:min(720px, 100%);
-    height:auto;
-    display:block;
-    margin-left:auto;
-    margin-right:auto;
+    border-radius:12px;
+    font-size:16px;
+    box-sizing:border-box;
+  }
+
+  .btnRow{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+  button{
+    border:none;
+    border-radius:12px;
+    padding:12px 16px;
+    font-weight:900;
+    cursor:pointer;
+    font-size:15px;
+  }
+  .primary{ background:var(--btn); color:var(--btnText); min-width:180px; }
+  .ghost{ background:#fff; border:1px solid #ddd; color:#111; }
+  button:disabled{ opacity:0.45; cursor:not-allowed; }
+
+  .statusBar{
+    max-width:760px;
+    margin: 14px auto 10px;
+    padding:12px;
+    border:1px solid #dbeafe;
+    background:#eff6ff;
+    border-radius:14px;
+    text-align:left;
+    display:none;
+  }
+  .statusBar .big{ font-weight:900; font-size:14px; }
+  .statusBar .small{ margin-top:6px; color:#333; font-size:13px; }
+
+  /* Scratch area */
+  .scratchArea{
+    max-width: 920px;
+    margin: 14px auto 10px;
+    padding: 18px;
+    border:1px solid var(--line);
+    border-radius:16px;
     background:#fff;
   }
 
-  .row{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-top:14px;
+  /* Prize line should NOT reveal before scratch */
+  .prizeTop{
+    font-weight:900;
+    font-size:22px;
+    margin: 0 0 8px;
+    letter-spacing:0.2px;
   }
-  .miniBtn{
-    padding:12px 14px; border-radius:10px; border:1px solid #ddd;
-    background:#fff; font-weight:900; cursor:pointer;
-    min-width:200px;
+  .prizeTop.muted{ color:#111; opacity:0.35; }
+
+  .scratchStage{
+    position:relative;
+    width: min(900px, 100%);
+    height: min(360px, 48vw);
+    max-height: 420px;
+    margin: 12px auto 0;
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid #dcdcdc;
+    background:#f7f7f7;
   }
 
-  .admin{
-    margin-top:14px;
+  /* Underlay (what gets revealed) */
+  .underlay{
+    position:absolute; inset:0;
     display:flex;
+    align-items:center;
     justify-content:center;
+    flex-direction:column;
+    padding:18px;
+    text-align:center;
   }
-  .admin .miniBtn{ background:#111; color:#fff; border-color:#111; }
+  .underlay .won{ font-size:16px; color:#333; font-weight:900; letter-spacing:0.5px; }
+  .underlay .big{ font-size:42px; font-weight:900; margin-top:8px; }
+  .underlay .code{ margin-top:10px; font-size:16px; color:#222; }
+  .underlay .note{ margin-top:12px; font-size:13px; color:#555; max-width:520px; }
 
-  #errorBox{
+  canvas{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    touch-action:none;
+  }
+
+  .footerNote{ color:var(--muted); font-size:12px; margin-top:10px; }
+
+  /* Confetti */
+  .confetti{
+    pointer-events:none;
+    position:fixed;
+    inset:0;
+    overflow:hidden;
     display:none;
-    margin:16px auto 0;
+    z-index:9999;
+  }
+  .confetti span{
+    position:absolute;
+    top:-10px;
+    width:10px; height:14px;
+    opacity:0.9;
+    transform: rotate(0deg);
+    animation: fall 1200ms linear forwards;
+  }
+  @keyframes fall{
+    to{
+      transform: translateY(110vh) rotate(720deg);
+      opacity:1;
+    }
+  }
+
+  .alert{
     max-width:760px;
+    margin: 12px auto 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #ffd6d6;
+    background: #fff3f3;
+    color:#7a1f1f;
     text-align:left;
-    background:#fff0f0;
-    border:1px solid #ffb3b3;
-    border-radius:12px;
-    padding:12px;
-    color:#7a0000;
-    font-size:13px;
-    white-space:pre-wrap;
+    display:none;
   }
 </style>
 </head>
 
 <body>
+<div class="confetti" id="confetti"></div>
+
 <div class="wrap">
   <div class="card">
-    <h2>🎉 Scratch to Win</h2>
-    <p class="sub">Enter your info → scratch to reveal your discount. (Offline demo, CSV export later.)</p>
+    <h1>🎉 Scratch to Win</h1>
+    <div class="sub">Enter your info → scratch to reveal your discount. (Offline demo: leads stored on this device, CSV export.)</div>
 
-    <!-- LEAD GATE -->
-    <div id="leadGate" class="leadGate">
-      <label for="name">Full Name</label>
-      <input id="name" placeholder="Full name" autocomplete="name" />
-
-      <label for="email">Email Address</label>
-      <input id="email" placeholder="name@email.com" autocomplete="email" />
-
-      <button id="startBtn" class="btn" type="button">Start Game</button>
-    </div>
-
-    <!-- GAME -->
-    <div id="gameArea">
-      <div class="prizeWrap">
-        <div id="prizeTitle">Scratch to reveal</div>
-        <div id="prizeLabel">—</div>
-        <div id="prizeCode">Code: —</div>
+    <div class="formRow" id="leadForm">
+      <div>
+        <label for="name">Full Name</label>
+        <input id="name" type="text" placeholder="Full Name" autocomplete="name">
       </div>
-
-      <canvas id="scratchCanvas" width="900" height="360"></canvas>
-
-      <div class="row">
-        <button id="nextBtn" class="miniBtn" type="button" disabled>Next Student</button>
+      <div>
+        <label for="email">Email Address</label>
+        <input id="email" type="email" placeholder="name@email.com" autocomplete="email">
       </div>
     </div>
 
-    <div class="admin">
-      <button id="exportBtn" class="miniBtn" type="button">Export CSV</button>
+    <div class="btnRow">
+      <button class="primary" id="startBtn" type="button">Start Game</button>
+      <button class="ghost" id="nextBtn" type="button" disabled>Next Student</button>
+      <button class="primary" id="exportBtn" type="button">Export CSV</button>
+      <button class="ghost" id="resetAllBtn" type="button" title="Resets inventory + clears leads on THIS device only">Reset Device Data</button>
     </div>
 
-    <div id="errorBox"></div>
+    <div class="alert" id="alertBox"></div>
+
+    <div class="statusBar" id="statusBar">
+      <div class="big">Saved ✅</div>
+      <div class="small" id="statusText"></div>
+    </div>
+
+    <div class="scratchArea">
+      <div id="prizeTop" class="prizeTop muted">Scratch to reveal your prize</div>
+
+      <div class="scratchStage" id="stage">
+        <div class="underlay">
+          <div class="won">🎁 YOUR PRIZE</div>
+          <div class="big" id="underBig">—</div>
+          <div class="code" id="underCode">Code: —</div>
+          <div class="note" id="underNote">Enter your info above, then scratch the card to reveal your discount.</div>
+        </div>
+        <canvas id="scratchCanvas"></canvas>
+      </div>
+
+      <div class="footerNote">
+        Tip: If you’re on multiple devices, each device keeps its own list + inventory (until we wire a backend).
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-window.addEventListener("DOMContentLoaded", () => {
-  // If anything throws, show it instead of white-screening.
-  const errorBox = document.getElementById("errorBox");
-  function showError(msg){
-    errorBox.style.display = "block";
-    errorBox.textContent = "Error:\n" + msg;
+document.addEventListener("DOMContentLoaded", () => {
+  // -----------------------------
+  // Storage keys
+  // -----------------------------
+  const LEADS_KEY = "odgo_leads_v2";
+  const INV_KEY   = "odgo_inventory_v2";
+
+  // -----------------------------
+  // Prize inventory (EDIT CODES HERE)
+  // -----------------------------
+  const PRIZES_DEFAULT = [
+    { type:"P1_FREE", label:"✅ FREE PART 1 COURSE", code:"P1FREE-01", remaining:2, grand:true },
+    { type:"P2_FREE", label:"✅ FREE PART 2 COURSE", code:"P2FREE-01", remaining:2, grand:true },
+    { type:"P3_FREE", label:"✅ FREE PART 3 COURSE", code:"P3FREE-01", remaining:2, grand:true },
+
+    // These two are “same code” prizes:
+    { type:"50_OFF",  label:"$50 OFF ANY COURSE", code:"CONF50", remaining:50, grand:false },
+    { type:"20_OFF",  label:"20% OFF ANY COURSE", code:"CONF20", remaining:500, grand:false },
+  ];
+
+  // If you want the 2+2+2 free prizes to each have UNIQUE codes,
+  // do it like: P1FREE-01, P1FREE-02, etc. For now we’ll auto-split below.
+
+  // -----------------------------
+  // Helpers: storage
+  // -----------------------------
+  function loadJSON(key, fallback){
+    try { return JSON.parse(localStorage.getItem(key) || ""); }
+    catch { return fallback; }
+  }
+  function saveJSON(key, val){
+    localStorage.setItem(key, JSON.stringify(val));
   }
 
-  try {
-    const STORAGE_KEY = "odgo_leads_v3";
+  function validEmail(s){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
+  }
+  function uid(){
+    return (crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now()+"_"+Math.random().toString(16).slice(2));
+  }
 
-    function getLeads(){
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-      catch { return []; }
-    }
-    function setLeads(data){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-    function validEmail(s){
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
-    }
-
-    // ===== PRIZE POOL (finite; replace codes later) =====
-    function buildPrizePool(){
-      const pool = [];
-
-      // 6 grand prizes (unique placeholders for now)
-      pool.push({label:"FREE PART 1 COURSE", code:"P1_CODE_1", grand:true});
-      pool.push({label:"FREE PART 1 COURSE", code:"P1_CODE_2", grand:true});
-      pool.push({label:"FREE PART 2 COURSE", code:"P2_CODE_1", grand:true});
-      pool.push({label:"FREE PART 2 COURSE", code:"P2_CODE_2", grand:true});
-      pool.push({label:"FREE PART 3 COURSE", code:"P3_CODE_1", grand:true});
-      pool.push({label:"FREE PART 3 COURSE", code:"P3_CODE_2", grand:true});
-
-      // 50 x $50 off (same code)
-      for(let i=0;i<50;i++) pool.push({label:"$50 OFF ANY COURSE", code:"CONF50", grand:false});
-
-      // 500 x 20% off (same code)
-      for(let i=0;i<500;i++) pool.push({label:"20% OFF ANY COURSE", code:"CONF20", grand:false});
-
-      // shuffle
-      for(let i=pool.length-1;i>0;i--){
-        const j=Math.floor(Math.random()*(i+1));
-        [pool[i], pool[j]] = [pool[j], pool[i]];
+  // -----------------------------
+  // Build a concrete inventory list with unique codes for the 2+2+2 prizes
+  // We’ll expand them into individual “tickets”.
+  // -----------------------------
+  function expandInventory(def){
+    const tickets = [];
+    for (const p of def){
+      if (p.type === "P1_FREE"){
+        tickets.push({ label:p.label, code:"P1FREE-01", grand:true });
+        tickets.push({ label:p.label, code:"P1FREE-02", grand:true });
+        continue;
       }
-      return pool;
-    }
-
-    // Keep pool for this session (so Next Student doesn't reshuffle)
-    // If you refresh, it reshuffles—fine for now.
-    let prizePool = buildPrizePool();
-
-    // ===== DOM =====
-    const leadGate = document.getElementById("leadGate");
-    const gameArea = document.getElementById("gameArea");
-    const nameEl = document.getElementById("name");
-    const emailEl = document.getElementById("email");
-    const startBtn = document.getElementById("startBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const exportBtn = document.getElementById("exportBtn");
-
-    const prizeLabel = document.getElementById("prizeLabel");
-    const prizeCode = document.getElementById("prizeCode");
-    const prizeTitle = document.getElementById("prizeTitle");
-
-    const canvas = document.getElementById("scratchCanvas");
-    const ctx = canvas.getContext("2d");
-
-    let currentPrize = null;
-    let currentLead = null;
-    let scratching = false;
-    let revealed = false;
-
-    function drawCover(){
-      ctx.globalCompositeOperation = "source-over";
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-
-      ctx.fillStyle = "#bfbfbf";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      ctx.fillStyle = "rgba(0,0,0,0.40)";
-      ctx.font = "bold 46px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("SCRATCH HERE", canvas.width/2, canvas.height/2);
-
-      ctx.globalCompositeOperation = "destination-out";
-    }
-
-    function scratchDot(x,y){
-      ctx.beginPath();
-      ctx.arc(x,y,30,0,Math.PI*2);
-      ctx.fill();
-    }
-
-    function getPos(evt){
-      const r = canvas.getBoundingClientRect();
-      const t = evt.touches ? evt.touches[0] : evt;
-      return {
-        x: (t.clientX - r.left) * (canvas.width / r.width),
-        y: (t.clientY - r.top)  * (canvas.height / r.height)
-      };
-    }
-
-    function percentCleared(){
-      const img = ctx.getImageData(0,0,canvas.width,canvas.height).data;
-      let cleared = 0;
-      for (let i=3;i<img.length;i+=4){
-        if (img[i] === 0) cleared++;
+      if (p.type === "P2_FREE"){
+        tickets.push({ label:p.label, code:"P2FREE-01", grand:true });
+        tickets.push({ label:p.label, code:"P2FREE-02", grand:true });
+        continue;
       }
-      return cleared / (img.length/4);
+      if (p.type === "P3_FREE"){
+        tickets.push({ label:p.label, code:"P3FREE-01", grand:true });
+        tickets.push({ label:p.label, code:"P3FREE-02", grand:true });
+        continue;
+      }
+      // Bulk prizes: add N identical tickets
+      for (let i=0;i<p.remaining;i++){
+        tickets.push({ label:p.label, code:p.code, grand:!!p.grand });
+      }
     }
+    return tickets;
+  }
 
-    function revealPrizeAndSave(){
-      if (revealed) return;
+  function getInventoryTickets(){
+    const saved = loadJSON(INV_KEY, null);
+    if (Array.isArray(saved) && saved.length) return saved;
+
+    const fresh = expandInventory(PRIZES_DEFAULT);
+    // Shuffle once so prizes are “random” but inventory-accurate.
+    for (let i=fresh.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [fresh[i], fresh[j]] = [fresh[j], fresh[i]];
+    }
+    saveJSON(INV_KEY, fresh);
+    return fresh;
+  }
+
+  function popPrize(){
+    const inv = getInventoryTickets();
+    if (!inv.length){
+      // fallback if you run out: keep giving 20% (or change this behavior)
+      return { label:"20% OFF ANY COURSE", code:"CONF20", grand:false, exhausted:true };
+    }
+    const prize = prizeFromFront(inv);
+    saveJSON(INV_KEY, inv);
+    return prize;
+  }
+  function prizeFromFront(invArr){
+    return invArr.shift();
+  }
+
+  // -----------------------------
+  // Leads list
+  // -----------------------------
+  function getLeads(){
+    const leads = loadJSON(LEADS_KEY, []);
+    return Array.isArray(leads) ? leads : [];
+  }
+  function addLead(lead){
+    const leads = getLeads();
+    leads.unshift(lead);
+    saveJSON(LEADS_KEY, leads);
+  }
+
+  // -----------------------------
+  // UI elements
+  // -----------------------------
+  const nameEl = document.getElementById("name");
+  const emailEl = document.getElementById("email");
+  const startBtn = document.getElementById("startBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const exportBtn = document.getElementById("exportBtn");
+  const resetAllBtn = document.getElementById("resetAllBtn");
+
+  const statusBar = document.getElementById("statusBar");
+  const statusText = document.getElementById("statusText");
+  const alertBox = document.getElementById("alertBox");
+
+  const prizeTop = document.getElementById("prizeTop");
+  const underBig = document.getElementById("underBig");
+  const underCode = document.getElementById("underCode");
+  const underNote = document.getElementById("underNote");
+
+  const confetti = document.getElementById("confetti");
+
+  // Canvas
+  const canvas = document.getElementById("scratchCanvas");
+  const stage = document.getElementById("stage");
+  const ctx = canvas.getContext("2d");
+
+  // State
+  let scratchEnabled = false;
+  let isDown = false;
+  let revealed = false;
+  let currentLeadId = null;
+  let currentPrize = null;
+
+  // -----------------------------
+  // Canvas sizing (critical on iPad/Safari)
+  // -----------------------------
+  function fitCanvas(){
+    const r = stage.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = Math.max(1, Math.floor(r.width * dpr));
+    canvas.height = Math.max(1, Math.floor(r.height * dpr));
+    canvas.style.width = r.width + "px";
+    canvas.style.height = r.height + "px";
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+  }
+
+  function drawCover(){
+    const r = stage.getBoundingClientRect();
+    // Draw in CSS pixels
+    ctx.globalCompositeOperation = "source-over";
+    ctx.clearRect(0,0,r.width,r.height);
+
+    // grey cover
+    ctx.fillStyle = "#bfbfbf";
+    ctx.fillRect(0,0,r.width,r.height);
+
+    // text
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.font = "bold 34px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("SCRATCH HERE", r.width/2, r.height/2);
+
+    // erase mode
+    ctx.globalCompositeOperation = "destination-out";
+  }
+
+  function pointerPos(evt){
+    const rect = stage.getBoundingClientRect();
+    const p = evt.touches ? evt.touches[0] : evt;
+    return { x: (p.clientX - rect.left), y: (p.clientY - rect.top) };
+  }
+
+  function scratch(x,y){
+    ctx.beginPath();
+    ctx.arc(x,y,26,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  function clearedPercent(){
+    // Sample down for speed
+    const w = canvas.width, h = canvas.height;
+    const img = ctx.getImageData(0,0,w,h).data;
+    let cleared = 0;
+    // alpha channel every 4th byte; sample every ~8 pixels
+    const stride = 4 * 8;
+    for (let i=3;i<img.length;i+=stride){
+      if (img[i] === 0) cleared++;
+    }
+    return cleared / (img.length/stride);
+  }
+
+  function showAlert(msg){
+    alertBox.textContent = msg;
+    alertBox.style.display = "block";
+    setTimeout(() => { alertBox.style.display="none"; }, 2600);
+  }
+
+  function setPrizeUIBeforeReveal(){
+    // IMPORTANT: do NOT show prize label before scratch
+    prizeTop.textContent = "Scratch to reveal your prize";
+    prizeTop.classList.add("muted");
+    underBig.textContent = "—";
+    underCode.textContent = "Code: —";
+    underNote.textContent = "Scratch the card to reveal your discount.";
+  }
+
+  function setPrizeUIAfterReveal(prize){
+    prizeTop.textContent = prize.label;
+    prizeTop.classList.remove("muted");
+    underBig.textContent = prize.label;
+    underCode.textContent = "Code: " + prize.code;
+
+    if (prize.label.includes("FREE")){
+      underNote.textContent = "🎉 Grand prize! Please show this screen to the booth staff. We’ll help you redeem it.";
+    } else {
+      underNote.textContent = "Show this code to the booth staff (or screenshot it).";
+    }
+  }
+
+  function confettiPop(){
+    confetti.innerHTML = "";
+    confetti.style.display = "block";
+    const colors = ["#111","#888","#f59e0b","#22c55e","#3b82f6","#ef4444","#a855f7"];
+    const n = 70;
+
+    for (let i=0;i<n;i++){
+      const s = document.createElement("span");
+      const left = Math.random()*100;
+      const delay = Math.random()*150;
+      const size = 8 + Math.random()*10;
+      s.style.left = left + "vw";
+      s.style.animationDelay = delay + "ms";
+      s.style.width = size + "px";
+      s.style.height = (size*1.2) + "px";
+      s.style.background = colors[Math.floor(Math.random()*colors.length)];
+      confetti.appendChild(s);
+    }
+    setTimeout(() => { confetti.style.display = "none"; }, 1400);
+  }
+
+  function lockLeadInputs(locked){
+    nameEl.disabled = locked;
+    emailEl.disabled = locked;
+    startBtn.disabled = locked;
+  }
+
+  function enableScratch(enabled){
+    scratchEnabled = enabled;
+    nextBtn.disabled = !enabled; // allow next student only after start
+  }
+
+  function startRoundForLead(name,email){
+    currentLeadId = uid();
+    revealed = false;
+
+    // Save lead now (before scratch)
+    addLead({
+      id: currentLeadId,
+      name,
+      email,
+      startedAt: new Date().toISOString(),
+      revealedAt: null,
+      prizeLabel: null,
+      prizeCode: null
+    });
+
+    // Pick prize NOW but do NOT display it until reveal
+    currentPrize = popPrize();
+    setPrizeUIBeforeReveal();
+
+    // UI status
+    statusText.textContent = `${name} — ${email} (saved). Now scratch below to reveal your prize.`;
+    statusBar.style.display = "block";
+
+    // Prepare scratch
+    fitCanvas();
+    drawCover();
+    enableScratch(true);
+    lockLeadInputs(true);
+    startBtn.textContent = "Saved — scratch below!";
+  }
+
+  function updateLeadWithPrize(){
+    if (!currentLeadId || !currentPrize) return;
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === currentLeadId);
+    if (idx === -1) return;
+
+    leads[idx].revealedAt = new Date().toISOString();
+    leads[idx].prizeLabel = currentPrize.label;
+    leads[idx].prizeCode  = currentPrize.code;
+    saveJSON(LEADS_KEY, leads);
+  }
+
+  function resetForNextStudent(){
+    // reset fields
+    nameEl.value = "";
+    emailEl.value = "";
+    statusBar.style.display = "none";
+    alertBox.style.display = "none";
+
+    // reset state
+    currentLeadId = null;
+    currentPrize = null;
+    revealed = false;
+    isDown = false;
+
+    lockLeadInputs(false);
+    startBtn.textContent = "Start Game";
+    enableScratch(false);
+
+    // reset scratch surface
+    setPrizeUIBeforeReveal();
+    fitCanvas();
+    drawCover();
+  }
+
+  // -----------------------------
+  // Event wiring
+  // -----------------------------
+  startBtn.addEventListener("click", () => {
+    const name = (nameEl.value||"").trim();
+    const email = (emailEl.value||"").trim();
+
+    if (!name) return showAlert("Please enter a full name.");
+    if (!validEmail(email)) return showAlert("Please enter a valid email address.");
+
+    startRoundForLead(name,email);
+  });
+
+  nextBtn.addEventListener("click", () => {
+    resetForNextStudent();
+  });
+
+  exportBtn.addEventListener("click", () => {
+    const leads = getLeads();
+    if (!leads.length){
+      alert("No leads yet.");
+      return;
+    }
+    const header = "name,email,startedAt,revealedAt,prizeLabel,prizeCode\n";
+    const rows = leads.map(l => {
+      const esc = (v) => `"${String(v ?? "").replaceAll('"','""')}"`;
+      return [
+        esc(l.name),
+        esc(l.email),
+        esc(l.startedAt),
+        esc(l.revealedAt || ""),
+        esc(l.prizeLabel || ""),
+        esc(l.prizeCode || "")
+      ].join(",");
+    }).join("\n");
+
+    const blob = new Blob([header + rows], { type:"text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "odgo_conference_leads.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  resetAllBtn.addEventListener("click", () => {
+    const ok = confirm("Reset inventory + clear ALL saved leads on THIS device?");
+    if (!ok) return;
+    localStorage.removeItem(LEADS_KEY);
+    localStorage.removeItem(INV_KEY);
+    alert("Device data cleared.");
+    resetForNextStudent();
+  });
+
+  // Scratch events
+  function onDown(e){
+    if (!scratchEnabled) return;
+    isDown = true;
+    const p = pointerPos(e);
+    scratch(p.x, p.y);
+    checkReveal();
+    e.preventDefault?.();
+  }
+  function onMove(e){
+    if (!scratchEnabled || !isDown) return;
+    const p = pointerPos(e);
+    scratch(p.x, p.y);
+    checkReveal();
+    e.preventDefault?.();
+  }
+  function onUp(){
+    isDown = false;
+  }
+
+  function checkReveal(){
+    if (revealed) return;
+    // threshold tuned so it doesn't require full erase
+    const pct = clearedPercent();
+    if (pct >= 0.55){
       revealed = true;
 
-      // Show prize + code
-      prizeTitle.textContent = "You won:";
-      prizeLabel.textContent = currentPrize.label;
-      prizeLabel.classList.toggle("grandGlow", !!currentPrize.grand);
+      // Reveal prize to UI now
+      setPrizeUIAfterReveal(currentPrize);
+      updateLeadWithPrize();
 
-      prizeCode.style.display = "block";
-      prizeCode.textContent = "Code: " + currentPrize.code;
-
-      // Save lead
-      const leads = getLeads();
-      leads.push({
-        name: currentLead.name,
-        email: currentLead.email,
-        prize: currentPrize.label,
-        code: currentPrize.code,
-        grand: !!currentPrize.grand,
-        time: new Date().toISOString()
-      });
-      setLeads(leads);
-
-      // Enable next student
-      nextBtn.disabled = false;
-    }
-
-    function maybeReveal(){
-      if (revealed) return;
-      if (percentCleared() >= 0.45){
-        revealPrizeAndSave();
+      // Grand prize effect
+      if (currentPrize && currentPrize.grand){
+        confettiPop();
       }
     }
-
-    // Canvas events
-    canvas.addEventListener("mousedown", (e) => {
-      if (!currentPrize) return;
-      scratching = true;
-      const p = getPos(e);
-      scratchDot(p.x,p.y);
-      maybeReveal();
-    });
-
-    canvas.addEventListener("mousemove", (e) => {
-      if (!scratching || !currentPrize) return;
-      const p = getPos(e);
-      scratchDot(p.x,p.y);
-      maybeReveal();
-    });
-
-    window.addEventListener("mouseup", () => scratching = false);
-
-    canvas.addEventListener("touchstart", (e) => {
-      if (!currentPrize) return;
-      scratching = true;
-      const p = getPos(e);
-      scratchDot(p.x,p.y);
-      maybeReveal();
-      e.preventDefault();
-    }, {passive:false});
-
-    canvas.addEventListener("touchmove", (e) => {
-      if (!scratching || !currentPrize) return;
-      const p = getPos(e);
-      scratchDot(p.x,p.y);
-      maybeReveal();
-      e.preventDefault();
-    }, {passive:false});
-
-    canvas.addEventListener("touchend", () => scratching = false);
-
-    // Start flow
-    startBtn.addEventListener("click", () => {
-      const name = (nameEl.value || "").trim();
-      const email = (emailEl.value || "").trim();
-
-      if (!name){ alert("Please enter your full name."); return; }
-      if (!validEmail(email)){ alert("Please enter a valid email."); return; }
-      if (prizePool.length === 0){ alert("All prizes have been claimed."); return; }
-
-      currentLead = { name, email };
-      currentPrize = prizePool.pop();
-      revealed = false;
-      scratching = false;
-
-      // Hide prize initially
-      prizeTitle.textContent = "Scratch to reveal";
-      prizeLabel.textContent = "—";
-      prizeLabel.classList.remove("grandGlow");
-      prizeCode.style.display = "none";
-      prizeCode.textContent = "Code: —";
-
-      // Show game
-      leadGate.style.display = "none";
-      gameArea.style.display = "block";
-      nextBtn.disabled = true;
-
-      drawCover();
-    });
-
-    // Next student (no reload)
-    nextBtn.addEventListener("click", () => {
-      // reset form
-      nameEl.value = "";
-      emailEl.value = "";
-
-      // reset state
-      currentPrize = null;
-      currentLead = null;
-      revealed = false;
-      scratching = false;
-
-      // swap views
-      gameArea.style.display = "none";
-      leadGate.style.display = "block";
-
-      // prep canvas
-      drawCover();
-    });
-
-    // Export CSV
-    exportBtn.addEventListener("click", () => {
-      const leads = getLeads();
-      if (!leads.length){ alert("No leads yet."); return; }
-
-      const header = "name,email,prize,code,grand,time\n";
-      const rows = leads.map(l => {
-        // basic CSV escaping for commas/quotes
-        const esc = (s) => `"${String(s ?? "").replaceAll('"','""')}"`;
-        return [
-          esc(l.name),
-          esc(l.email),
-          esc(l.prize),
-          esc(l.code),
-          esc(l.grand),
-          esc(l.time)
-        ].join(",");
-      }).join("\n");
-
-      const blob = new Blob([header + rows], { type:"text/csv;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "odgo_scratcher_leads.csv";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
-
-    // initial cover (even before starting)
-    drawCover();
-
-  } catch (err) {
-    showError(err && err.stack ? err.stack : String(err));
   }
+
+  stage.addEventListener("mousedown", onDown);
+  stage.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+
+  stage.addEventListener("touchstart", onDown, { passive:false });
+  stage.addEventListener("touchmove", onMove, { passive:false });
+  stage.addEventListener("touchend", onUp);
+
+  window.addEventListener("resize", () => {
+    // keep scratch layer aligned
+    fitCanvas();
+    // If mid-round, redraw cover only if not revealed yet
+    if (!revealed) drawCover();
+  });
+
+  // Init
+  setPrizeUIBeforeReveal();
+  fitCanvas();
+  drawCover();
+  enableScratch(false);
 });
 </script>
-
 </body>
 </html>
