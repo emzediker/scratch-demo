@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OD on the GO — Conference Scratcher</title>
-
 <style>
   :root{
     --bg:#fafafa;
@@ -14,574 +13,534 @@
     --line:#e9e9e9;
     --btn:#111;
     --btnText:#fff;
-    --danger:#c0392b;
+    --soft:#f4f6ff;
   }
   body{ margin:0; font-family: Arial, sans-serif; background:var(--bg); color:var(--text); }
-  .wrap{ max-width: 1100px; margin: 26px auto; padding: 0 14px; text-align:center; }
+  .wrap{ max-width:1100px; margin:28px auto; padding:0 14px; text-align:center; }
   .card{
     background:var(--card);
     border:1px solid var(--line);
     border-radius:18px;
-    padding:22px;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+    padding:20px;
+    box-shadow:0 2px 14px rgba(0,0,0,.06);
   }
-  h1{ margin:0 0 6px; font-size:28px; }
-  .sub{ margin:0 0 18px; color:var(--muted); font-size:14px; }
+  h1{ margin:0 0 6px; font-size:32px; }
+  .sub{ margin:0 0 18px; color:var(--muted); }
 
-  .formRow{
-    max-width:680px;
-    margin: 0 auto 16px;
+  .grid{
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap:12px;
+    max-width:760px;
+    margin:0 auto;
     text-align:left;
   }
-  @media (max-width:760px){
-    .formRow{ grid-template-columns: 1fr; }
-  }
-  label{ font-weight:900; font-size:13px; margin-bottom:6px; display:block; }
-  input{
+  .field label{ display:block; font-weight:900; font-size:13px; margin:0 0 6px; }
+  .field input{
     width:100%;
-    padding:14px;
+    box-sizing:border-box;
+    padding:12px 12px;
     border:1px solid #ddd;
     border-radius:12px;
     font-size:16px;
-    box-sizing:border-box;
+    outline:none;
   }
+  .field input:disabled{ background:#f6f6f6; }
 
-  .btnRow{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+  .btnRow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin:14px 0 0;
+  }
   button{
-    border:none;
+    border:0;
     border-radius:12px;
     padding:12px 16px;
     font-weight:900;
-    cursor:pointer;
     font-size:15px;
+    cursor:pointer;
   }
-  .primary{ background:var(--btn); color:var(--btnText); min-width:180px; }
-  .ghost{ background:#fff; border:1px solid #ddd; color:#111; }
-  button:disabled{ opacity:0.45; cursor:not-allowed; }
+  .primary{ background:var(--btn); color:var(--btnText); min-width:220px; }
+  .ghost{ background:#fff; color:#111; border:1px solid #ddd; }
+  button:disabled{ opacity:.5; cursor:not-allowed; }
 
-  .statusBar{
+  .savedBox{
     max-width:760px;
-    margin: 14px auto 10px;
-    padding:12px;
-    border:1px solid #dbeafe;
-    background:#eff6ff;
+    margin:14px auto 0;
+    background:var(--soft);
+    border:1px solid #cfe0ff;
     border-radius:14px;
+    padding:12px 14px;
     text-align:left;
     display:none;
   }
-  .statusBar .big{ font-weight:900; font-size:14px; }
-  .statusBar .small{ margin-top:6px; color:#333; font-size:13px; }
+  .savedBox .title{ font-weight:900; margin-bottom:6px; }
+  .savedBox .line{ font-size:14px; color:#222; }
 
-  /* Scratch area */
-  .scratchArea{
-    max-width: 920px;
-    margin: 14px auto 10px;
-    padding: 18px;
+  .scratchWrap{
+    max-width:860px;
+    margin:18px auto 0;
     border:1px solid var(--line);
-    border-radius:16px;
-    background:#fff;
-  }
-
-  /* Prize line should NOT reveal before scratch */
-  .prizeTop{
-    font-weight:900;
-    font-size:22px;
-    margin: 0 0 8px;
-    letter-spacing:0.2px;
-  }
-  .prizeTop.muted{ color:#111; opacity:0.35; }
-
-  .scratchStage{
-    position:relative;
-    width: min(900px, 100%);
-    height: min(360px, 48vw);
-    max-height: 420px;
-    margin: 12px auto 0;
     border-radius:18px;
-    overflow:hidden;
-    border:1px solid #dcdcdc;
-    background:#f7f7f7;
+    padding:16px;
+  }
+  .scratchTop{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:10px;
   }
 
-  /* Underlay (what gets revealed) */
-  .underlay{
-    position:absolute; inset:0;
+  .stage{
+    position:relative;
+    width:min(860px, 100%);
+    height:320px;           /* <-- adjust taller/shorter here */
+    margin:0 auto;
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid #ddd;
+    background:#f6f6f6;
+  }
+
+  .under{
+    position:absolute;
+    inset:0;
     display:flex;
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    padding:18px;
     text-align:center;
+    padding:16px;
+    z-index:0;
   }
-  .underlay .won{ font-size:16px; color:#333; font-weight:900; letter-spacing:0.5px; }
-  .underlay .big{ font-size:42px; font-weight:900; margin-top:8px; }
-  .underlay .code{ margin-top:10px; font-size:16px; color:#222; }
-  .underlay .note{ margin-top:12px; font-size:13px; color:#555; max-width:520px; }
+  .under .small{ color:#666; font-size:13px; margin-top:8px; }
+  .under .big{
+    font-size:34px;
+    font-weight:900;
+    margin-top:8px;
+  }
+  .under .code{
+    margin-top:8px;
+    font-size:14px;
+    color:#333;
+  }
 
   canvas{
-    position:absolute; inset:0;
-    width:100%; height:100%;
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:1;
     touch-action:none;
   }
 
-  .footerNote{ color:var(--muted); font-size:12px; margin-top:10px; }
-
-  /* Confetti */
-  .confetti{
-    pointer-events:none;
-    position:fixed;
-    inset:0;
-    overflow:hidden;
-    display:none;
-    z-index:9999;
-  }
-  .confetti span{
-    position:absolute;
-    top:-10px;
-    width:10px; height:14px;
-    opacity:0.9;
-    transform: rotate(0deg);
-    animation: fall 1200ms linear forwards;
-  }
-  @keyframes fall{
-    to{
-      transform: translateY(110vh) rotate(720deg);
-      opacity:1;
-    }
-  }
-
-  .alert{
-    max-width:760px;
-    margin: 12px auto 0;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: 1px solid #ffd6d6;
-    background: #fff3f3;
-    color:#7a1f1f;
-    text-align:left;
-    display:none;
+  .footerNote{
+    max-width:860px;
+    margin:10px auto 0;
+    color:#777;
+    font-size:12px;
+    text-align:center;
   }
 </style>
 </head>
 
 <body>
-<div class="confetti" id="confetti"></div>
-
 <div class="wrap">
   <div class="card">
     <h1>🎉 Scratch to Win</h1>
-    <div class="sub">Enter your info → scratch to reveal your discount. (Offline demo: leads stored on this device, CSV export.)</div>
+    <div class="sub">Enter name + email → scratch to reveal your prize. (Offline demo: saved on this device, CSV export.)</div>
 
-    <div class="formRow" id="leadForm">
-      <div>
-        <label for="name">Full Name</label>
-        <input id="name" type="text" placeholder="Full Name" autocomplete="name">
+    <div class="grid">
+      <div class="field">
+        <label>Full Name</label>
+        <input id="name" type="text" placeholder="Full name" autocomplete="name">
       </div>
-      <div>
-        <label for="email">Email Address</label>
+      <div class="field">
+        <label>Email Address</label>
         <input id="email" type="email" placeholder="name@email.com" autocomplete="email">
       </div>
     </div>
 
     <div class="btnRow">
-      <button class="primary" id="startBtn" type="button">Start Game</button>
-      <button class="ghost" id="nextBtn" type="button" disabled>Next Student</button>
-      <button class="primary" id="exportBtn" type="button">Export CSV</button>
-      <button class="ghost" id="resetAllBtn" type="button" title="Resets inventory + clears leads on THIS device only">Reset Device Data</button>
+      <button id="saveBtn" class="primary" type="button">Save &amp; Start Scratch</button>
+      <button id="nextBtn" class="ghost" type="button" disabled>Next Student</button>
+      <button id="exportBtn" class="primary" type="button" style="min-width:180px;">Export CSV</button>
+      <button id="resetBtn" class="ghost" type="button">Reset Device Data</button>
     </div>
 
-    <div class="alert" id="alertBox"></div>
-
-    <div class="statusBar" id="statusBar">
-      <div class="big">Saved ✅</div>
-      <div class="small" id="statusText"></div>
+    <div id="savedBox" class="savedBox">
+      <div class="title">Saved ✅</div>
+      <div class="line" id="savedLine">—</div>
+      <div class="line" style="margin-top:6px; color:#555;">Now scratch below to reveal your prize.</div>
     </div>
 
-    <div class="scratchArea">
-      <div id="prizeTop" class="prizeTop muted">Scratch to reveal your prize</div>
+    <div class="scratchWrap">
+      <div class="scratchTop">Scratch to reveal your prize</div>
 
-      <div class="scratchStage" id="stage">
-        <div class="underlay">
-          <div class="won">🎁 YOUR PRIZE</div>
-          <div class="big" id="underBig">—</div>
-          <div class="code" id="underCode">Code: —</div>
-          <div class="note" id="underNote">Enter your info above, then scratch the card to reveal your discount.</div>
+      <div class="stage" id="stage">
+        <div class="under">
+          <div style="font-weight:900; color:#444;">🎁 YOUR PRIZE</div>
+          <div class="big" id="prizeLabel">Scratch to reveal…</div>
+          <div class="code" id="prizeCode">Code: —</div>
+          <div class="small">Scratch the gray layer to reveal your discount.</div>
         </div>
-        <canvas id="scratchCanvas"></canvas>
+        <canvas id="scratch"></canvas>
       </div>
 
       <div class="footerNote">
-        Tip: If you’re on multiple devices, each device keeps its own list + inventory (until we wire a backend).
+        Tip: each device has its own saved list + prize inventory (until we connect a backend).
       </div>
     </div>
+
   </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  // -----------------------------
-  // Storage keys
-  // -----------------------------
+(() => {
+  // =========================
+  // STORAGE KEYS
+  // =========================
   const LEADS_KEY = "odgo_leads_v2";
-  const INV_KEY   = "odgo_inventory_v2";
+  const INVENTORY_KEY = "odgo_inventory_v2";
 
-  // -----------------------------
-  // Prize inventory (EDIT CODES HERE)
-  // -----------------------------
-  const PRIZES_DEFAULT = [
-    { type:"P1_FREE", label:"✅ FREE PART 1 COURSE", code:"P1FREE-01", remaining:2, grand:true },
-    { type:"P2_FREE", label:"✅ FREE PART 2 COURSE", code:"P2FREE-01", remaining:2, grand:true },
-    { type:"P3_FREE", label:"✅ FREE PART 3 COURSE", code:"P3FREE-01", remaining:2, grand:true },
+  // =========================
+  // PRIZE INVENTORY (CONTROLLED)
+  // Edit codes later; labels can stay.
+  // =========================
+  function defaultInventory(){
+    const inv = [];
 
-    // These two are “same code” prizes:
-    { type:"50_OFF",  label:"$50 OFF ANY COURSE", code:"CONF50", remaining:50, grand:false },
-    { type:"20_OFF",  label:"20% OFF ANY COURSE", code:"CONF20", remaining:500, grand:false },
-  ];
+    // 6 grand prizes with unique codes (placeholders — you’ll replace)
+    inv.push({type:"FREE_PART1", label:"FREE Part 1 Course", code:"FREE-P1-001"});
+    inv.push({type:"FREE_PART1", label:"FREE Part 1 Course", code:"FREE-P1-002"});
+    inv.push({type:"FREE_PART2", label:"FREE Part 2 Course", code:"FREE-P2-001"});
+    inv.push({type:"FREE_PART2", label:"FREE Part 2 Course", code:"FREE-P2-002"});
+    inv.push({type:"FREE_PART3", label:"FREE Part 3 Course", code:"FREE-P3-001"});
+    inv.push({type:"FREE_PART3", label:"FREE Part 3 Course", code:"FREE-P3-002"});
 
-  // If you want the 2+2+2 free prizes to each have UNIQUE codes,
-  // do it like: P1FREE-01, P1FREE-02, etc. For now we’ll auto-split below.
+    // 50 x $50 off (same code allowed)
+    for(let i=0;i<50;i++){
+      inv.push({type:"50_OFF", label:"$50 OFF any course", code:"ODGO50"});
+    }
 
-  // -----------------------------
-  // Helpers: storage
-  // -----------------------------
-  function loadJSON(key, fallback){
-    try { return JSON.parse(localStorage.getItem(key) || ""); }
-    catch { return fallback; }
+    // 500 x 20% off (same code allowed)
+    for(let i=0;i<500;i++){
+      inv.push({type:"20_OFF", label:"20% OFF any course", code:"ODGO20"});
+    }
+
+    return inv;
   }
-  function saveJSON(key, val){
-    localStorage.setItem(key, JSON.stringify(val));
+
+  function loadInventory(){
+    try{
+      const raw = localStorage.getItem(INVENTORY_KEY);
+      if(!raw){
+        const fresh = defaultInventory();
+        localStorage.setItem(INVENTORY_KEY, JSON.stringify(fresh));
+        return fresh;
+      }
+      const parsed = JSON.parse(raw);
+      if(!Array.isArray(parsed) || parsed.length === 0){
+        const fresh = defaultInventory();
+        localStorage.setItem(INVENTORY_KEY, JSON.stringify(fresh));
+        return fresh;
+      }
+      return parsed;
+    }catch{
+      const fresh = defaultInventory();
+      localStorage.setItem(INVENTORY_KEY, JSON.stringify(fresh));
+      return fresh;
+    }
   }
 
+  function saveInventory(inv){
+    localStorage.setItem(INVENTORY_KEY, JSON.stringify(inv));
+  }
+
+  // pick one prize from inventory, remove it (so counts are exact)
+  function drawPrize(){
+    const inv = loadInventory();
+    if(inv.length === 0){
+      // fallback if exhausted
+      return {type:"20_OFF", label:"20% OFF any course", code:"ODGO20"};
+    }
+    const idx = Math.floor(Math.random() * inv.length);
+    const prize = inv.splice(idx, 1)[0];
+    saveInventory(inv);
+    return prize;
+  }
+
+  // =========================
+  // LEADS
+  // =========================
+  function loadLeads(){
+    try{ return JSON.parse(localStorage.getItem(LEADS_KEY) || "[]"); }
+    catch{ return []; }
+  }
+  function saveLeads(arr){
+    localStorage.setItem(LEADS_KEY, JSON.stringify(arr));
+  }
   function validEmail(s){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s||"").trim());
   }
   function uid(){
     return (crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now()+"_"+Math.random().toString(16).slice(2));
   }
 
-  // -----------------------------
-  // Build a concrete inventory list with unique codes for the 2+2+2 prizes
-  // We’ll expand them into individual “tickets”.
-  // -----------------------------
-  function expandInventory(def){
-    const tickets = [];
-    for (const p of def){
-      if (p.type === "P1_FREE"){
-        tickets.push({ label:p.label, code:"P1FREE-01", grand:true });
-        tickets.push({ label:p.label, code:"P1FREE-02", grand:true });
-        continue;
-      }
-      if (p.type === "P2_FREE"){
-        tickets.push({ label:p.label, code:"P2FREE-01", grand:true });
-        tickets.push({ label:p.label, code:"P2FREE-02", grand:true });
-        continue;
-      }
-      if (p.type === "P3_FREE"){
-        tickets.push({ label:p.label, code:"P3FREE-01", grand:true });
-        tickets.push({ label:p.label, code:"P3FREE-02", grand:true });
-        continue;
-      }
-      // Bulk prizes: add N identical tickets
-      for (let i=0;i<p.remaining;i++){
-        tickets.push({ label:p.label, code:p.code, grand:!!p.grand });
-      }
-    }
-    return tickets;
-  }
-
-  function getInventoryTickets(){
-    const saved = loadJSON(INV_KEY, null);
-    if (Array.isArray(saved) && saved.length) return saved;
-
-    const fresh = expandInventory(PRIZES_DEFAULT);
-    // Shuffle once so prizes are “random” but inventory-accurate.
-    for (let i=fresh.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [fresh[i], fresh[j]] = [fresh[j], fresh[i]];
-    }
-    saveJSON(INV_KEY, fresh);
-    return fresh;
-  }
-
-  function popPrize(){
-    const inv = getInventoryTickets();
-    if (!inv.length){
-      // fallback if you run out: keep giving 20% (or change this behavior)
-      return { label:"20% OFF ANY COURSE", code:"CONF20", grand:false, exhausted:true };
-    }
-    const prize = prizeFromFront(inv);
-    saveJSON(INV_KEY, inv);
-    return prize;
-  }
-  function prizeFromFront(invArr){
-    return invArr.shift();
-  }
-
-  // -----------------------------
-  // Leads list
-  // -----------------------------
-  function getLeads(){
-    const leads = loadJSON(LEADS_KEY, []);
-    return Array.isArray(leads) ? leads : [];
-  }
-  function addLead(lead){
-    const leads = getLeads();
-    leads.unshift(lead);
-    saveJSON(LEADS_KEY, leads);
-  }
-
-  // -----------------------------
-  // UI elements
-  // -----------------------------
+  // =========================
+  // DOM
+  // =========================
   const nameEl = document.getElementById("name");
   const emailEl = document.getElementById("email");
-  const startBtn = document.getElementById("startBtn");
+  const saveBtn = document.getElementById("saveBtn");
   const nextBtn = document.getElementById("nextBtn");
   const exportBtn = document.getElementById("exportBtn");
-  const resetAllBtn = document.getElementById("resetAllBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const savedBox = document.getElementById("savedBox");
+  const savedLine = document.getElementById("savedLine");
 
-  const statusBar = document.getElementById("statusBar");
-  const statusText = document.getElementById("statusText");
-  const alertBox = document.getElementById("alertBox");
-
-  const prizeTop = document.getElementById("prizeTop");
-  const underBig = document.getElementById("underBig");
-  const underCode = document.getElementById("underCode");
-  const underNote = document.getElementById("underNote");
-
-  const confetti = document.getElementById("confetti");
-
-  // Canvas
-  const canvas = document.getElementById("scratchCanvas");
+  const canvas = document.getElementById("scratch");
   const stage = document.getElementById("stage");
-  const ctx = canvas.getContext("2d");
+  const prizeLabelEl = document.getElementById("prizeLabel");
+  const prizeCodeEl = document.getElementById("prizeCode");
 
-  // State
+  // =========================
+  // SCRATCH ENGINE (iOS-safe)
+  // =========================
+  const ctx = canvas.getContext("2d", { willReadFrequently:true });
+
   let scratchEnabled = false;
   let isDown = false;
   let revealed = false;
   let currentLeadId = null;
   let currentPrize = null;
+  let lastCheck = 0;
 
-  // -----------------------------
-  // Canvas sizing (critical on iPad/Safari)
-  // -----------------------------
-  function fitCanvas(){
-    const r = stage.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width  = Math.max(1, Math.floor(r.width * dpr));
-    canvas.height = Math.max(1, Math.floor(r.height * dpr));
-    canvas.style.width = r.width + "px";
-    canvas.style.height = r.height + "px";
-    ctx.setTransform(1,0,0,1,0,0);
-    ctx.scale(dpr, dpr);
+  function resizeCanvas(){
+    const rect = stage.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+    drawCover();
   }
 
   function drawCover(){
-    const r = stage.getBoundingClientRect();
-    // Draw in CSS pixels
+    // Draw a solid cover layer (scratched away via destination-out)
+    const rect = stage.getBoundingClientRect();
+    const W = rect.width;
+    const H = rect.height;
+
     ctx.globalCompositeOperation = "source-over";
-    ctx.clearRect(0,0,r.width,r.height);
+    ctx.clearRect(0,0,W,H);
 
-    // grey cover
     ctx.fillStyle = "#bfbfbf";
-    ctx.fillRect(0,0,r.width,r.height);
+    ctx.fillRect(0,0,W,H);
 
-    // text
     ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.font = "bold 34px Arial";
+    ctx.font = "900 28px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("SCRATCH HERE", r.width/2, r.height/2);
+    ctx.fillText("SCRATCH HERE", W/2, H/2);
 
-    // erase mode
     ctx.globalCompositeOperation = "destination-out";
   }
 
-  function pointerPos(evt){
+  function getPos(evt){
     const rect = stage.getBoundingClientRect();
     const p = evt.touches ? evt.touches[0] : evt;
-    return { x: (p.clientX - rect.left), y: (p.clientY - rect.top) };
+    return { x: p.clientX - rect.left, y: p.clientY - rect.top };
   }
 
-  function scratch(x,y){
+  function scratchDot(x,y){
     ctx.beginPath();
     ctx.arc(x,y,26,0,Math.PI*2);
     ctx.fill();
   }
 
-  function clearedPercent(){
-    // Sample down for speed
-    const w = canvas.width, h = canvas.height;
-    const img = ctx.getImageData(0,0,w,h).data;
+  function percentCleared(){
+    // sample pixels (downsample) so it's fast even on iPad
+    const rect = stage.getBoundingClientRect();
+    const W = Math.floor(rect.width);
+    const H = Math.floor(rect.height);
+
+    // read image at CSS size
+    const img = ctx.getImageData(0, 0, W, H).data;
     let cleared = 0;
-    // alpha channel every 4th byte; sample every ~8 pixels
-    const stride = 4 * 8;
-    for (let i=3;i<img.length;i+=stride){
-      if (img[i] === 0) cleared++;
+    const step = 8; // speed/accuracy tradeoff
+    for(let y=0; y<H; y+=step){
+      for(let x=0; x<W; x+=step){
+        const i = (y*W + x) * 4 + 3; // alpha
+        if(img[i] === 0) cleared++;
+      }
     }
-    return cleared / (img.length/stride);
+    const total = Math.ceil(H/step) * Math.ceil(W/step);
+    return cleared / total;
   }
 
-  function showAlert(msg){
-    alertBox.textContent = msg;
-    alertBox.style.display = "block";
-    setTimeout(() => { alertBox.style.display="none"; }, 2600);
+  function revealPrize(){
+    if(revealed) return;
+    revealed = true;
+
+    // Now show the real prize text
+    prizeLabelEl.textContent = currentPrize.label;
+    prizeCodeEl.textContent = "Code: " + currentPrize.code;
+
+    // update lead record with prize (it was already chosen at save-time)
+    const leads = loadLeads();
+    const idx = leads.findIndex(l => l.id === currentLeadId);
+    if(idx >= 0){
+      leads[idx].revealedAt = new Date().toISOString();
+      leads[idx].prizeLabel = currentPrize.label;
+      leads[idx].prizeCode = currentPrize.code;
+      saveLeads(leads);
+    }
+
+    // enable Next Student
+    nextBtn.disabled = false;
   }
 
-  function setPrizeUIBeforeReveal(){
-    // IMPORTANT: do NOT show prize label before scratch
-    prizeTop.textContent = "Scratch to reveal your prize";
-    prizeTop.classList.add("muted");
-    underBig.textContent = "—";
-    underCode.textContent = "Code: —";
-    underNote.textContent = "Scratch the card to reveal your discount.";
-  }
-
-  function setPrizeUIAfterReveal(prize){
-    prizeTop.textContent = prize.label;
-    prizeTop.classList.remove("muted");
-    underBig.textContent = prize.label;
-    underCode.textContent = "Code: " + prize.code;
-
-    if (prize.label.includes("FREE")){
-      underNote.textContent = "🎉 Grand prize! Please show this screen to the booth staff. We’ll help you redeem it.";
-    } else {
-      underNote.textContent = "Show this code to the booth staff (or screenshot it).";
+  function checkRevealThrottled(){
+    const now = Date.now();
+    if(now - lastCheck < 250) return;
+    lastCheck = now;
+    const pct = percentCleared();
+    if(pct >= 0.45){ // adjust threshold here (0.35 easier, 0.55 harder)
+      revealPrize();
     }
   }
 
-  function confettiPop(){
-    confetti.innerHTML = "";
-    confetti.style.display = "block";
-    const colors = ["#111","#888","#f59e0b","#22c55e","#3b82f6","#ef4444","#a855f7"];
-    const n = 70;
-
-    for (let i=0;i<n;i++){
-      const s = document.createElement("span");
-      const left = Math.random()*100;
-      const delay = Math.random()*150;
-      const size = 8 + Math.random()*10;
-      s.style.left = left + "vw";
-      s.style.animationDelay = delay + "ms";
-      s.style.width = size + "px";
-      s.style.height = (size*1.2) + "px";
-      s.style.background = colors[Math.floor(Math.random()*colors.length)];
-      confetti.appendChild(s);
-    }
-    setTimeout(() => { confetti.style.display = "none"; }, 1400);
+  function onDown(evt){
+    if(!scratchEnabled) return;
+    isDown = true;
+    const p = getPos(evt);
+    scratchDot(p.x, p.y);
+    checkRevealThrottled();
+    evt.preventDefault?.();
+  }
+  function onMove(evt){
+    if(!scratchEnabled || !isDown) return;
+    const p = getPos(evt);
+    scratchDot(p.x, p.y);
+    checkRevealThrottled();
+    evt.preventDefault?.();
+  }
+  function onUp(){
+    isDown = false;
   }
 
-  function lockLeadInputs(locked){
+  canvas.addEventListener("mousedown", onDown);
+  canvas.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+
+  canvas.addEventListener("touchstart", onDown, { passive:false });
+  canvas.addEventListener("touchmove", onMove, { passive:false });
+  canvas.addEventListener("touchend", onUp);
+
+  window.addEventListener("resize", resizeCanvas);
+
+  // =========================
+  // FLOW: SAVE -> SCRATCH -> REVEAL -> NEXT
+  // =========================
+  function lockForm(locked){
     nameEl.disabled = locked;
     emailEl.disabled = locked;
-    startBtn.disabled = locked;
+    saveBtn.disabled = locked;
   }
 
-  function enableScratch(enabled){
-    scratchEnabled = enabled;
-    nextBtn.disabled = !enabled; // allow next student only after start
+  function setHiddenPrizeUI(){
+    prizeLabelEl.textContent = "Scratch to reveal…";
+    prizeCodeEl.textContent = "Code: —";
   }
 
-  function startRoundForLead(name,email){
-    currentLeadId = uid();
+  function startRoundForLead(leadId, prize){
+    currentLeadId = leadId;
+    currentPrize = prize;
     revealed = false;
+    scratchEnabled = true;
+    setHiddenPrizeUI();
+    drawCover();
+  }
 
-    // Save lead now (before scratch)
-    addLead({
-      id: currentLeadId,
+  saveBtn.addEventListener("click", () => {
+    const name = (nameEl.value || "").trim();
+    const email = (emailEl.value || "").trim();
+
+    if(!name){ alert("Please enter full name."); return; }
+    if(!validEmail(email)){ alert("Please enter a valid email."); return; }
+
+    // choose prize NOW but keep hidden until scratch completion
+    const prize = drawPrize();
+
+    const lead = {
+      id: uid(),
       name,
       email,
-      startedAt: new Date().toISOString(),
+      savedAt: new Date().toISOString(),
       revealedAt: null,
       prizeLabel: null,
-      prizeCode: null
-    });
+      prizeCode: null,
+      assignedPrizeLabel: prize.label,
+      assignedPrizeCode: prize.code
+    };
 
-    // Pick prize NOW but do NOT display it until reveal
-    currentPrize = popPrize();
-    setPrizeUIBeforeReveal();
+    const leads = loadLeads();
+    leads.unshift(lead);
+    saveLeads(leads);
 
-    // UI status
-    statusText.textContent = `${name} — ${email} (saved). Now scratch below to reveal your prize.`;
-    statusBar.style.display = "block";
+    savedLine.textContent = `${lead.name} — ${lead.email} (saved). Now scratch below to reveal your prize.`;
+    savedBox.style.display = "block";
 
-    // Prepare scratch
-    fitCanvas();
-    drawCover();
-    enableScratch(true);
-    lockLeadInputs(true);
-    startBtn.textContent = "Saved — scratch below!";
-  }
+    lockForm(true);
+    saveBtn.textContent = "Saved — scratch below!";
+    nextBtn.disabled = true;
 
-  function updateLeadWithPrize(){
-    if (!currentLeadId || !currentPrize) return;
-    const leads = getLeads();
-    const idx = leads.findIndex(l => l.id === currentLeadId);
-    if (idx === -1) return;
-
-    leads[idx].revealedAt = new Date().toISOString();
-    leads[idx].prizeLabel = currentPrize.label;
-    leads[idx].prizeCode  = currentPrize.code;
-    saveJSON(LEADS_KEY, leads);
-  }
-
-  function resetForNextStudent(){
-    // reset fields
-    nameEl.value = "";
-    emailEl.value = "";
-    statusBar.style.display = "none";
-    alertBox.style.display = "none";
-
-    // reset state
-    currentLeadId = null;
-    currentPrize = null;
-    revealed = false;
-    isDown = false;
-
-    lockLeadInputs(false);
-    startBtn.textContent = "Start Game";
-    enableScratch(false);
-
-    // reset scratch surface
-    setPrizeUIBeforeReveal();
-    fitCanvas();
-    drawCover();
-  }
-
-  // -----------------------------
-  // Event wiring
-  // -----------------------------
-  startBtn.addEventListener("click", () => {
-    const name = (nameEl.value||"").trim();
-    const email = (emailEl.value||"").trim();
-
-    if (!name) return showAlert("Please enter a full name.");
-    if (!validEmail(email)) return showAlert("Please enter a valid email address.");
-
-    startRoundForLead(name,email);
+    startRoundForLead(lead.id, prize);
   });
 
   nextBtn.addEventListener("click", () => {
-    resetForNextStudent();
+    // reset UI for next person
+    nameEl.value = "";
+    emailEl.value = "";
+    savedBox.style.display = "none";
+
+    lockForm(false);
+    saveBtn.textContent = "Save & Start Scratch";
+
+    // reset scratch state
+    scratchEnabled = false;
+    currentLeadId = null;
+    currentPrize = null;
+    revealed = false;
+    nextBtn.disabled = true;
+
+    setHiddenPrizeUI();
+    drawCover();
   });
 
   exportBtn.addEventListener("click", () => {
-    const leads = getLeads();
-    if (!leads.length){
+    const leads = loadLeads();
+    if(!leads.length){
       alert("No leads yet.");
       return;
     }
-    const header = "name,email,startedAt,revealedAt,prizeLabel,prizeCode\n";
+
+    const header = "name,email,savedAt,revealedAt,assignedPrizeLabel,assignedPrizeCode,revealedPrizeLabel,revealedPrizeCode\n";
     const rows = leads.map(l => {
       const esc = (v) => `"${String(v ?? "").replaceAll('"','""')}"`;
       return [
         esc(l.name),
         esc(l.email),
-        esc(l.startedAt),
+        esc(l.savedAt),
         esc(l.revealedAt || ""),
+        esc(l.assignedPrizeLabel || ""),
+        esc(l.assignedPrizeCode || ""),
         esc(l.prizeLabel || ""),
         esc(l.prizeCode || "")
       ].join(",");
@@ -598,74 +557,20 @@ document.addEventListener("DOMContentLoaded", () => {
     URL.revokeObjectURL(url);
   });
 
-  resetAllBtn.addEventListener("click", () => {
-    const ok = confirm("Reset inventory + clear ALL saved leads on THIS device?");
-    if (!ok) return;
+  resetBtn.addEventListener("click", () => {
+    if(!confirm("Reset ALL saved leads + inventory on this device?")) return;
     localStorage.removeItem(LEADS_KEY);
-    localStorage.removeItem(INV_KEY);
-    alert("Device data cleared.");
-    resetForNextStudent();
+    localStorage.removeItem(INVENTORY_KEY);
+    alert("Device data reset.");
+    location.reload();
   });
 
-  // Scratch events
-  function onDown(e){
-    if (!scratchEnabled) return;
-    isDown = true;
-    const p = pointerPos(e);
-    scratch(p.x, p.y);
-    checkReveal();
-    e.preventDefault?.();
-  }
-  function onMove(e){
-    if (!scratchEnabled || !isDown) return;
-    const p = pointerPos(e);
-    scratch(p.x, p.y);
-    checkReveal();
-    e.preventDefault?.();
-  }
-  function onUp(){
-    isDown = false;
-  }
-
-  function checkReveal(){
-    if (revealed) return;
-    // threshold tuned so it doesn't require full erase
-    const pct = clearedPercent();
-    if (pct >= 0.55){
-      revealed = true;
-
-      // Reveal prize to UI now
-      setPrizeUIAfterReveal(currentPrize);
-      updateLeadWithPrize();
-
-      // Grand prize effect
-      if (currentPrize && currentPrize.grand){
-        confettiPop();
-      }
-    }
-  }
-
-  stage.addEventListener("mousedown", onDown);
-  stage.addEventListener("mousemove", onMove);
-  window.addEventListener("mouseup", onUp);
-
-  stage.addEventListener("touchstart", onDown, { passive:false });
-  stage.addEventListener("touchmove", onMove, { passive:false });
-  stage.addEventListener("touchend", onUp);
-
-  window.addEventListener("resize", () => {
-    // keep scratch layer aligned
-    fitCanvas();
-    // If mid-round, redraw cover only if not revealed yet
-    if (!revealed) drawCover();
-  });
-
-  // Init
-  setPrizeUIBeforeReveal();
-  fitCanvas();
+  // init
+  setHiddenPrizeUI();
+  resizeCanvas();           // ensures canvas size matches iPad display
   drawCover();
-  enableScratch(false);
-});
+})();
 </script>
+
 </body>
 </html>
