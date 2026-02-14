@@ -1,122 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OD on the GO – Conference Scratcher</title>
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background:#f7f7f7;
-  margin:0;
-  text-align:center;
-}
-
-.wrap {
-  max-width:700px;
-  margin:40px auto;
-  padding:20px;
-}
-
-.card {
-  background:#fff;
-  padding:20px;
-  border-radius:16px;
-  box-shadow:0 4px 16px rgba(0,0,0,.08);
-}
-
-input {
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:16px;
-}
-
-button {
-  margin-top:14px;
-  padding:12px 18px;
-  border:none;
-  border-radius:10px;
-  font-weight:bold;
-  background:#111;
-  color:#fff;
-  cursor:pointer;
-}
-
-button:disabled {
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-canvas {
-  margin-top:20px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  touch-action:none;
-}
-
-.prizeText {
-  font-size:26px;
-  font-weight:900;
-  margin-top:10px;
-}
-
-.grand {
-  color:#c70000;
-  animation:pulse 1s infinite alternate;
-}
-
-@keyframes pulse {
-  from { transform:scale(1); }
-  to { transform:scale(1.05); }
-}
-
-.admin {
-  margin-top:30px;
-  text-align:left;
-  font-size:13px;
-}
-
-.admin button {
-  margin-right:8px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="wrap">
-  <div class="card">
-    <h2>🎉 Scratch to Win</h2>
-
-    <div id="leadGate">
-      <input id="name" placeholder="Full Name">
-      <input id="email" placeholder="Email Address">
-      <button id="startBtn">Start Game</button>
-    </div>
-
-    <div id="gameArea" style="display:none;">
-      <div id="prizeLabel" class="prizeText">—</div>
-      <canvas id="scratchCanvas" width="500" height="220"></canvas>
-      <button id="resetBtn" disabled>Next Student</button>
-    </div>
-  </div>
-
-  <div class="admin">
-    <button id="exportBtn">Export CSV</button>
-  </div>
-</div>
-
 <script>
-const STORAGE_KEY = "odgo_leads_v1";
+const STORAGE_KEY = "odgo_leads_v2";
+
+/* ===== STORAGE ===== */
 
 function getLeads(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
-
 function setLeads(data){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
@@ -124,10 +13,8 @@ function setLeads(data){
 /* ===== PRIZE POOL ===== */
 
 function buildPrizePool(){
-
   let pool = [];
 
-  // Grand prizes (unique codes – replace later)
   pool.push({label:"FREE PART 1 COURSE", code:"P1_CODE_1", grand:true});
   pool.push({label:"FREE PART 1 COURSE", code:"P1_CODE_2", grand:true});
   pool.push({label:"FREE PART 2 COURSE", code:"P2_CODE_1", grand:true});
@@ -143,7 +30,6 @@ function buildPrizePool(){
     pool.push({label:"20% OFF ANY COURSE", code:"CONF20", grand:false});
   }
 
-  // shuffle
   for(let i=pool.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [pool[i],pool[j]]=[pool[j],pool[i]];
@@ -154,8 +40,9 @@ function buildPrizePool(){
 
 let prizePool = buildPrizePool();
 let currentPrize = null;
+let currentLead = null;
 
-/* ===== SCRATCHER ===== */
+/* ===== SCRATCH ===== */
 
 const canvas = document.getElementById("scratchCanvas");
 const ctx = canvas.getContext("2d");
@@ -164,8 +51,8 @@ function drawCover(){
   ctx.globalCompositeOperation="source-over";
   ctx.fillStyle="#bfbfbf";
   ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle="rgba(0,0,0,.5)";
-  ctx.font="bold 26px Arial";
+  ctx.fillStyle="rgba(0,0,0,.4)";
+  ctx.font="bold 24px Arial";
   ctx.textAlign="center";
   ctx.fillText("SCRATCH HERE",canvas.width/2,canvas.height/2);
   ctx.globalCompositeOperation="destination-out";
@@ -173,7 +60,7 @@ function drawCover(){
 
 function scratch(x,y){
   ctx.beginPath();
-  ctx.arc(x,y,22,0,Math.PI*2);
+  ctx.arc(x,y,25,0,Math.PI*2);
   ctx.fill();
 }
 
@@ -186,47 +73,68 @@ function getPos(e){
   };
 }
 
+function percentCleared(){
+  const pixels = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  let cleared = 0;
+  for(let i=3;i<pixels.length;i+=4){
+    if(pixels[i]===0) cleared++;
+  }
+  return cleared/(pixels.length/4);
+}
+
 let scratching=false;
+let revealed=false;
 
 canvas.addEventListener("mousedown",e=>{
   scratching=true;
   const p=getPos(e);
   scratch(p.x,p.y);
+  checkReveal();
 });
-
 canvas.addEventListener("mousemove",e=>{
   if(!scratching) return;
   const p=getPos(e);
   scratch(p.x,p.y);
+  checkReveal();
 });
-
 window.addEventListener("mouseup",()=>scratching=false);
 
 canvas.addEventListener("touchstart",e=>{
   scratching=true;
   const p=getPos(e);
   scratch(p.x,p.y);
+  checkReveal();
   e.preventDefault();
 },{passive:false});
-
 canvas.addEventListener("touchmove",e=>{
   if(!scratching) return;
   const p=getPos(e);
   scratch(p.x,p.y);
+  checkReveal();
   e.preventDefault();
 },{passive:false});
-
 canvas.addEventListener("touchend",()=>scratching=false);
+
+function checkReveal(){
+  if(revealed) return;
+  if(percentCleared() > 0.45){
+    revealed=true;
+
+    document.getElementById("prizeLabel").textContent=currentPrize.label;
+    document.getElementById("resetBtn").disabled=false;
+
+    saveLead();
+  }
+}
 
 /* ===== FLOW ===== */
 
 document.getElementById("startBtn").addEventListener("click",()=>{
-
   const name=document.getElementById("name").value.trim();
   const email=document.getElementById("email").value.trim();
 
   if(!name || !email){
-    alert("Please enter name and email.");
+    alert("Enter name + email");
     return;
   }
 
@@ -236,26 +144,38 @@ document.getElementById("startBtn").addEventListener("click",()=>{
   }
 
   currentPrize = prizePool.pop();
+  currentLead = {name,email};
 
   document.getElementById("leadGate").style.display="none";
   document.getElementById("gameArea").style.display="block";
+  document.getElementById("prizeLabel").textContent="";
 
-  const label=document.getElementById("prizeLabel");
-  label.textContent=currentPrize.label;
-
-  if(currentPrize.grand){
-    label.classList.add("grand");
-  } else {
-    label.classList.remove("grand");
-  }
-
+  revealed=false;
   drawCover();
 });
 
-/* ===== RESET + SAVE ===== */
+/* ===== SAVE ===== */
+
+function saveLead(){
+  const leads=getLeads();
+  leads.push({
+    name:currentLead.name,
+    email:currentLead.email,
+    prize:currentPrize.label,
+    code:currentPrize.code,
+    time:new Date().toISOString()
+  });
+  setLeads(leads);
+}
+
+/* ===== RESET ===== */
 
 document.getElementById("resetBtn").addEventListener("click",()=>{
-  location.reload();
+  document.getElementById("name").value="";
+  document.getElementById("email").value="";
+  document.getElementById("leadGate").style.display="block";
+  document.getElementById("gameArea").style.display="none";
+  document.getElementById("resetBtn").disabled=true;
 });
 
 /* ===== EXPORT ===== */
@@ -267,8 +187,8 @@ document.getElementById("exportBtn").addEventListener("click",()=>{
     return;
   }
 
-  const header="name,email,prize,code\n";
-  const rows=leads.map(l=>`${l.name},${l.email},${l.prize},${l.code}`).join("\n");
+  const header="name,email,prize,code,time\n";
+  const rows=leads.map(l=>`${l.name},${l.email},${l.prize},${l.code},${l.time}`).join("\n");
 
   const blob=new Blob([header+rows],{type:"text/csv"});
   const url=URL.createObjectURL(blob);
@@ -278,7 +198,6 @@ document.getElementById("exportBtn").addEventListener("click",()=>{
   a.click();
   URL.revokeObjectURL(url);
 });
-</script>
 
-</body>
-</html>
+drawCover();
+</script>
