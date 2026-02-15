@@ -4,148 +4,118 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OD on the GO — Conference Scratcher</title>
-
-  <!-- Optional: clean modern font (safe fallback if offline) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-
   <style>
     :root{
-      --bg:#f3f6fb;
+      --bg:#f2f5f8;
       --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --brand1:#1f89a6;
-      --brand2:#2ea4bf;
+      --ink:#0b1220;
+      --muted:#5b667a;
+      --line:#e4eaf1;
+      --brand1:#1f86a8;   /* AOA-ish teal */
+      --brand2:#2c9fbe;
       --btn:#111827;
-      --btnText:#ffffff;
-      --btnGhost:#ffffff;
-      --btnGhostText:#111827;
-      --ok:#22c55e;
+      --btn2:#eef2f6;
+      --ok:#1a7f37;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: Outfit, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 15% -10%, rgba(46,164,191,.18), transparent 60%),
-                  radial-gradient(1000px 600px at 90% 0%, rgba(31,137,166,.16), transparent 55%),
-                  var(--bg);
-      color:var(--text);
-      padding: 22px 14px 40px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--ink);
     }
-
-    .shell{
-      max-width: 980px;
-      margin: 0 auto;
+    .wrap{
+      max-width: 1060px;
+      margin: 22px auto;
+      padding: 0 14px;
     }
-
     .card{
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 18px;
+      border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(15,23,42,.06);
     }
 
-    .header{
-      padding: 18px 18px 16px;
-      background: linear-gradient(90deg, var(--brand1), var(--brand2));
-      color: white;
+    /* Header */
+    .hero{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap: 16px;
+      padding: 18px 18px 16px;
+      background: linear-gradient(90deg, var(--brand1), var(--brand2));
+      color: #fff;
     }
-
-    .headerLeft{
-      display:flex;
-      flex-direction:column;
-      gap: 4px;
-      min-width: 240px;
-    }
-
-    .title{
-      font-size: 34px;
+    .heroLeft h1{
+      margin:0;
+      font-size: 40px;
       line-height: 1.05;
+      letter-spacing: -.02em;
       font-weight: 800;
-      letter-spacing: .2px;
-      margin:0;
     }
-    .subtitle{
-      margin:0;
+    .heroLeft .sub{
+      margin-top: 6px;
       font-size: 14px;
-      opacity: .92;
-      font-weight: 500;
-      letter-spacing: .2px;
+      opacity: .95;
+      letter-spacing: .02em;
+      font-weight: 600;
     }
 
-    /* user requested logo HTML snippet class names */
     .logoRow{
       display:flex;
-      gap: 10px;
+      gap: 12px;
       align-items:center;
-      justify-content:flex-end;
-      flex-wrap: nowrap;
+      margin-top: 2px;
     }
-
     .logoBox{
-      height: 52px;
-      width: 110px;
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.28);
+      width: 64px;            /* bigger */
+      height: 64px;           /* bigger */
       border-radius: 12px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.22);
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 8px;
       overflow:hidden;
     }
     .logoBox img{
-      max-height: 100%;
-      max-width: 100%;
+      width: 56px;            /* bigger */
+      height: 56px;           /* bigger */
       object-fit: contain;
       display:block;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.18));
     }
 
-    .body{
+    /* Content */
+    .content{
       padding: 18px;
     }
-
     .grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
+      align-items:end;
     }
-
-    @media (max-width: 720px){
-      .grid{grid-template-columns: 1fr;}
-      .title{font-size: 28px;}
-      .logoBox{height: 48px; width: 98px;}
-    }
-
     label{
       display:block;
       font-size: 13px;
       font-weight: 700;
-      color:#111827;
-      margin: 4px 0 8px;
+      color: var(--ink);
+      margin-bottom: 8px;
     }
-
     input{
-      width: 100%;
+      width:100%;
       padding: 14px 14px;
       border: 1px solid var(--line);
       border-radius: 12px;
       font-size: 16px;
-      outline: none;
-      background: #fbfdff;
+      outline:none;
+      background:#fff;
     }
     input:focus{
-      border-color: rgba(46,164,191,.55);
-      box-shadow: 0 0 0 4px rgba(46,164,191,.14);
+      border-color: rgba(31,134,168,.45);
+      box-shadow: 0 0 0 4px rgba(31,134,168,.12);
     }
 
     .rowBtns{
@@ -154,227 +124,215 @@
       align-items:center;
       margin-top: 14px;
       flex-wrap: wrap;
-    }
 
+      position: relative;
+      z-index: 50; /* keep buttons tappable */
+    }
     button{
-      border: 1px solid transparent;
+      border: 1px solid var(--line);
       border-radius: 12px;
       padding: 12px 16px;
       font-weight: 800;
-      font-size: 15px;
-      cursor: pointer;
-      user-select: none;
+      font-size: 14px;
+      cursor:pointer;
+      user-select:none;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
     }
-
-    .btnPrimary{
+    .primary{
       background: var(--btn);
-      color: var(--btnText);
-      min-width: 190px;
+      color:#fff;
+      border-color: rgba(0,0,0,.08);
     }
-
-    .btnGhost{
-      background: var(--btnGhost);
-      color: var(--btnGhostText);
-      border-color: var(--line);
-      min-width: 150px;
+    .ghost{
+      background: #fff;
+      color: var(--ink);
     }
-
+    .mutedBtn{
+      background: #9aa3ad;
+      color:#fff;
+      border-color: rgba(0,0,0,.06);
+    }
     button:disabled{
-      opacity:.5;
-      cursor: not-allowed;
+      opacity:.55;
+      cursor:not-allowed;
     }
 
     .status{
       margin-top: 14px;
-      border: 1px solid rgba(46,164,191,.25);
-      background: rgba(46,164,191,.08);
-      border-radius: 14px;
       padding: 12px 14px;
+      background: #eef6ff;
+      border: 1px solid #d8e9ff;
+      border-radius: 12px;
+      color: #0a3a78;
+      font-weight: 700;
       display:none;
     }
-    .status b{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      font-weight: 900;
-      color:#0b3b52;
-    }
-    .status small{
+    .status.ok{
       display:block;
-      margin-top: 6px;
-      color:#0b3b52;
-      opacity:.9;
+    }
+    .status .small{
+      display:block;
+      margin-top: 4px;
       font-weight: 600;
-    }
-    .check{
-      display:inline-flex;
-      width: 18px;
-      height: 18px;
-      border-radius: 6px;
-      background: rgba(34,197,94,.18);
-      border: 1px solid rgba(34,197,94,.35);
-      align-items:center;
-      justify-content:center;
-      color: var(--ok);
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    /* Prize card area */
-    .prizeWrap{
-      margin-top: 16px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      overflow:hidden;
-      background: #ffffff;
-    }
-
-    .prizeHeader{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      background: #fbfdff;
-      font-weight: 800;
-    }
-    .inv{
-      font-weight: 700;
-      color: var(--muted);
+      opacity: .9;
       font-size: 13px;
     }
 
-    .scratchStage{
-      position: relative;
-      height: 260px;
-      background:
-        radial-gradient(800px 300px at 20% 25%, rgba(46,164,191,.16), transparent 55%),
-        radial-gradient(700px 240px at 80% 60%, rgba(31,137,166,.14), transparent 55%),
-        linear-gradient(180deg, #ffffff, #f6fbff);
+    /* Scratch card */
+    .scratchCard{
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow:hidden;
+      background: #fff;
+    }
+    .scratchTop{
       display:flex;
+      justify-content:space-between;
       align-items:center;
-      justify-content:center;
-      padding: 18px;
+      padding: 12px 14px;
       border-bottom: 1px solid var(--line);
+      background:#fbfcfe;
+    }
+    .scratchTop .title{
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .scratchTop .inv{
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .scratchStage{
+      position:relative;
+      height: 250px;
+      background: radial-gradient(1200px 500px at 20% 20%, rgba(31,134,168,.12), transparent 60%),
+                  radial-gradient(1200px 500px at 80% 40%, rgba(44,159,190,.14), transparent 60%),
+                  #fff;
+      z-index: 1;
     }
 
     .prizeLayer{
       position:absolute;
-      inset: 0;
+      inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      flex-direction:column;
+      padding: 18px;
       text-align:center;
-      padding: 24px 16px;
-      gap: 10px;
-      pointer-events:none;
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap: 8px;
-      padding: 8px 14px;
+      gap: 10px;
+      padding: 9px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,.74);
-      border: 1px solid rgba(15,23,42,.12);
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.8);
       font-weight: 900;
-      letter-spacing: .3px;
-      color:#0f172a;
-      text-transform: uppercase;
-      font-size: 12px;
-      box-shadow: 0 6px 18px rgba(15,23,42,.08);
+      letter-spacing: .02em;
     }
-
-    .prizeTitle{
-      margin: 0;
-      font-size: 42px;
+    .prizeMain{
+      margin-top: 14px;
+      font-size: 44px;
       line-height: 1.05;
-      letter-spacing: .3px;
-      font-weight: 900;
-      color:#0f172a;
-      text-transform: uppercase;
-      text-shadow: 0 10px 30px rgba(15,23,42,.08);
-      padding: 0 10px;
+      font-weight: 1000;
+      letter-spacing: -.03em;
     }
-
     .prizeCode{
-      font-weight: 800;
-      color:#0f172a;
-      font-size: 16px;
+      margin-top: 10px;
+      font-weight: 900;
+      color: var(--ink);
+      opacity: .9;
     }
-
-    .prizeNote{
-      font-size: 14px;
+    .prizeHint{
+      margin-top: 10px;
+      font-size: 13px;
       color: var(--muted);
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    /* Scratch canvas */
-    #scratchCanvas{
+    canvas#scratchCanvas{
       position:absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display:block;
-      border-radius: 0; /* stage already rounded by outer */
-      touch-action: none; /* important for iPad */
-      pointer-events:auto;
-      opacity: 1;
+      inset:0;
+      width:100%;
+      height:100%;
+      touch-action: none;
+      cursor: pointer;
+      z-index: 5;
+      background: transparent;
     }
 
-    .bottomBtns{
+    /* Bottom buttons */
+    .bottomRow{
       display:flex;
-      gap: 12px;
       justify-content:flex-end;
+      gap: 12px;
       padding: 14px;
-      background: #ffffff;
+      border-top: 1px dashed var(--line);
+      background:#fff;
+      position: relative;
+      z-index: 50;
     }
 
-    .smallBtn{
-      min-width: 150px;
-    }
-
-    /* Confetti canvas */
-    #confetti{
+    /* Confetti */
+    .confetti{
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
+      pointer-events:none;
+      overflow:hidden;
       z-index: 9999;
-      display:none;
+    }
+    .confetti i{
+      position:absolute;
+      top:-20px;
+      width: 10px;
+      height: 16px;
+      opacity: .95;
+      transform: rotate(0deg);
+      border-radius: 2px;
+      animation: fall 1100ms linear forwards;
+    }
+    @keyframes fall{
+      to{
+        transform: translate3d(var(--dx), 110vh, 0) rotate(720deg);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 760px){
+      .grid{grid-template-columns:1fr}
+      .heroLeft h1{font-size: 34px}
+      .logoBox{width:56px;height:56px}
+      .logoBox img{width:48px;height:48px}
+      .scratchStage{height: 280px}
+      .prizeMain{font-size: 38px}
     }
   </style>
 </head>
-
 <body>
-  <canvas id="confetti"></canvas>
-
-  <div class="shell">
+  <div class="wrap">
     <div class="card">
-      <div class="header">
-        <div class="headerLeft">
-          <h1 class="title">Scratch to Win</h1>
-          <p class="subtitle">AOA Optometry’s Meeting • Phoenix 2026</p>
+      <div class="hero">
+        <div class="heroLeft">
+          <h1>Scratch to Win</h1>
+          <div class="sub">AOA Optometry’s Meeting • Phoenix 2026</div>
         </div>
 
-        <!-- USER REQUESTED LOGO SNIPPET / STRUCTURE -->
+        <!-- Logos (per your requested snippet) -->
         <div class="logoRow">
           <div class="logoBox"><img src="assets/aoa-logo.jpeg" alt="AOA Logo"></div>
           <div class="logoBox"><img src="assets/odgo-logo.jpeg" alt="OD on the GO Logo"></div>
         </div>
       </div>
 
-      <div class="body">
+      <div class="content">
         <div class="grid">
           <div>
-            <label for="fullName">Full Name</label>
-            <input id="fullName" type="text" placeholder="Full name" autocomplete="name" />
+            <label for="name">Full Name</label>
+            <input id="name" type="text" placeholder="Full name" autocomplete="name" />
           </div>
           <div>
             <label for="email">Email Address</label>
@@ -383,498 +341,398 @@
         </div>
 
         <div class="rowBtns">
-          <button class="btnPrimary" id="saveBtn">Save — scratch below!</button>
-          <button class="btnGhost" id="nextBtn" disabled>Next Student</button>
+          <button id="saveBtn" class="primary">Save — scratch below!</button>
+          <button id="nextBtn" class="ghost" disabled>Next Student</button>
         </div>
 
-        <div class="status" id="statusBox">
-          <b><span class="check">✓</span> Saved</b>
-          <small id="statusText"></small>
+        <div id="status" class="status">
+          Saved
+          <span id="statusDetail" class="small"></span>
         </div>
 
-        <div class="prizeWrap">
-          <div class="prizeHeader">
-            <div>Scratch to reveal your prize</div>
-            <div class="inv" id="invText">Inventory remaining: —</div>
+        <div class="scratchCard">
+          <div class="scratchTop">
+            <div class="title">Scratch here to start</div>
+            <div class="inv">Inventory remaining: <span id="invCount">—</span></div>
           </div>
 
-          <div class="scratchStage" id="scratchStage">
+          <div class="scratchStage">
             <div class="prizeLayer">
-              <div class="pill" id="pillLabel">SCRATCH HERE TO START</div>
-              <h2 class="prizeTitle" id="prizeTitle"></h2>
-              <div class="prizeCode" id="prizeCode"></div>
-              <div class="prizeNote" id="prizeNote"></div>
+              <div>
+                <div class="pill">YOUR PRIZE</div>
+                <div id="prizeText" class="prizeMain">—</div>
+                <div id="codeText" class="prizeCode">Code: —</div>
+                <div class="prizeHint">Scratch the gray card to reveal your prize.</div>
+              </div>
             </div>
 
             <canvas id="scratchCanvas"></canvas>
           </div>
 
-          <!-- moved to bottom (per your earlier request) -->
-          <div class="bottomBtns">
-            <button class="btnGhost smallBtn" id="exportBtn">Export CSV</button>
-            <button class="btnGhost smallBtn" id="resetBtn">Reset Device Data</button>
+          <!-- Buttons moved to bottom so they don’t get tapped accidentally -->
+          <div class="bottomRow">
+            <button id="exportBtn" class="ghost">Export CSV</button>
+            <button id="resetBtn" class="ghost">Reset Device Data</button>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+
   <script>
     /***********************
-     * CONFIG / INVENTORY
+     * Inventory + Storage *
      ***********************/
-    const STORAGE_KEYS = {
-      leads: "odgo_conf_leads_v3",
-      inventory: "odgo_conf_inventory_v3"
+    const STORAGE_KEY = "odgo_scratch_state_v6";
+
+    // Your requested inventory:
+    // 2 free Part 1, 2 free Part 2, 2 free Part 3, 50 x $50 off (same code), 400 x 20% off (same code)
+    // Temporary codes included — replace later.
+    const TEMP_CODES = {
+      off20: "ODGO20",
+      off50: "ODGO50",
+      freeP1: ["FREEP1-A", "FREEP1-B"],
+      freeP2: ["FREEP2-A", "FREEP2-B"],
+      freeP3: ["FREEP3-A", "FREEP3-B"],
     };
 
-    // TEMP codes (replace later)
-    // Inventory required:
-    // 2 free part 1, 2 free part 2, 2 free part 3
-    // 50 $50 off any course (same code ok)
-    // 400 20% off any course (same code ok)
-    const DEFAULT_INVENTORY = [
-      { prize: "FREE PART 1 COURSE", code: "FREEPART1TM", qty: 2, isFree: true },
-      { prize: "FREE PART 2 COURSE", code: "FREEPART2TM", qty: 2, isFree: true },
-      { prize: "FREE PART 3 COURSE", code: "FREEPART3TM", qty: 2, isFree: true },
-      { prize: "$50 OFF ANY COURSE",  code: "CONF50TN",    qty: 50, isFree: false },
-      { prize: "20% OFF ANY COURSE",  code: "ODGO20",      qty: 400, isFree: false },
-    ];
+    function buildInitialInventory(){
+      const inv = [];
 
-    /***********************
-     * STATE
-     ***********************/
-    let leads = [];
-    let inventory = [];
-    let currentPrize = null;     // {prize, code, isFree}
-    let currentLeadId = null;    // unique id for saved row
-    let scratchEnabled = false;
-    let revealed = false;
-    let scratchPercent = 0;
+      // Free programs (unique codes)
+      TEMP_CODES.freeP1.forEach(code => inv.push({ prize:"FREE PART 1 COURSE", code, isFree:true }));
+      TEMP_CODES.freeP2.forEach(code => inv.push({ prize:"FREE PART 2 COURSE", code, isFree:true }));
+      TEMP_CODES.freeP3.forEach(code => inv.push({ prize:"FREE PART 3 COURSE", code, isFree:true }));
 
-    /***********************
-     * ELEMENTS
-     ***********************/
-    const fullNameEl = document.getElementById("fullName");
-    const emailEl    = document.getElementById("email");
-    const saveBtn    = document.getElementById("saveBtn");
-    const nextBtn    = document.getElementById("nextBtn");
-    const exportBtn  = document.getElementById("exportBtn");
-    const resetBtn   = document.getElementById("resetBtn");
+      // $50 off any course (50)
+      for(let i=0;i<50;i++){
+        inv.push({ prize:"$50 OFF ANY COURSE", code:TEMP_CODES.off50, isFree:false });
+      }
 
-    const statusBox  = document.getElementById("statusBox");
-    const statusText = document.getElementById("statusText");
+      // 20% off any course (400)
+      for(let i=0;i<400;i++){
+        inv.push({ prize:"20% OFF ANY COURSE", code:TEMP_CODES.off20, isFree:false });
+      }
 
-    const invText    = document.getElementById("invText");
-
-    const pillLabel  = document.getElementById("pillLabel");
-    const prizeTitleEl = document.getElementById("prizeTitle");
-    const prizeCodeEl  = document.getElementById("prizeCode");
-    const prizeNoteEl  = document.getElementById("prizeNote");
-
-    const canvas = document.getElementById("scratchCanvas");
-    const ctx = canvas.getContext("2d");
-
-    const confettiCanvas = document.getElementById("confetti");
-    const cctx = confettiCanvas.getContext("2d");
-
-    /***********************
-     * UTIL
-     ***********************/
-    function nowISO(){
-      return new Date().toISOString();
+      // Shuffle for true randomness
+      return shuffle(inv);
     }
 
-    function safeTrim(v){ return (v || "").trim(); }
-
-    function isValidEmail(email){
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function uid(){
-      return "L" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+    function defaultState(){
+      return {
+        inventory: buildInitialInventory(),
+        leads: [] // {name,email,prize,code,timestamp}
+      };
     }
 
     function loadState(){
       try{
-        leads = JSON.parse(localStorage.getItem(STORAGE_KEYS.leads) || "[]");
-      }catch{ leads = []; }
-
-      try{
-        inventory = JSON.parse(localStorage.getItem(STORAGE_KEYS.inventory) || "null");
-        if(!Array.isArray(inventory) || inventory.length === 0) inventory = structuredClone(DEFAULT_INVENTORY);
-      }catch{
-        inventory = structuredClone(DEFAULT_INVENTORY);
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        // Basic validation
+        if(!parsed.inventory || !Array.isArray(parsed.inventory)) return defaultState();
+        if(!parsed.leads || !Array.isArray(parsed.leads)) parsed.leads = [];
+        return parsed;
+      }catch(e){
+        return defaultState();
       }
-      persistState();
-      updateInventoryText();
     }
 
-    function persistState(){
-      localStorage.setItem(STORAGE_KEYS.leads, JSON.stringify(leads));
-      localStorage.setItem(STORAGE_KEYS.inventory, JSON.stringify(inventory));
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      invCount.textContent = state.inventory.length;
     }
 
-    function remainingCount(){
-      return inventory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-    }
-
-    function updateInventoryText(){
-      invText.textContent = "Inventory remaining: " + remainingCount();
-    }
-
-    // Build a true random draw based on remaining quantities.
-    function drawPrize(){
-      const total = remainingCount();
-      if(total <= 0) return null;
-
-      let r = Math.floor(Math.random() * total); // 0..total-1
-      for(const item of inventory){
-        const q = Number(item.qty) || 0;
-        if(r < q){
-          // decrement
-          item.qty = q - 1;
-          persistState();
-          updateInventoryText();
-          return { prize: item.prize, code: item.code, isFree: !!item.isFree };
-        }
-        r -= q;
+    function shuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
       }
-      return null;
-    }
-
-    function setStartState(){
-      currentPrize = null;
-      currentLeadId = null;
-      scratchEnabled = false;
-      revealed = false;
-      scratchPercent = 0;
-
-      pillLabel.textContent = "SCRATCH HERE TO START";
-      prizeTitleEl.textContent = "";
-      prizeCodeEl.textContent = "";
-      prizeNoteEl.textContent = "";
-
-      statusBox.style.display = "none";
-
-      // form buttons
-      saveBtn.disabled = false;
-      nextBtn.disabled = true;
-
-      // reset scratch canvas
-      resizeCanvas();
-      paintScratchCover(); // grey cover with text
-      canvas.style.pointerEvents = "none"; // disable until saved
-    }
-
-    function setReadyToScratchState(){
-      // after save: prize exists but hidden by scratch layer (canvas is active)
-      pillLabel.textContent = "YOUR PRIZE";
-      prizeTitleEl.textContent = currentPrize?.prize || "";
-      prizeCodeEl.textContent = currentPrize?.code ? `Code: ${currentPrize.code}` : "";
-      prizeNoteEl.textContent = "Scratch the gray card to reveal your discount.";
-
-      scratchEnabled = true;
-      revealed = false;
-      scratchPercent = 0;
-
-      resizeCanvas();
-      paintScratchCover();
-      canvas.style.pointerEvents = "auto";
+      return a;
     }
 
     /***********************
-     * SCRATCH LOGIC
+     * DOM
+     ***********************/
+    const nameEl = document.getElementById("name");
+    const emailEl = document.getElementById("email");
+    const saveBtn = document.getElementById("saveBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const statusBox = document.getElementById("status");
+    const statusDetail = document.getElementById("statusDetail");
+
+    const prizeText = document.getElementById("prizeText");
+    const codeText = document.getElementById("codeText");
+    const invCount = document.getElementById("invCount");
+
+    const canvas = document.getElementById("scratchCanvas");
+    const ctx = canvas.getContext("2d");
+    const confettiLayer = document.getElementById("confetti");
+
+    let state = loadState();
+    invCount.textContent = state.inventory.length;
+
+    // Session variables
+    let currentPrize = null;
+    let savedLead = null;
+    let scratchEnabled = false;
+    let revealed = false;
+
+    /***********************
+     * Scratch setup
      ***********************/
     function resizeCanvas(){
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.max(1, window.devicePixelRatio || 1);
-      canvas.width  = Math.floor(rect.width * dpr);
+      canvas.width = Math.floor(rect.width * dpr);
       canvas.height = Math.floor(rect.height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      drawCover();
     }
 
-    function paintScratchCover(){
+    function drawCover(){
+      // Gray scratch cover
       const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-
-      // cover
       ctx.globalCompositeOperation = "source-over";
-      ctx.clearRect(0,0,w,h);
+      ctx.clearRect(0,0,rect.width,rect.height);
       ctx.fillStyle = "#bdbdbd";
-      ctx.fillRect(0,0,w,h);
+      ctx.fillRect(0,0,rect.width,rect.height);
 
-      // subtle noise lines
-      ctx.globalAlpha = 0.08;
-      ctx.fillStyle = "#000";
-      for(let i=0;i<55;i++){
-        ctx.fillRect(Math.random()*w, Math.random()*h, Math.random()*120, 1);
-      }
-      ctx.globalAlpha = 1;
-
-      // text
-      ctx.fillStyle = "rgba(0,0,0,.28)";
-      ctx.font = "800 42px Outfit, system-ui, sans-serif";
+      // Big "SCRATCH HERE"
+      ctx.fillStyle = "rgba(0,0,0,.22)";
+      ctx.font = "900 40px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("SCRATCH HERE", w/2, h/2);
-
-      // reset mode for scratching
-      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillText("SCRATCH HERE", rect.width/2, rect.height/2);
     }
 
-    let isDown = false;
-    let lastPoint = null;
-
-    function getPointFromEvent(e){
+    function getPoint(evt){
       const rect = canvas.getBoundingClientRect();
-      let clientX, clientY;
-      if(e.touches && e.touches[0]){
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
-      return { x: clientX - rect.left, y: clientY - rect.top };
+      const e = evt.touches ? evt.touches[0] : evt;
+      return {
+        x: (e.clientX - rect.left),
+        y: (e.clientY - rect.top)
+      };
     }
 
-    function scratchLine(a, b){
-      const radius = 24; // slightly chunky for iPad
+    function scratchDot(p){
+      const r = 22; // brush radius
+      ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.lineWidth = radius * 2;
-
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
-
-      // also stamp circles for taps
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, radius, 0, Math.PI*2);
+      ctx.arc(p.x, p.y, r, 0, Math.PI*2);
       ctx.fill();
     }
 
-    function estimateScratchedPercent(){
-      // sample pixels (cheap)
-      const rect = canvas.getBoundingClientRect();
-      const w = Math.floor(rect.width);
-      const h = Math.floor(rect.height);
-
-      // Read at lower resolution to keep it fast
-      const sampleStep = 12; // larger step = faster
-      const img = ctx.getImageData(0,0,w,h).data;
-      let total = 0, cleared = 0;
-
-      for(let y=0; y<h; y+=sampleStep){
-        for(let x=0; x<w; x+=sampleStep){
-          const idx = (y*w + x) * 4 + 3; // alpha
-          total++;
-          if(img[idx] === 0) cleared++;
-        }
-      }
-      return total ? (cleared / total) * 100 : 0;
+    function scratchLine(p1, p2){
+      const r = 22;
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = r*2;
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
     }
 
-    function maybeReveal(){
-      if(revealed) return;
-      scratchPercent = estimateScratchedPercent();
-
-      // LOWER requirement (you asked) — reveal quickly
-      if(scratchPercent >= 10){
-        revealed = true;
-
-        // allow Next Student NOW (and make it reliably clickable)
-        nextBtn.disabled = false;
-
-        // if free prize -> confetti
-        if(currentPrize?.isFree){
-          burstConfetti();
-        }
-      }
-    }
+    let isDown = false;
+    let last = null;
 
     function onDown(e){
       if(!scratchEnabled) return;
+
+      // ✅ Make Next Student work immediately on first scratch action
+      if(nextBtn.disabled) nextBtn.disabled = false;
+
       isDown = true;
-      lastPoint = getPointFromEvent(e);
-      // stamp immediately
-      scratchLine(lastPoint, lastPoint);
-      maybeReveal();
+      const p = getPoint(e);
+      last = p;
+      scratchDot(p);
+
+      // "Reveal" logic for confetti: trigger once on first scratch
+      if(!revealed){
+        revealed = true;
+        if(currentPrize?.isFree) burstConfetti();
+      }
+
       e.preventDefault();
     }
 
     function onMove(e){
       if(!scratchEnabled || !isDown) return;
-      const p = getPointFromEvent(e);
-      scratchLine(lastPoint, p);
-      lastPoint = p;
-
-      // throttle reveal checks
-      if(Math.random() < 0.18) maybeReveal();
+      const p = getPoint(e);
+      scratchLine(last, p);
+      last = p;
       e.preventDefault();
     }
 
-    function onUp(e){
-      if(!scratchEnabled) return;
+    function onUp(){
       isDown = false;
-      lastPoint = null;
-      maybeReveal();
-      e.preventDefault();
+      last = null;
     }
 
+    canvas.addEventListener("mousedown", onDown);
+    canvas.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+
+    canvas.addEventListener("touchstart", onDown, {passive:false});
+    canvas.addEventListener("touchmove", onMove, {passive:false});
+    window.addEventListener("touchend", onUp);
+
+    window.addEventListener("resize", resizeCanvas);
+    setTimeout(resizeCanvas, 50);
+
     /***********************
-     * CONFETTI (simple)
+     * Prize + Lead flow
      ***********************/
-    function burstConfetti(){
-      confettiCanvas.style.display = "block";
-      confettiCanvas.width = Math.floor(window.innerWidth * (window.devicePixelRatio || 1));
-      confettiCanvas.height = Math.floor(window.innerHeight * (window.devicePixelRatio || 1));
-      cctx.setTransform((window.devicePixelRatio || 1), 0, 0, (window.devicePixelRatio || 1), 0, 0);
-
-      const W = window.innerWidth;
-      const H = window.innerHeight;
-
-      const pieces = [];
-      const N = 160;
-
-      for(let i=0;i<N;i++){
-        pieces.push({
-          x: Math.random()*W,
-          y: -20 - Math.random()*H*0.2,
-          vx: (Math.random()-0.5)*3,
-          vy: 3 + Math.random()*5,
-          r: 3 + Math.random()*5,
-          rot: Math.random()*Math.PI*2,
-          vr: (Math.random()-0.5)*0.2,
-          a: 1
-        });
+    function pickNextPrize(){
+      if(state.inventory.length === 0){
+        return { prize:"NO PRIZES LEFT", code:"—", isFree:false };
       }
-
-      let t0 = performance.now();
-      function frame(t){
-        const dt = Math.min(32, t - t0);
-        t0 = t;
-        cctx.clearRect(0,0,W,H);
-
-        for(const p of pieces){
-          p.x += p.vx * (dt/16);
-          p.y += p.vy * (dt/16);
-          p.rot += p.vr * (dt/16);
-          p.vy += 0.03 * (dt/16); // gravity
-          p.a *= 0.998;
-
-          cctx.save();
-          cctx.translate(p.x, p.y);
-          cctx.rotate(p.rot);
-          cctx.globalAlpha = Math.max(0, Math.min(1, p.a));
-          // no fixed colors: use random grayscale-ish brandy look
-          cctx.fillStyle = `rgba(255,255,255,0.9)`;
-          cctx.fillRect(-p.r, -p.r/2, p.r*2.2, p.r);
-          cctx.restore();
-        }
-
-        const alive = pieces.some(p => p.y < H + 40 && p.a > 0.25);
-        if(alive){
-          requestAnimationFrame(frame);
-        } else {
-          confettiCanvas.style.display = "none";
-        }
-      }
-      requestAnimationFrame(frame);
+      // Take from end for performance (inventory already shuffled)
+      return state.inventory.pop();
     }
 
-    /***********************
-     * ACTIONS
-     ***********************/
+    function resetScratchCardToGray(){
+      revealed = false;
+      drawCover();
+    }
+
+    function setPrizeUI(prizeObj, preSave=false){
+      // preSave: show placeholders before the user saves
+      if(preSave){
+        prizeText.textContent = "—";
+        codeText.textContent = "Code: —";
+      }else{
+        prizeText.textContent = prizeObj.prize;
+        codeText.textContent = "Code: " + prizeObj.code;
+      }
+    }
+
     function showStatus(name, email){
-      statusBox.style.display = "block";
-      statusText.textContent = `${name} — ${email} (saved). Now scratch below to reveal your prize.`;
+      statusBox.classList.add("ok");
+      statusBox.textContent = "Saved";
+      const span = document.createElement("span");
+      span.className = "small";
+      span.textContent = `${name} — ${email} (saved). Now scratch below to reveal your prize.`;
+      statusBox.appendChild(span);
     }
 
-    function onSave(){
-      const name = safeTrim(fullNameEl.value);
-      const email = safeTrim(emailEl.value);
+    function clearStatus(){
+      statusBox.classList.remove("ok");
+      statusBox.innerHTML = "";
+    }
 
-      if(!name || !email){
-        alert("Please enter both name and email.");
+    function validateEmail(email){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    }
+
+    function startNewStudent(){
+      nameEl.value = "";
+      emailEl.value = "";
+      nameEl.focus();
+
+      savedLead = null;
+      scratchEnabled = false;
+      nextBtn.disabled = true;
+
+      // New hidden prize is chosen on Save (not before)
+      currentPrize = null;
+
+      clearStatus();
+      resetScratchCardToGray();
+      setPrizeUI({}, true);
+
+      // Update heading to "Scratch here to start"
+      document.querySelector(".scratchTop .title").textContent = "Scratch here to start";
+    }
+
+    // Initial state
+    startNewStudent();
+    invCount.textContent = state.inventory.length;
+
+    saveBtn.addEventListener("click", () => {
+      const name = (nameEl.value || "").trim();
+      const email = (emailEl.value || "").trim();
+
+      if(!name){
+        alert("Please enter a full name.");
         return;
       }
-      if(!isValidEmail(email)){
-        alert("Please enter a valid email.");
+      if(!validateEmail(email)){
+        alert("Please enter a valid email address.");
         return;
       }
 
-      // prevent double-save for same student
-      if(currentLeadId){
+      // Prevent double-saving same student without "Next Student"
+      if(savedLead){
         alert("This student is already saved. Tap Next Student for the next entry.");
         return;
       }
 
-      // draw prize now (so it is visible under scratch as you scratch)
-      const prize = drawPrize();
-      if(!prize){
-        alert("No prizes remaining on this device.");
+      // Choose prize NOW (so it’s truly random and not previewed)
+      currentPrize = pickNextPrize();
+      saveState(); // inventory decremented here
+
+      // Set prize text underneath scratch layer (reveals as scratched)
+      setPrizeUI(currentPrize, false);
+
+      // Save lead (one row per student)
+      const timestamp = new Date().toISOString();
+      savedLead = { name, email, prize: currentPrize.prize, code: currentPrize.code, timestamp };
+      state.leads.push(savedLead);
+      saveState();
+
+      // Enable scratch
+      scratchEnabled = true;
+
+      // Update UI
+      showStatus(name, email);
+      document.querySelector(".scratchTop .title").textContent = "Scratch to reveal your prize";
+      resetScratchCardToGray();
+
+      // Keep Next Student disabled until they begin scratching (but we enable on first scratch)
+      nextBtn.disabled = true;
+    });
+
+    nextBtn.addEventListener("click", () => {
+      // Only allow after a save
+      if(!savedLead){
+        alert("Tap Save first to record the student, then scratch.");
         return;
       }
-      currentPrize = prize;
+      startNewStudent();
+    });
 
-      // create one (and only one) lead record on SAVE
-      const id = uid();
-      currentLeadId = id;
-      leads.push({
-        id,
-        name,
-        email,
-        prize: prize.prize,
-        code: prize.code,
-        timestamp: nowISO()
-      });
-      persistState();
-
-      // UI
-      showStatus(name, email);
-      saveBtn.disabled = true;        // lock after save
-      nextBtn.disabled = true;        // stays locked until reveal threshold hit
-      setReadyToScratchState();       // enables scratch
-
-      // keep inventory label current
-      updateInventoryText();
+    /***********************
+     * CSV Export
+     ***********************/
+    function toCSV(rows){
+      const header = ["Name","Email","Prize","Code","Timestamp"];
+      const esc = (v) => {
+        const s = String(v ?? "");
+        if(/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+        return s;
+      };
+      const lines = [header.join(",")];
+      for(const r of rows){
+        lines.push([r.name, r.email, r.prize, r.code, r.timestamp].map(esc).join(","));
+      }
+      return lines.join("\n");
     }
 
-    function onNextStudent(){
-      // MUST be clickable: ensure canvas isn't covering buttons.
-      // (Canvas is inside scratchStage; next button is above it, but iOS sometimes gets stuck with pointer capture
-      // if you keep touching. We defensively blur active element.)
-      document.activeElement && document.activeElement.blur();
-
-      // Clear form + reset for new entry
-      fullNameEl.value = "";
-      emailEl.value = "";
-      setStartState();
-    }
-
-    function onExportCSV(){
-      if(!leads.length){
+    exportBtn.addEventListener("click", () => {
+      if(!state.leads.length){
         alert("No leads yet.");
         return;
       }
-
-      const rows = [
-        ["Name","Email","Prize","Code","Timestamp"]
-      ];
-
-      for(const l of leads){
-        rows.push([l.name, l.email, l.prize, l.code, l.timestamp]);
-      }
-
-      const csv = rows.map(r =>
-        r.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(",")
-      ).join("\n");
-
+      const csv = toCSV(state.leads);
       const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
       const url = URL.createObjectURL(blob);
 
@@ -884,59 +742,51 @@
       document.body.appendChild(a);
       a.click();
       a.remove();
+      URL.revokeObjectURL(url);
+    });
 
-      setTimeout(()=>URL.revokeObjectURL(url), 800);
-    }
-
-    function onResetDevice(){
-      const ok = confirm("Reset ALL device data?\n\nThis will erase saved leads and reset the prize inventory for THIS device.");
+    resetBtn.addEventListener("click", () => {
+      const ok = confirm("Reset this device's leads + inventory? This cannot be undone.");
       if(!ok) return;
-
-      leads = [];
-      inventory = structuredClone(DEFAULT_INVENTORY);
-      persistState();
-      updateInventoryText();
-      setStartState();
+      localStorage.removeItem(STORAGE_KEY);
+      state = defaultState();
+      saveState();
+      invCount.textContent = state.inventory.length;
+      startNewStudent();
       alert("Device data reset.");
-    }
-
-    /***********************
-     * EVENTS
-     ***********************/
-    // scratch events
-    canvas.addEventListener("mousedown", onDown);
-    canvas.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-
-    canvas.addEventListener("touchstart", onDown, {passive:false});
-    canvas.addEventListener("touchmove", onMove, {passive:false});
-    window.addEventListener("touchend", onUp, {passive:false});
-
-    // buttons
-    saveBtn.addEventListener("click", onSave);
-    nextBtn.addEventListener("click", onNextStudent);
-    exportBtn.addEventListener("click", onExportCSV);
-    resetBtn.addEventListener("click", onResetDevice);
-
-    // keep canvas crisp on resize
-    window.addEventListener("resize", () => {
-      // only repaint if in a known state
-      resizeCanvas();
-      paintScratchCover();
-      // If already revealed, we can clear the cover so prize is fully visible.
-      if(revealed){
-        const rect = canvas.getBoundingClientRect();
-        ctx.globalCompositeOperation = "source-over";
-        ctx.clearRect(0,0,rect.width,rect.height);
-        ctx.globalCompositeOperation = "destination-out";
-      }
     });
 
     /***********************
-     * INIT
+     * Confetti (free prizes)
      ***********************/
-    loadState();
-    setStartState();
+    function burstConfetti(){
+      confettiLayer.innerHTML = "";
+      const count = 90;
+      const colors = ["#ffffff","#e6f7ff","#b6e8ff","#13e9fe","#1f86a8","#2c9fbe","#ffd166","#ef476f","#06d6a0"];
+
+      for(let i=0;i<count;i++){
+        const piece = document.createElement("i");
+        const left = Math.random()*100;
+        const dx = (Math.random()*2-1) * 40; // drift
+        const delay = Math.random()*120;
+        const dur = 900 + Math.random()*500;
+        const w = 7 + Math.random()*8;
+        const h = 10 + Math.random()*10;
+
+        piece.style.left = left + "vw";
+        piece.style.setProperty("--dx", dx + "vw");
+        piece.style.animationDuration = dur + "ms";
+        piece.style.animationDelay = delay + "ms";
+        piece.style.width = w + "px";
+        piece.style.height = h + "px";
+        piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+
+        confettiLayer.appendChild(piece);
+      }
+
+      // clear after animation
+      setTimeout(() => { confettiLayer.innerHTML = ""; }, 1700);
+    }
   </script>
 </body>
 </html>
