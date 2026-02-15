@@ -2,633 +2,284 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OD on the GO — Conference Scratcher</title>
+
 <style>
-  :root{
-    --bg:#f6f7fb;
-    --card:#ffffff;
-    --text:#0f172a;
-    --muted:#64748b;
-    --line:#e5e7eb;
-    --btn:#111;
-    --btnText:#fff;
-    --okbg:#eef7ff;
-    --okline:#cfe6ff;
-  }
-  body{ margin:0; font-family: Arial, sans-serif; background:var(--bg); color:var(--text); }
-  .wrap{ max-width:1100px; margin:26px auto; padding:0 14px; }
-  .shell{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:18px;
-    box-shadow:0 2px 18px rgba(0,0,0,.06);
-    padding:22px;
-    text-align:center;
-  }
-  h1{ margin:0 0 6px; font-size:34px; }
-  .sub{ margin:0 0 16px; color:var(--muted); font-size:14px; }
+body { font-family: Arial, sans-serif; background:#fafafa; margin:0; }
+.wrap { max-width: 600px; margin: 30px auto; padding: 0 16px; text-align:center; }
 
-  .formRow{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:14px;
-    max-width:860px;
-    margin:0 auto 12px;
-    text-align:left;
-  }
-  @media (max-width:760px){
-    .formRow{ grid-template-columns:1fr; }
-  }
-  label{ font-weight:900; font-size:14px; margin-bottom:6px; display:block; }
-  input{
-    width:100%;
-    padding:14px 14px;
-    border:1px solid var(--line);
-    border-radius:12px;
-    font-size:16px;
-    box-sizing:border-box;
-    outline:none;
-    background:#fff;
-  }
-  input:disabled{ background:#f3f4f6; color:#666; }
+h2 { margin-bottom:6px; }
+.sub { display:none; } /* Hidden per request */
 
-  .btnRow{
-    display:flex;
-    gap:12px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin:12px 0 12px;
-  }
-  button{
-    border:none;
-    border-radius:14px;
-    padding:14px 18px;
-    font-weight:900;
-    font-size:15px;
-    cursor:pointer;
-  }
-  .primary{ background:var(--btn); color:var(--btnText); min-width:220px; }
-  .secondary{
-    background:#fff; border:1px solid var(--line); color:#111;
-    min-width:160px;
-  }
-  button:disabled{ opacity:.45; cursor:not-allowed; }
+.card {
+  background:#fff;
+  border:1px solid #eee;
+  border-radius:16px;
+  padding:18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
 
-  .savedBox{
-    max-width:860px;
-    margin:0 auto 16px;
-    text-align:left;
-    border:1px solid var(--okline);
-    background:var(--okbg);
-    border-radius:14px;
-    padding:12px 14px;
-    display:none;
-  }
-  .savedBox b{ display:block; margin-bottom:4px; }
-  .scratchCard{
-    max-width:860px;
-    margin:0 auto;
-    border:1px solid var(--line);
-    border-radius:18px;
-    overflow:hidden;
-    background:#fff;
-  }
-  .scratchHeader{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:14px 16px;
-    border-bottom:1px solid var(--line);
-  }
-  .scratchHeader .title{ font-weight:900; }
-  .scratchHeader .inv{ color:var(--muted); font-size:13px; }
+label { display:block; text-align:left; font-weight:700; margin-top:12px; }
+input {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  margin-top:6px;
+  font-size:16px;
+  box-sizing:border-box;
+}
 
-  /* Underlay (prize) */
-  .stage{
-    position:relative;
-    width:100%;
-    aspect-ratio: 16 / 7;
-    background:
-      radial-gradient(circle at 18% 40%, rgba(84, 170, 255, .18), transparent 45%),
-      radial-gradient(circle at 60% 55%, rgba(255, 154, 77, .14), transparent 50%),
-      radial-gradient(circle at 82% 35%, rgba(80, 255, 193, .12), transparent 45%),
-      #ffffff;
-  }
+.btnRow { margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; }
+button {
+  padding:12px 16px;
+  border-radius:10px;
+  border:none;
+  font-weight:800;
+  cursor:pointer;
+}
+.primary { background:#111; color:#fff; }
+.secondary { background:#f0f0f0; }
 
-  .prizeUnder{
-    position:absolute; inset:0;
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    padding:18px;
-    text-align:center;
-  }
-  .pill{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:10px 14px;
-    border-radius:999px;
-    border:1px solid var(--line);
-    background:rgba(255,255,255,.8);
-    font-weight:900;
-    letter-spacing:.3px;
-  }
-  .bigPrize{
-    margin-top:14px;
-    font-size:44px;
-    font-weight:900;
-    line-height:1.05;
-  }
-  .codeLine{
-    margin-top:10px;
-    font-size:18px;
-    color:#111;
-  }
-  .hint{
-    margin-top:10px;
-    font-size:13px;
-    color:var(--muted);
-  }
+.scratchCard {
+  margin-top:22px;
+  position:relative;
+  max-width:520px;
+  margin-left:auto;
+  margin-right:auto;
+}
 
-  /* Canvas overlay */
-  canvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    display:block;
-    touch-action:none;
-  }
+.scratchUnder {
+  position:absolute;
+  inset:0;
+  background:#fff;
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:26px;
+  border:1px solid #ddd;
+  z-index:0;
+}
 
-  .foot{
-    color:var(--muted);
-    font-size:12px;
-    margin-top:10px;
-  }
+canvas {
+  width:100%;
+  height:auto;
+  border-radius:14px;
+  border:1px solid #ddd;
+  touch-action:none;
+  position:relative;
+  z-index:1;
+}
+
+.foot { display:none; } /* Hidden per request */
 </style>
 </head>
 
 <body>
 <div class="wrap">
-  <div class="shell">
-    <h1>🎉 Scratch to Win</h1>
-    <p class="sub">Enter name + email → tap <b>Save</b> → scratch the gray card to reveal the prize underneath. (Offline demo: stored on this device; export CSV.)</p>
+<h2>🎉 OD on the GO Conference Scratcher</h2>
 
-    <div class="formRow">
-      <div>
-        <label for="name">Full Name</label>
-        <input id="name" autocomplete="name" placeholder="Full name" />
-      </div>
-      <div>
-        <label for="email">Email Address</label>
-        <input id="email" autocomplete="email" placeholder="name@email.com" />
-      </div>
-    </div>
+<div class="card">
 
-    <div class="btnRow">
-      <button id="saveBtn" class="primary" type="button">Save — scratch below!</button>
-      <button id="nextBtn" class="secondary" type="button" disabled>Next Student</button>
-      <button id="exportBtn" class="primary" type="button">Export CSV</button>
-      <button id="resetAllBtn" class="secondary" type="button">Reset Device Data</button>
-    </div>
+<label>Name</label>
+<input id="nameInput" type="text" placeholder="First + last name">
 
-    <div id="savedBox" class="savedBox">
-      <b>Saved ✅</b>
-      <div id="savedText"></div>
-    </div>
+<label>Email</label>
+<input id="emailInput" type="email" placeholder="name@email.com">
 
-    <div class="scratchCard">
-      <div class="scratchHeader">
-        <div class="title">Scratch to reveal your prize</div>
-        <div class="inv">Inventory remaining: <span id="invCount">—</span></div>
-      </div>
+<div class="btnRow">
+  <button id="saveBtn" class="primary" type="button">Save — scratch below!</button>
+  <button id="nextBtn" class="secondary" type="button" disabled>Next Student</button>
+</div>
 
-      <div class="stage" id="stage">
-        <!-- Prize UNDERLAY (visible as you scratch) -->
-        <div class="prizeUnder">
-          <div class="pill">🎁 <span>YOUR PRIZE</span></div>
-          <div class="bigPrize" id="prizeLabel">—</div>
-          <div class="codeLine">Code: <b id="prizeCode">—</b></div>
-          <div class="hint">Scratch the gray area to reveal your discount.</div>
-        </div>
-
-        <!-- Scratch overlay -->
-        <canvas id="scratch"></canvas>
-      </div>
-
-      <div class="foot">
-        Tip: each device keeps its own leads + prize inventory (until you connect a backend). Export CSV from each device.
-      </div>
-    </div>
-
+<div class="scratchCard">
+  <div class="scratchUnder">
+    <div id="prizeText">—</div>
+    <div style="font-size:14px;margin-top:6px;" id="codeText"></div>
   </div>
+  <canvas id="scratchCanvas" width="600" height="240"></canvas>
+</div>
+
+<!-- Admin buttons moved to bottom -->
+<div class="btnRow" style="margin-top:20px;">
+  <button id="exportBtn" class="secondary" type="button">Export CSV</button>
+  <button id="resetAllBtn" class="secondary" type="button">Reset Device Data</button>
+</div>
+
+</div>
 </div>
 
 <script>
 (() => {
-  // ============================
-  // Storage keys (localStorage)
-  // ============================
-  const LEADS_KEY = "odgo_scratcher_leads_v3";
-  const INV_KEY   = "odgo_scratcher_inventory_v3";
 
-  // ============================
-  // Scratch tuning (iPad-friendly)
-  // ============================
-  const SCRATCH_RADIUS = 52;   // BIG brush (easy)
-  const REVEAL_AT = 0.06;      // 6% cleared to "complete"
-  const SAMPLE_STEP = 8;       // pixel sampling stride (perf vs accuracy)
+const STORAGE_KEY = "odgo_conf_inventory_v1";
+const LEADS_KEY = "odgo_conf_leads_v1";
 
-  // ============================
-  // Prize inventory (edit codes later)
-  // ============================
-  // 6 grand prizes with UNIQUE codes (temporary placeholders)
-  const GRAND = [
-    { label:"FREE Part 1 Course", code:"P1FREE-A1" },
-    { label:"FREE Part 1 Course", code:"P1FREE-B2" },
-    { label:"FREE Part 2 Course", code:"P2FREE-C3" },
-    { label:"FREE Part 2 Course", code:"P2FREE-D4" },
-    { label:"FREE Part 3 Course", code:"P3FREE-E5" },
-    { label:"FREE Part 3 Course", code:"P3FREE-F6" },
-  ];
+const inventoryTemplate = {
+  freeP1: 2,
+  freeP2: 2,
+  freeP3: 2,
+  fifty: 50,
+  twenty: 500
+};
 
-  // 50 x $50 off (same code)
-  const FIFTY_OFF = { count: 50, label:"$50 OFF ANY COURSE", code:"ODGO50" };
+function loadInventory(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || inventoryTemplate;
+}
+function saveInventory(inv){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(inv));
+}
+function loadLeads(){
+  return JSON.parse(localStorage.getItem(LEADS_KEY)) || [];
+}
+function saveLeads(arr){
+  localStorage.setItem(LEADS_KEY, JSON.stringify(arr));
+}
 
-  // 500 x 20% off (same code)
-  const TWENTY_OFF = { count: 500, label:"20% OFF ANY COURSE", code:"ODGO20" };
+function choosePrize(inv){
 
-  // Build initial inventory array (one entry per prize)
-  function buildFreshInventory(){
-    const inv = [];
-    GRAND.forEach(p => inv.push({ ...p, tier:"grand" }));
-    for(let i=0;i<FIFTY_OFF.count;i++) inv.push({ label:FIFTY_OFF.label, code:FIFTY_OFF.code, tier:"50" });
-    for(let i=0;i<TWENTY_OFF.count;i++) inv.push({ label:TWENTY_OFF.label, code:TWENTY_OFF.code, tier:"20" });
-    return shuffle(inv);
+  const pool = [];
+
+  if(inv.freeP1 > 0) pool.push("FREE PART 1");
+  if(inv.freeP2 > 0) pool.push("FREE PART 2");
+  if(inv.freeP3 > 0) pool.push("FREE PART 3");
+  if(inv.fifty > 0) pool.push("$50 OFF");
+  if(inv.twenty > 0) pool.push("20% OFF");
+
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+
+  switch(pick){
+    case "FREE PART 1": inv.freeP1--; return {label:pick, code:"FREEP1TMP"};
+    case "FREE PART 2": inv.freeP2--; return {label:pick, code:"FREEP2TMP"};
+    case "FREE PART 3": inv.freeP3--; return {label:pick, code:"FREEP3TMP"};
+    case "$50 OFF": inv.fifty--; return {label:pick, code:"CONF50TMP"};
+    default: inv.twenty--; return {label:"20% OFF", code:"CONF20TMP"};
   }
+}
 
-  function shuffle(arr){
-    const a = arr.slice();
-    for(let i=a.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [a[i],a[j]]=[a[j],a[i]];
-    }
-    return a;
-  }
+const canvas = document.getElementById("scratchCanvas");
+const ctx = canvas.getContext("2d");
 
-  function getInventory(){
-    try{
-      const raw = localStorage.getItem(INV_KEY);
-      if(!raw) return null;
-      const inv = JSON.parse(raw);
-      if(!Array.isArray(inv)) return null;
-      return inv;
-    }catch{ return null; }
-  }
+function drawCover(){
+  ctx.globalCompositeOperation="source-over";
+  ctx.fillStyle="#bfbfbf";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="rgba(0,0,0,0.4)";
+  ctx.font="bold 28px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("SCRATCH HERE", canvas.width/2, canvas.height/2);
+  ctx.globalCompositeOperation="destination-out";
+}
 
-  function setInventory(inv){
-    localStorage.setItem(INV_KEY, JSON.stringify(inv));
-  }
+function scratchDot(x,y){
+  ctx.beginPath();
+  ctx.arc(x,y,34,0,Math.PI*2);
+  ctx.fill();
+}
 
-  function ensureInventory(){
-    let inv = getInventory();
-    if(!inv || inv.length === 0){
-      inv = buildFreshInventory();
-      setInventory(inv);
-    }
-    return inv;
-  }
+function getPos(e){
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return {
+    x:(t.clientX-r.left)*(canvas.width/r.width),
+    y:(t.clientY-r.top)*(canvas.height/r.height)
+  };
+}
 
-  // ============================
-  // Leads storage
-  // ============================
-  function getLeads(){
-    try{ return JSON.parse(localStorage.getItem(LEADS_KEY) || "[]"); }
-    catch{ return []; }
-  }
-  function setLeads(leads){
-    localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
-  }
-  function validEmail(s){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
-  }
-  function newId(){
-    return (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())+"_"+Math.random().toString(16).slice(2));
-  }
+let scratching=false;
+let currentLead=null;
+let currentPrize=null;
 
-  // ============================
-  // Elements
-  // ============================
-  const nameEl = document.getElementById("name");
-  const emailEl = document.getElementById("email");
-  const saveBtn = document.getElementById("saveBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const exportBtn = document.getElementById("exportBtn");
-  const resetAllBtn = document.getElementById("resetAllBtn");
+canvas.addEventListener("mousedown",e=>{
+  if(!currentLead)return;
+  scratching=true;
+  const p=getPos(e);
+  scratchDot(p.x,p.y);
+});
+canvas.addEventListener("mousemove",e=>{
+  if(!scratching||!currentLead)return;
+  const p=getPos(e);
+  scratchDot(p.x,p.y);
+});
+window.addEventListener("mouseup",()=>scratching=false);
 
-  const savedBox = document.getElementById("savedBox");
-  const savedText = document.getElementById("savedText");
+canvas.addEventListener("touchstart",e=>{
+  if(!currentLead)return;
+  scratching=true;
+  const p=getPos(e);
+  scratchDot(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
+canvas.addEventListener("touchmove",e=>{
+  if(!scratching||!currentLead)return;
+  const p=getPos(e);
+  scratchDot(p.x,p.y);
+  e.preventDefault();
+},{passive:false});
+canvas.addEventListener("touchend",()=>scratching=false);
 
-  const invCount = document.getElementById("invCount");
+document.getElementById("saveBtn").addEventListener("click",()=>{
+  const name=document.getElementById("nameInput").value.trim();
+  const email=document.getElementById("emailInput").value.trim();
+  if(!name||!email){ alert("Enter name and email"); return; }
 
-  const prizeLabelEl = document.getElementById("prizeLabel");
-  const prizeCodeEl  = document.getElementById("prizeCode");
+  const inv=loadInventory();
+  const prize=choosePrize(inv);
+  saveInventory(inv);
 
-  const stage = document.getElementById("stage");
-  const canvas = document.getElementById("scratch");
-  const ctx = canvas.getContext("2d");
+  currentPrize=prize;
+  document.getElementById("prizeText").textContent=prize.label;
+  document.getElementById("codeText").textContent="Code: "+prize.code;
 
-  // ============================
-  // State
-  // ============================
-  let currentLeadId = null;
-  let currentPrize = null;
-  let scratchEnabled = false;
-  let isDown = false;
-  let completed = false;
+  const leads=loadLeads();
+  currentLead={name,email,prize:prize.label,code:prize.code,time:new Date().toISOString()};
+  leads.push(currentLead);
+  saveLeads(leads);
 
-  // ============================
-  // Canvas sizing (crisp)
-  // ============================
-  function resizeCanvas(){
-    const r = stage.getBoundingClientRect();
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    canvas.width  = Math.round(r.width * dpr);
-    canvas.height = Math.round(r.height * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0); // draw in CSS pixels
-    drawCover();
-  }
-
-  // ============================
-  // Draw gray scratch cover
-  // ============================
-  function drawCover(){
-    const r = stage.getBoundingClientRect();
-    const w = r.width, h = r.height;
-
-    ctx.globalCompositeOperation = "source-over";
-    ctx.clearRect(0,0,w,h);
-
-    // gray card
-    ctx.fillStyle = "#bfbfbf";
-    ctx.fillRect(0,0,w,h);
-
-    // text
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.font = "900 28px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("SCRATCH HERE", w/2, h/2);
-
-    // erase mode
-    ctx.fillStyle = "rgba(0,0,0,1)";
-    ctx.globalCompositeOperation = "destination-out";
-  }
-
-  function pos(evt){
-    const r = canvas.getBoundingClientRect();
-    const t = evt.touches ? evt.touches[0] : evt;
-    return { x: (t.clientX - r.left), y: (t.clientY - r.top) };
-  }
-
-  function scratchDot(x,y){
-    ctx.beginPath();
-    ctx.arc(x,y,SCRATCH_RADIUS,0,Math.PI*2);
-    ctx.fill();
-  }
-
-  // ============================
-  // Completion check (fast sampling)
-  // ============================
-  function percentCleared(){
-    // Read back at device pixel size, but sample sparsely for speed.
-    const img = ctx.getImageData(0,0,canvas.width,canvas.height).data;
-    let cleared = 0;
-    let total = 0;
-
-    // alpha is every 4th byte starting at index 3
-    for(let y=0;y<canvas.height;y+=SAMPLE_STEP){
-      for(let x=0;x<canvas.width;x+=SAMPLE_STEP){
-        const idx = (y*canvas.width + x)*4 + 3;
-        total++;
-        if(img[idx] === 0) cleared++;
-      }
-    }
-    return cleared / total;
-  }
-
-  function updateInventoryUI(){
-    const inv = ensureInventory();
-    invCount.textContent = inv.length;
-  }
-
-  function markLead(fields){
-    if(!currentLeadId) return;
-    const leads = getLeads();
-    const idx = leads.findIndex(l => l.id === currentLeadId);
-    if(idx === -1) return;
-    leads[idx] = { ...leads[idx], ...fields };
-    setLeads(leads);
-  }
-
-  function checkComplete(){
-    if(completed) return;
-    const pct = percentCleared();
-    if(pct >= REVEAL_AT){
-      completed = true;
-      nextBtn.disabled = false;
-
-      // record completion + prize
-      markLead({
-        completedAt: new Date().toISOString(),
-        prizeLabel: currentPrize?.label || "",
-        prizeCode: currentPrize?.code || ""
-      });
-
-      // small UX update
-      savedText.innerHTML = `${escapeHtml(nameEl.value)} — ${escapeHtml(emailEl.value)} (saved). Prize revealed: <b>${escapeHtml(currentPrize.label)}</b> (<b>${escapeHtml(currentPrize.code)}</b>)`;
-    }
-  }
-
-  // ============================
-  // Prize pick (inventory-based)
-  // ============================
-  function drawPrizeFromInventory(){
-    const inv = ensureInventory();
-    if(inv.length === 0){
-      // fallback if somehow empty
-      return { label: TWENTY_OFF.label, code: TWENTY_OFF.code, tier:"20" };
-    }
-    const prize = inv.pop(); // take last
-    setInventory(inv);
-    updateInventoryUI();
-    return prize;
-  }
-
-  function setPrize(prize){
-    currentPrize = prize;
-    // IMPORTANT: prize is visible UNDER the gray layer, so it "reveals as you scratch"
-    prizeLabelEl.textContent = prize.label;
-    prizeCodeEl.textContent  = prize.code;
-  }
-
-  // ============================
-  // Gate: Save name/email BEFORE scratching
-  // ============================
-  function lockForm(lock){
-    nameEl.disabled = lock;
-    emailEl.disabled = lock;
-    saveBtn.disabled = lock;
-    saveBtn.textContent = lock ? "Saved — scratch below!" : "Save — scratch below!";
-  }
-
-  saveBtn.addEventListener("click", () => {
-    const name = (nameEl.value || "").trim();
-    const email = (emailEl.value || "").trim();
-
-    if(!name){ alert("Please enter your name."); return; }
-    if(!validEmail(email)){ alert("Please enter a valid email."); return; }
-
-    // create lead record
-    const id = newId();
-    const leads = getLeads();
-    leads.unshift({
-      id, name, email,
-      startedAt: new Date().toISOString(),
-      completedAt: "",
-      prizeLabel: "",
-      prizeCode: ""
-    });
-    setLeads(leads);
-    currentLeadId = id;
-
-    // pick prize NOW (so it’s underneath while scratching)
-    setPrize(drawPrizeFromInventory());
-
-    // enable scratching + reset cover
-    scratchEnabled = true;
-    completed = false;
-    nextBtn.disabled = true;
-    savedBox.style.display = "block";
-    savedText.textContent = `${name} — ${email} (saved). Now scratch below to reveal your prize.`;
-
-    lockForm(true);
-    drawCover();
-  });
-
-  // ============================
-  // Next Student
-  // ============================
-  nextBtn.addEventListener("click", () => {
-    // unlock form
-    lockForm(false);
-    savedBox.style.display = "none";
-    nameEl.value = "";
-    emailEl.value = "";
-
-    // reset scratch state
-    currentLeadId = null;
-    currentPrize = null;
-    scratchEnabled = false;
-    completed = false;
-    nextBtn.disabled = true;
-
-    // hide prize text until next save (optional)
-    prizeLabelEl.textContent = "—";
-    prizeCodeEl.textContent = "—";
-
-    drawCover();
-  });
-
-  // ============================
-  // Export CSV
-  // ============================
-  exportBtn.addEventListener("click", () => {
-    const leads = getLeads();
-    if(!leads.length){
-      alert("No leads yet.");
-      return;
-    }
-    const header = "name,email,startedAt,completedAt,prizeLabel,prizeCode\n";
-    const rows = leads.map(l => {
-      const esc = (s) => `"${String(s||"").replaceAll('"','""')}"`;
-      return [esc(l.name), esc(l.email), esc(l.startedAt), esc(l.completedAt), esc(l.prizeLabel), esc(l.prizeCode)].join(",");
-    }).join("\n");
-
-    const blob = new Blob([header + rows], {type:"text/csv;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "odgo_scratcher_leads.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  // ============================
-  // Reset device data
-  // ============================
-  resetAllBtn.addEventListener("click", () => {
-    if(!confirm("Reset ALL saved leads + prize inventory on this device?")) return;
-    localStorage.removeItem(LEADS_KEY);
-    localStorage.removeItem(INV_KEY);
-    alert("Reset complete.");
-    location.reload();
-  });
-
-  // ============================
-  // Scratch events
-  // ============================
-  function down(evt){
-    if(!scratchEnabled) return;
-    isDown = true;
-    const p = pos(evt);
-    scratchDot(p.x,p.y);
-    checkComplete();
-    evt.preventDefault?.();
-  }
-  function move(evt){
-    if(!scratchEnabled || !isDown) return;
-    const p = pos(evt);
-    scratchDot(p.x,p.y);
-    checkComplete();
-    evt.preventDefault?.();
-  }
-  function up(evt){
-    isDown = false;
-    if(scratchEnabled) checkComplete(); // iPad reliability
-  }
-
-  canvas.addEventListener("mousedown", down);
-  canvas.addEventListener("mousemove", move);
-  window.addEventListener("mouseup", up);
-
-  canvas.addEventListener("touchstart", down, {passive:false});
-  canvas.addEventListener("touchmove", move, {passive:false});
-  window.addEventListener("touchend", up, {passive:false});
-
-  // ============================
-  // Helpers
-  // ============================
-  function escapeHtml(str){
-    return String(str||"")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  // ============================
-  // Init
-  // ============================
-  ensureInventory();
-  updateInventoryUI();
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-
-  // Start locked (must Save first)
-  scratchEnabled = false;
-  nextBtn.disabled = true;
   drawCover();
+  document.getElementById("nextBtn").disabled=false;
+});
+
+document.getElementById("nextBtn").addEventListener("click",()=>{
+  document.getElementById("nameInput").value="";
+  document.getElementById("emailInput").value="";
+  document.getElementById("prizeText").textContent="—";
+  document.getElementById("codeText").textContent="";
+  currentLead=null;
+  currentPrize=null;
+  drawCover();
+});
+
+document.getElementById("exportBtn").addEventListener("click",()=>{
+  const leads=loadLeads();
+  if(!leads.length){ alert("No leads yet."); return; }
+  const header="Name,Email,Prize,Code,Timestamp\n";
+  const rows=leads.map(l=>`${l.name},${l.email},${l.prize},${l.code},${l.time}`).join("\n");
+  const blob=new Blob([header+rows],{type:"text/csv"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="odgo_conference_leads.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("resetAllBtn").addEventListener("click",()=>{
+  if(confirm("Reset ALL inventory and leads on this device?")){
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEADS_KEY);
+    alert("Device reset.");
+  }
+});
+
+drawCover();
+
 })();
 </script>
+
 </body>
 </html>
