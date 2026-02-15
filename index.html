@@ -17,8 +17,8 @@
       --ink:#0f172a;
       --muted:#64748b;
       --line:#e5e7eb;
-      --accent:#0F6E8C;   /* AOA-ish teal */
-      --accent2:#2A9DBB;  /* lighter teal */
+      --accent:#0F6E8C;
+      --accent2:#2A9DBB;
       --btn:#0b0f14;
       --btnText:#fff;
       --soft:#f8fafc;
@@ -38,7 +38,7 @@
       padding: 0 14px;
     }
 
-    /* ===== Header (new) ===== */
+    /* ===== Header ===== */
     .header{
       background: linear-gradient(90deg, var(--accent), var(--accent2));
       padding: 18px 20px;
@@ -109,7 +109,6 @@
       padding: 18px;
     }
 
-    /* ===== Form row ===== */
     .grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -142,7 +141,6 @@
       box-shadow: 0 0 0 4px rgba(42,157,187,.12);
     }
 
-    /* ===== Buttons ===== */
     .btnRow{
       display:flex;
       gap:12px;
@@ -172,7 +170,6 @@
       cursor:not-allowed;
     }
 
-    /* ===== Status bar ===== */
     .status{
       margin-top:12px;
       border:1px solid #cfe7ff;
@@ -184,7 +181,6 @@
     }
     .status strong{font-family:'Montserrat', Arial, sans-serif}
 
-    /* ===== Scratch area ===== */
     .scratchHeader{
       display:flex;
       align-items:center;
@@ -269,7 +265,6 @@
       touch-action:none;
     }
 
-    /* ===== Admin moved to bottom ===== */
     .admin{
       margin-top: 18px;
       padding-top: 14px;
@@ -279,17 +274,7 @@
       flex-wrap:wrap;
       justify-content:flex-end;
     }
-    .admin .btn{
-      min-width: 190px;
-    }
-
-    /* small helper text (kept minimal) */
-    .tiny{
-      font-size:12px;
-      color: var(--muted);
-      margin-top: 8px;
-      text-align:right;
-    }
+    .admin .btn{ min-width: 190px; }
   </style>
 </head>
 
@@ -303,7 +288,6 @@
         </div>
 
         <div class="logoRow">
-          <!-- Your uploaded JPEGs -->
           <div class="logoBox"><img src="assets/aoa-logo.jpeg" alt="AOA Logo"></div>
           <div class="logoBox"><img src="assets/odgo-logo.jpeg" alt="OD on the GO Logo"></div>
         </div>
@@ -346,12 +330,10 @@
         <canvas id="scratchCanvas"></canvas>
       </div>
 
-      <!-- Admin buttons moved to bottom -->
       <div class="admin">
         <button id="exportBtn" class="btn secondary" type="button">Export CSV</button>
         <button id="resetBtn" class="btn secondary" type="button">Reset Device Data</button>
       </div>
-      <div class="tiny"></div>
     </div>
   </div>
 
@@ -361,9 +343,8 @@
      CONFIG — EDIT CODES LATER
      ========================= */
   const CODES = {
-    OFF50: "ODGO50",     // same code for all $50 off
-    OFF20: "ODGO20",     // same code for all 20% off
-    // Unique grand prizes (temporary — replace later)
+    OFF50: "ODGO50",
+    OFF20: "ODGO20",
     FREE_P1: ["FREEP1-1", "FREEP1-2"],
     FREE_P2: ["FREEP2-1", "FREEP2-2"],
     FREE_P3: ["FREEP3-1", "FREEP3-2"],
@@ -374,22 +355,15 @@
     FREE_P2: 2,
     FREE_P3: 2,
     OFF50: 50,
-    OFF20: 50,
+    OFF20: 400, // ✅ increased to 400
   };
 
-  // Scratch behavior
-  const SCRATCH_THRESHOLD = 0.25; // 25% cleared (easier)
-  const BRUSH_RADIUS = 34;        // bigger brush (iPad friendly)
+  const SCRATCH_THRESHOLD = 0.25; // easier
+  const BRUSH_RADIUS = 34;
 
-  /* =========================
-     STORAGE KEYS
-     ========================= */
   const K_LEADS = "odgo_aoa2026_leads_v1";
   const K_INV   = "odgo_aoa2026_inventory_v1";
 
-  /* =========================
-     DOM
-     ========================= */
   const nameEl = document.getElementById("name");
   const emailEl = document.getElementById("email");
   const saveBtn = document.getElementById("saveBtn");
@@ -408,17 +382,11 @@
   const canvas = document.getElementById("scratchCanvas");
   const ctx = canvas.getContext("2d");
 
-  /* =========================
-     STATE
-     ========================= */
   let currentLeadId = null;
   let scratchEnabled = false;
   let scratching = false;
   let revealed = false;
 
-  /* =========================
-     HELPERS
-     ========================= */
   function validEmail(s){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
   }
@@ -450,33 +418,23 @@
     return arr;
   }
 
-  /* =========================
-     BUILD INVENTORY (106 total)
-     ========================= */
   function buildInventory(){
     const inv = [];
-
-    // 2 free part 1
     for (let i=0;i<COUNTS.FREE_P1;i++){
       inv.push({ type:"FREE_P1", label:"FREE PART 1", code: CODES.FREE_P1[i] || ("FREEP1-"+(i+1)) });
     }
-    // 2 free part 2
     for (let i=0;i<COUNTS.FREE_P2;i++){
       inv.push({ type:"FREE_P2", label:"FREE PART 2", code: CODES.FREE_P2[i] || ("FREEP2-"+(i+1)) });
     }
-    // 2 free part 3
     for (let i=0;i<COUNTS.FREE_P3;i++){
       inv.push({ type:"FREE_P3", label:"FREE PART 3", code: CODES.FREE_P3[i] || ("FREEP3-"+(i+1)) });
     }
-    // 50 x $50 off
     for (let i=0;i<COUNTS.OFF50;i++){
       inv.push({ type:"OFF50", label:"$50 OFF ANY COURSE", code: CODES.OFF50 });
     }
-    // 50 x 20% off
     for (let i=0;i<COUNTS.OFF20;i++){
       inv.push({ type:"OFF20", label:"20% OFF ANY COURSE", code: CODES.OFF20 });
     }
-
     return shuffle(inv);
   }
 
@@ -493,15 +451,12 @@
   function pickPrizeFromInventory(){
     const inv = ensureInventory();
     if (inv.length === 0) return null;
-    const prize = inv.shift(); // already shuffled => truly random
+    const prize = inv.shift(); // inventory is shuffled -> random
     setInv(inv);
     invCount.textContent = String(inv.length);
     return prize;
   }
 
-  /* =========================
-     CANVAS / SCRATCH
-     ========================= */
   function resizeCanvasToStage(){
     const r = stage.getBoundingClientRect();
     const dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -509,9 +464,7 @@
     canvas.width  = Math.floor(r.width * dpr);
     canvas.height = Math.floor(r.height * dpr);
 
-    // scale drawing ops into DPR space
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
     drawCover();
   }
 
@@ -520,27 +473,21 @@
     ctx.globalCompositeOperation = "source-over";
     ctx.clearRect(0, 0, r.width, r.height);
 
-    // gray cover
     ctx.fillStyle = "#bfbfbf";
     ctx.fillRect(0, 0, r.width, r.height);
 
-    // hint text
     ctx.fillStyle = "rgba(0,0,0,0.40)";
     ctx.font = "800 22px Montserrat, Arial, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("SCRATCH HERE", r.width/2, r.height/2);
 
-    // switch to erase mode
     ctx.globalCompositeOperation = "destination-out";
   }
 
   function getPos(evt){
     const r = stage.getBoundingClientRect();
     const t = evt.touches ? evt.touches[0] : evt;
-    return {
-      x: (t.clientX - r.left),
-      y: (t.clientY - r.top)
-    };
+    return { x: (t.clientX - r.left), y: (t.clientY - r.top) };
   }
 
   function scratchDot(x,y){
@@ -550,7 +497,6 @@
   }
 
   function percentCleared(){
-    // Read pixels in DPR buffer
     const img = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     let cleared = 0;
     for (let i = 3; i < img.length; i += 4){
@@ -566,7 +512,9 @@
       revealed = true;
       nextBtn.disabled = false;
 
-      // mark revealed timestamp in lead (prize already assigned at Save)
+      // ✅ allow taps to reach the Next Student button (iPad Safari fix)
+      canvas.style.pointerEvents = "none";
+
       if (currentLeadId){
         const leads = getLeads();
         const idx = leads.findIndex(l => l.id === currentLeadId);
@@ -582,6 +530,10 @@
     scratchEnabled = true;
     revealed = false;
     nextBtn.disabled = true;
+
+    // ✅ re-enable scratching for the next student
+    canvas.style.pointerEvents = "auto";
+
     drawCover();
   }
 
@@ -589,10 +541,10 @@
     scratchEnabled = false;
     revealed = false;
     nextBtn.disabled = true;
+    canvas.style.pointerEvents = "none";
     drawCover();
   }
 
-  // Events
   canvas.addEventListener("mousedown", (e) => {
     if (!scratchEnabled) return;
     scratching = true;
@@ -627,9 +579,6 @@
 
   canvas.addEventListener("touchend", () => scratching = false);
 
-  /* =========================
-     FLOW
-     ========================= */
   function resetUIForNewStudent(){
     currentLeadId = null;
 
@@ -641,11 +590,9 @@
     saveBtn.disabled = false;
     saveBtn.textContent = "Save — scratch below!";
 
-    // hide status
     status.style.display = "none";
     statusText.textContent = "";
 
-    // hide prize until next save
     prizeLabelEl.textContent = "—";
     prizeCodeEl.textContent = "—";
 
@@ -659,14 +606,12 @@
     if (!name){ alert("Please enter your full name."); return; }
     if (!validEmail(email)){ alert("Please enter a valid email."); return; }
 
-    // assign a prize now (will be hidden under scratch layer)
     const prize = pickPrizeFromInventory();
     if (!prize){
       alert("No prizes remaining on this device.");
       return;
     }
 
-    // create lead (1 row per save — no duplicates)
     const id = uid();
     const lead = {
       id,
@@ -684,7 +629,6 @@
 
     currentLeadId = id;
 
-    // UI lock + show status
     nameEl.disabled = true;
     emailEl.disabled = true;
     saveBtn.disabled = true;
@@ -693,7 +637,6 @@
     status.style.display = "block";
     statusText.textContent = `${name} — ${email} (saved). Now scratch below to reveal your prize.`;
 
-    // put prize text underneath (covered by gray canvas)
     prizeLabelEl.textContent = prize.label;
     prizeCodeEl.textContent = prize.code;
 
@@ -704,9 +647,6 @@
     resetUIForNewStudent();
   });
 
-  /* =========================
-     CSV EXPORT / RESET
-     ========================= */
   exportBtn.addEventListener("click", () => {
     const leads = getLeads();
     if (!leads.length){
@@ -714,7 +654,6 @@
       return;
     }
 
-    // One row per lead
     const header = "Name,Email,Prize,Code,TimestampSaved,TimestampRevealed\n";
     const rows = leads.map(l => {
       const esc = (s) => `"${String(s ?? "").replaceAll('"','""')}"`;
@@ -748,20 +687,12 @@
     alert("Device data cleared.");
   });
 
-  /* =========================
-     INIT
-     ========================= */
   ensureInventory();
   resizeCanvasToStage();
   resetUIForNewStudent();
 
-  window.addEventListener("resize", () => {
-    // keep canvas aligned with stage size
-    resizeCanvasToStage();
-  });
-  window.addEventListener("orientationchange", () => {
-    setTimeout(resizeCanvasToStage, 250);
-  });
+  window.addEventListener("resize", () => resizeCanvasToStage());
+  window.addEventListener("orientationchange", () => setTimeout(resizeCanvasToStage, 250));
 })();
 </script>
 
